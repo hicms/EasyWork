@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DSH_TELEMETRY_DISABLED: '1'
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      product: ${{ steps.scope.outputs.product }}
+      web: ${{ steps.scope.outputs.web }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Classify source changes
+        id: scope
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          node scripts/verify-bilingual-docs.mjs
+          if [[ "$EVENT_NAME" == "workflow_dispatch" || -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
+            product=true
+            web=true
+          else
+            git diff --check "$BASE_SHA" "$HEAD_SHA"
+            product="$(git diff --name-only -z "$BASE_SHA" "$HEAD_SHA" | node scripts/classify-ci-changes.mjs)"
+            changed_paths="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+            if grep -Eq '^(apps/web/|packages/|profiles/)' <<< "$changed_paths" || grep -Eq '^(assets/brand/|scripts/|package.json|upstream.json|\.github/)' <<< "$changed_paths"; then web=true; else web=false; fi
+          fi
+          echo "product=$product" >> "$GITHUB_OUTPUT"
+          echo "web=$web" >> "$GITHUB_OUTPUT"
+
+  desktop-check:
+    needs: changes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        if: needs.changes.outputs.product == 'true'
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        if: needs.changes.outputs.product == 'true'
+        with:
+          node-version: '24'
+      - if: needs.changes.outputs.product == 'true'
+        run: corepack enable
+      - if: needs.changes.outputs.product == 'true'
+        run: corepack yarn install --immutable
+      - if: needs.changes.outputs.product == 'true'
+        run: corepack yarn check
+      - if: needs.changes.outputs.product == 'false'
+        run: echo "Documentation change verified in changes job."
+
+  web-check:
+    needs: changes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        if: needs.changes.outputs.web == 'true'
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        if: needs.changes.outputs.web == 'true'
+        with:
+          node-version: '24'
+      - if: needs.changes.outputs.web == 'true'
+        run: corepack enable
+      - if: needs.changes.outputs.web == 'true'
+        working-directory: apps/web
+        run: corepack pnpm install --frozen-lockfile
+      - if: needs.changes.outputs.web == 'true'
+        working-directory: apps/web
+        run: |
+          corepack pnpm build
+          corepack pnpm --filter workdsh-provider-identity-enterprise build
+          corepack pnpm --filter workdsh-plugin-enterprise-collaboration build
+          corepack pnpm typecheck
+          corepack pnpm --filter workdsh-provider-identity-enterprise typecheck
+          corepack pnpm --filter workdsh-plugin-enterprise-collaboration typecheck
+          corepack pnpm check:versions
+          corepack pnpm check:plan
+      - if: needs.changes.outputs.web == 'false'
+        run: echo "No Web source changes."

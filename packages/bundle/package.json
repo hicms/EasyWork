@@ -1,0 +1,92 @@
+{
+  "name": "workdsh-bundle",
+  "version": "0.1.0-alpha.53",
+  "private": true,
+  "type": "module",
+  "description": "Composes the EasyWork workspace, capabilities and default DSH plugins.",
+  "exports": {
+    "./probe": {
+      "types": "./dist/probe.d.ts",
+      "default": "./dist/probe.js"
+    },
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "default": "./dist/client.js"
+    },
+    ".": {
+      "types": "./dist/probe.d.ts",
+      "default": "./dist/probe.js"
+    },
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "dist",
+    "cordis.patch.yml",
+    "README.md",
+    "CHANGELOG.md",
+    "locale/*.json"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-sidebar-right",
+        "@deepseek-ai/dsh-client-ui-session",
+        "@deepseek-ai/dsh-api-remotes",
+        "@deepseek-ai/dsh-api-session-controller",
+        "@deepseek-ai/dsh-api-workspace-controller",
+        "@deepseek-ai/dsh-client-ui-workspace"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "node ../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../apps/web --filter workdsh-ui build && node ../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../apps/web --filter workdsh-plugin-workbench build && tsc -p tsconfig.json && node ../../apps/web/scripts/build-client-probe.mjs",
+    "typecheck": "node ../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../apps/web --filter workdsh-ui build && node ../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../apps/web --filter workdsh-plugin-workbench typecheck && tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "4.0.4"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "4.0.4",
+    "@deepseek-ai/dsh-attachment": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-api-remotes": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-api-session-controller": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-api-workspace-controller": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-connection": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-conversation": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-layout": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-plugin-manager": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-renderer": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-sidebar": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-sidebar-right": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-session": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-llm": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tools": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-skill": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-system-prompt": "0.2.0-rc.2",
+    "@types/react": "19.2.14",
+    "react": "19.2.4",
+    "workdsh-plugin-workbench": "workspace:*",
+    "workdsh-ui": "workspace:*",
+    "@types/node": "22.19.0",
+    "@deepseek-ai/dsh-agent": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-workspace": "0.2.0-rc.2"
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-browser-use": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-computer-use": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-experimental-auto-review": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-experimental-browser-use-playwright-mcp": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-experimental-computer-use-cua-driver-native": "0.2.0-rc.2",
+    "yaml": "2.9.0"
+  }
+}

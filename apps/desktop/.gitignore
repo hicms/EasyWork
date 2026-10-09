@@ -1,0 +1,14 @@
+dist/
+/lib/
+node_modules/
+
+build/workdsh-runtime
+build/workdsh-runtime.*
+build/workdsh-profile-release*
+build/.workdsh-release-*
+build/.workdsh-node
+build/.workdsh-primary-runtime-cache
+build/official-primary-runtime
+build/external-plugins/
+
+build/deployment/

@@ -1,0 +1,87 @@
+{
+  "name": "workdsh-plugin-skills",
+  "version": "0.1.0-alpha.34",
+  "private": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "default": "./dist/client.browser.js"
+    },
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "dist",
+    "resources",
+    "README.md",
+    "CHANGELOG.md",
+    "cordis.patch.yml",
+    "locale/*.json"
+  ],
+  "scripts": {
+    "build": "node ../../../apps/web/scripts/generate-builtin-skills.mjs && node ../../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../../apps/web --filter workdsh-contracts build && node ../../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../../apps/web --filter workdsh-ui build && tsc -p tsconfig.json && node ../../../apps/web/scripts/build-skills.mjs",
+    "typecheck": "node ../../../apps/web/scripts/generate-builtin-skills.mjs && tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "4.0.4",
+    "@deepseek-ai/dsh-client-connection": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-skill": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tools": "0.2.0-rc.2",
+    "react": "19.2.4",
+    "@deepseek-ai/dsh-client-ui-primitives": "0.2.0-rc.2"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "4.0.4",
+    "@deepseek-ai/dsh-api-remotes": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-api-session-controller": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-api-workspace-controller": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-connection": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-conversation": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-layout": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-renderer": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-session": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-sidebar": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-client-ui-workspace": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-skill": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tools": "0.2.0-rc.2",
+    "@types/react": "19.2.14",
+    "react": "19.2.4",
+    "workdsh-ui": "workspace:*",
+    "workdsh-contracts": "workspace:*",
+    "@deepseek-ai/dsh-client-ui-primitives": "0.2.0-rc.2",
+    "@types/node": "22.19.0"
+  },
+  "dependencies": {
+    "fflate": "0.8.3",
+    "yaml": "2.9.0"
+  },
+  "description": "Manages installed skills, local skill packages and SkillHub browsing.",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-session",
+        "@deepseek-ai/dsh-client-ui-workspace",
+        "@deepseek-ai/dsh-api-remotes",
+        "@deepseek-ai/dsh-api-session-controller",
+        "@deepseek-ai/dsh-api-workspace-controller",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-primitives"
+      ]
+    }
+  }
+}

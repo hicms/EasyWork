@@ -1,0 +1,538 @@
+[
+  {
+    "path": "../../packages/contracts",
+    "title": "领域公开契约",
+    "status": "implemented",
+    "directories": [
+      "src"
+    ],
+    "moduleVersion": "0.1",
+    "requirements": [
+      "R15"
+    ]
+  },
+  {
+    "path": "../../packages/ui",
+    "title": "共享展示组件",
+    "status": "implemented",
+    "directories": [
+      "src/components",
+      "src/styles"
+    ],
+    "moduleVersion": "0.1",
+    "requirements": [
+      "R15"
+    ]
+  },
+  {
+    "path": "../../packages/bundle",
+    "title": "默认组合包",
+    "status": "in_progress",
+    "directories": [
+      "src"
+    ],
+    "moduleVersion": "0.1",
+    "requirements": [
+      "R01",
+      "R02",
+      "R15"
+    ]
+  },
+  {
+    "path": "../../packages/plugins/workbench",
+    "title": "工作台",
+    "status": "implemented",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness"
+    ],
+    "moduleVersion": "0.1",
+    "requirements": [
+      "R15"
+    ]
+  },
+  {
+    "path": "../../packages/plugins/experts",
+    "title": "专家管理",
+    "status": "in_progress",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness",
+      "resources/skills/workdsh-expert-manager",
+      "resources/templates",
+      "src/services/preferences"
+    ],
+    "moduleVersion": "0.1",
+    "requirements": [
+      "R04"
+    ]
+  },
+  {
+    "path": "../../packages/plugins/skills",
+    "title": "技能管理",
+    "status": "implemented",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness",
+      "resources/skills/workdsh-skill-creator",
+      "resources/templates",
+      "src/services/discovery",
+      "src/services/preferences"
+    ],
+    "moduleVersion": "0.1",
+    "requirements": [
+      "R05"
+    ]
+  },
+  {
+    "path": "../../packages/plugins/connectors",
+    "title": "连接器管理",
+    "status": "in_progress",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness"
+    ],
+    "moduleVersion": "0.1",
+    "requirements": [
+      "R06"
+    ]
+  },
+  {
+    "path": "../../packages/plugins/applications",
+    "title": "行业应用",
+    "status": "planned",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness"
+    ],
+    "requirements": [
+      "R14"
+    ]
+  },
+  {
+    "path": "../../packages/plugins/projects",
+    "title": "项目管理",
+    "status": "in_progress",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness",
+      "src/client/sections/overview",
+      "src/client/sections/tasks",
+      "src/client/sections/work-items",
+      "src/client/sections/assets",
+      "src/client/sections/activity",
+      "src/client/sections/settings",
+      "src/client/sections/members",
+      "resources/skills/project-manager",
+      "resources/templates",
+      "src/client/components/capability-picker",
+      "src/client/components/config-panel",
+      "src/client/components/project-composer",
+      "src/client/components/project-lineage",
+      "src/runtime",
+      "src/domain/discussions"
+    ],
+    "moduleVersion": "0.1",
+    "requirements": [
+      "R08"
+    ]
+  },
+  {
+    "path": "../../packages/plugins/library",
+    "title": "资料库",
+    "status": "implemented",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness",
+      "src/client/sections/review",
+      "src/services/revisions",
+      "src/services/search"
+    ],
+    "requirements": [
+      "R07"
+    ],
+    "moduleVersion": "0.1"
+  },
+  {
+    "path": "../../packages/plugins/automations",
+    "title": "自动化",
+    "status": "planned",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness"
+    ],
+    "requirements": [
+      "R13"
+    ]
+  },
+  {
+    "path": "../../packages/plugins/identity",
+    "title": "身份和组织",
+    "status": "planned",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness"
+    ],
+    "requirements": [
+      "R14"
+    ]
+  },
+  {
+    "path": "../../packages/plugins/access",
+    "title": "资源授权",
+    "status": "implemented",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness"
+    ],
+    "moduleVersion": "0.1",
+    "requirements": [
+      "R03"
+    ]
+  },
+  {
+    "path": "../../packages/plugins/audit",
+    "title": "审计",
+    "status": "implemented",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness"
+    ],
+    "moduleVersion": "0.1",
+    "requirements": [
+      "R03"
+    ]
+  },
+  {
+    "path": "../../packages/plugins/model-policy",
+    "title": "企业模型策略",
+    "status": "planned",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness"
+    ],
+    "requirements": [
+      "R14"
+    ]
+  },
+  {
+    "path": "../../packages/plugins/usage",
+    "title": "用量与统计",
+    "status": "planned",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness"
+    ],
+    "requirements": [
+      "R14"
+    ]
+  },
+  {
+    "path": "../../packages/plugins/admin",
+    "title": "企业管理后台",
+    "status": "planned",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness",
+      "src/client/sections/organization",
+      "src/client/sections/members",
+      "src/client/sections/capabilities",
+      "src/client/sections/connectors",
+      "src/client/sections/audit",
+      "src/client/sections/models",
+      "src/client/sections/usage"
+    ],
+    "requirements": [
+      "R14"
+    ]
+  },
+  {
+    "path": "../../packages/plugins/enterprise-collaboration",
+    "title": "企业成员交接工具",
+    "status": "in_progress",
+    "directories": [
+      "src"
+    ],
+    "moduleVersion": "0.1",
+    "requirements": [
+      "R10",
+      "R12"
+    ]
+  },
+  {
+    "path": "../../packages/plugins/tables",
+    "title": "在线表格",
+    "status": "planned",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness"
+    ],
+    "requirements": [
+      "R14"
+    ]
+  },
+  {
+    "path": "../../packages/plugins/pages",
+    "title": "业务页面",
+    "status": "planned",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness"
+    ],
+    "requirements": [
+      "R14"
+    ]
+  },
+  {
+    "path": "../../packages/providers/browser-session",
+    "title": "受管浏览器会话提供方",
+    "status": "in_progress",
+    "directories": [
+      "src"
+    ],
+    "moduleVersion": "0.1",
+    "requirements": [
+      "R11"
+    ]
+  },
+  {
+    "path": "../../packages/providers/identity-local",
+    "title": "本地身份提供方",
+    "status": "implemented",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness"
+    ],
+    "moduleVersion": "0.1",
+    "requirements": [
+      "R03"
+    ]
+  },
+  {
+    "path": "../../packages/providers/identity-enterprise",
+    "title": "企业实例身份提供方",
+    "status": "in_progress",
+    "directories": [
+      "src"
+    ],
+    "moduleVersion": "0.1",
+    "requirements": [
+      "R12"
+    ]
+  },
+  {
+    "path": "../../packages/providers/identity-oidc",
+    "title": "SSO 身份提供方",
+    "status": "planned",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness"
+    ],
+    "requirements": [
+      "R14"
+    ]
+  },
+  {
+    "path": "../../packages/providers/library-team",
+    "title": "团队资产提供方",
+    "status": "planned",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness"
+    ],
+    "requirements": [
+      "R14"
+    ]
+  },
+  {
+    "path": "../../packages/providers/runtime-isolated",
+    "title": "隔离执行提供方",
+    "status": "planned",
+    "directories": [
+      "src/domain",
+      "src/services",
+      "src/storage",
+      "src/tools",
+      "src/remote",
+      "src/client/components",
+      "src/harness"
+    ],
+    "requirements": [
+      "R14"
+    ]
+  },
+  {
+    "path": "examples/provider-education",
+    "title": "教育领域提供方示例",
+    "status": "planned",
+    "directories": [
+      "src",
+      "resources/skills",
+      "resources/experts",
+      "resources/applications"
+    ],
+    "requirements": [
+      "R14"
+    ]
+  },
+  {
+    "path": "examples/mcp-business-service",
+    "title": "测试业务系统",
+    "status": "planned",
+    "directories": [
+      "src"
+    ],
+    "requirements": [
+      "R14"
+    ]
+  },
+  {
+    "path": "examples/remote-probe",
+    "title": "Remote 发布包兼容性探针",
+    "status": "in_progress",
+    "directories": [
+      "packages/probe/src"
+    ],
+    "requirements": [
+      "R01"
+    ]
+  },
+  {
+    "path": "examples/univer-browser-edit",
+    "title": "Office 纯浏览器编辑兼容探针",
+    "status": "in_progress",
+    "directories": [],
+    "requirements": [
+      "R09"
+    ]
+  },
+  {
+    "path": "../../packages/plugins/office",
+    "title": "Office 浏览器编辑插件",
+    "status": "in_progress",
+    "directories": [
+      "src"
+    ],
+    "moduleVersion": "0.1",
+    "requirements": [
+      "R09"
+    ]
+  },
+  {
+    "path": "../../packages/plugins/activity",
+    "title": "协作与活动展示",
+    "status": "in_progress",
+    "directories": [
+      "src"
+    ],
+    "moduleVersion": "0.1",
+    "requirements": [
+      "R10"
+    ]
+  },
+  {
+    "path": "../../packages/enterprise-connection",
+    "title": "企业连接外部单包交付",
+    "status": "in_progress",
+    "directories": [],
+    "moduleVersion": "0.1",
+    "requirements": [
+      "R12"
+    ]
+  }
+]

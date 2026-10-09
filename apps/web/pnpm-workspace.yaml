@@ -1,0 +1,7 @@
+packages:
+  - ../../packages/*
+  - ../../packages/plugins/*
+  - ../../packages/providers/*
+  - examples/*
+  - '!examples/univer-browser-edit'
+  - '!../../packages/enterprise-connection'

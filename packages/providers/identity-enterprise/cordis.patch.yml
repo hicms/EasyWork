@@ -1,0 +1,3 @@
+- insert:
+    - id: workdsh-identity-enterprise
+      name: workdsh-provider-identity-enterprise

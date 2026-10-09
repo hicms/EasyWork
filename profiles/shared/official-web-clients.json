@@ -1,0 +1,1395 @@
+{
+  "schemaVersion": 2,
+  "dshVersion": "0.2.0-rc.2",
+  "sources": [
+    {
+      "package": "@deepseek-ai/dsh-base",
+      "file": "cordis.patch.yml",
+      "sha256": "9c2be64f46a193eff3cca190c26e697e8e8eee25c9b40149dfdb56f8142c252d"
+    },
+    {
+      "package": "@deepseek-ai/dsh-web-app",
+      "file": "cordis.patch.yml",
+      "sha256": "df7653ee4c324dca706034631926c86f13a2cf17c280cc018f8c070a0aaad19e"
+    }
+  ],
+  "note": "Derived from published dsh.client metadata in the locked base + Web patches. Includes dual-face services and their exact official conditions; this is not an authorization policy.",
+  "officialClients": [
+    {
+      "id": "typert",
+      "package": "@deepseek-ai/dsh-typert-registry",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-base/cordis.patch.yml",
+      "row": {
+        "id": "typert",
+        "name": "@deepseek-ai/dsh-typert-registry"
+      },
+      "client": {
+        "inject": [],
+        "platform": "web",
+        "immediately": true
+      },
+      "conditional": false
+    },
+    {
+      "id": "typert-gateway",
+      "package": "@deepseek-ai/dsh-api-gateway",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-base/cordis.patch.yml",
+      "row": {
+        "id": "typert-gateway",
+        "name": "@deepseek-ai/dsh-api-gateway"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-typert-registry",
+          "@deepseek-ai/dsh-client-connection"
+        ],
+        "platform": "web",
+        "immediately": true
+      },
+      "conditional": false
+    },
+    {
+      "id": "product-analytics",
+      "package": "@deepseek-ai/dsh-client-product-analytics",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "product-analytics",
+        "name": "@deepseek-ai/dsh-client-product-analytics",
+        "disabled": "ctx.get('profileContext')?.name !== 'desktop'",
+        "config": {
+          "enabled": true,
+          "appVersion": "process.env.DSH_CLIENT_VERSION"
+        }
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-gateway"
+        ],
+        "platform": "web"
+      },
+      "conditional": true
+    },
+    {
+      "id": "session-log-download",
+      "package": "@deepseek-ai/dsh-session-log-export",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "session-log-download",
+        "name": "@deepseek-ai/dsh-session-log-export"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-commands",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-session"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-open-in-app",
+      "package": "@deepseek-ai/dsh-client-ui-open-in-app",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-open-in-app",
+        "name": "@deepseek-ai/dsh-client-ui-open-in-app"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-gateway",
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-api-session-controller",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-shortcuts",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-client-ui-layout",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-session",
+          "@deepseek-ai/dsh-client-ui-sidebar-documentpreview"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "session-controller",
+      "package": "@deepseek-ai/dsh-api-session-controller",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "session-controller",
+        "name": "@deepseek-ai/dsh-api-session-controller"
+      },
+      "client": {
+        "external": [
+          "@deepseek-ai/dsh-api-gateway/client"
+        ],
+        "inject": [
+          "@deepseek-ai/dsh-api-gateway",
+          "@deepseek-ai/dsh-client-file-upload"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "job-controller",
+      "package": "@deepseek-ai/dsh-api-job-controller",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "job-controller",
+        "name": "@deepseek-ai/dsh-api-job-controller"
+      },
+      "client": {
+        "external": [
+          "@deepseek-ai/dsh-api-gateway/client"
+        ],
+        "inject": [
+          "@deepseek-ai/dsh-api-gateway",
+          "@deepseek-ai/dsh-client-connection"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "terminal-controller",
+      "package": "@deepseek-ai/dsh-api-terminal-controller",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "terminal-controller",
+        "name": "@deepseek-ai/dsh-api-terminal-controller"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-gateway"
+        ],
+        "external": [
+          "@deepseek-ai/dsh-api-gateway/client"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "workspace-files",
+      "package": "@deepseek-ai/dsh-api-workspace-files",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "workspace-files",
+        "name": "@deepseek-ai/dsh-api-workspace-files"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-gateway",
+          "@deepseek-ai/dsh-client-resources"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-settings-account",
+      "package": "@deepseek-ai/dsh-client-ui-settings-account",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-settings-account",
+        "name": "@deepseek-ai/dsh-client-ui-settings-account"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-chat",
+          "@deepseek-ai/dsh-client-ui-layout",
+          "@deepseek-ai/dsh-client-ui-settings",
+          "@deepseek-ai/dsh-client-ui-theme"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "workspace-controller",
+      "package": "@deepseek-ai/dsh-api-workspace-controller",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "workspace-controller",
+        "name": "@deepseek-ai/dsh-api-workspace-controller"
+      },
+      "client": {
+        "external": [
+          "@deepseek-ai/dsh-api-gateway/client"
+        ],
+        "inject": [
+          "@deepseek-ai/dsh-api-gateway",
+          "@deepseek-ai/dsh-client-connection"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "client-hmr",
+      "package": "@deepseek-ai/dsh-client-hmr",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "client-hmr",
+        "name": "@deepseek-ai/dsh-client-hmr"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-modules"
+        ],
+        "platform": "web",
+        "immediately": true
+      },
+      "conditional": false
+    },
+    {
+      "id": "modules",
+      "package": "@deepseek-ai/dsh-client-modules",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "modules",
+        "name": "@deepseek-ai/dsh-client-modules"
+      },
+      "client": {
+        "platform": "web",
+        "inject": [],
+        "immediately": true
+      },
+      "conditional": false
+    },
+    {
+      "id": "connection",
+      "package": "@deepseek-ai/dsh-client-connection",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "connection",
+        "name": "@deepseek-ai/dsh-client-connection",
+        "inject": [
+          "webRuntime"
+        ],
+        "config": {
+          "trustedHosts": "ctx.webRuntime.trustedHosts"
+        }
+      },
+      "client": {
+        "inject": [],
+        "platform": "web",
+        "immediately": true
+      },
+      "conditional": false
+    },
+    {
+      "id": "file-upload",
+      "package": "@deepseek-ai/dsh-client-file-upload",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "file-upload",
+        "name": "@deepseek-ai/dsh-client-file-upload"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-remotes"
+        ],
+        "platform": "web",
+        "immediately": true
+      },
+      "conditional": false
+    },
+    {
+      "id": "api-remotes",
+      "package": "@deepseek-ai/dsh-api-remotes",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "api-remotes",
+        "name": "@deepseek-ai/dsh-api-remotes"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-gateway"
+        ],
+        "platform": "web",
+        "immediately": true
+      },
+      "conditional": false
+    },
+    {
+      "id": "cordis-client-runner",
+      "package": "@deepseek-ai/dsh-cordis-client-runner",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "cordis-client-runner",
+        "name": "@deepseek-ai/dsh-cordis-client-runner"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-client-modules",
+          "@deepseek-ai/dsh-client-ui-theme"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-theme",
+      "package": "@deepseek-ai/dsh-client-ui-theme",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-theme",
+        "name": "@deepseek-ai/dsh-client-ui-theme"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-connection",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-settings",
+          "@deepseek-ai/dsh-api-remotes"
+        ],
+        "platform": "web",
+        "immediately": true
+      },
+      "conditional": false
+    },
+    {
+      "id": "locale",
+      "package": "@deepseek-ai/dsh-client-locale",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "locale",
+        "name": "@deepseek-ai/dsh-client-locale"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-connection",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-settings",
+          "@deepseek-ai/dsh-api-remotes"
+        ],
+        "platform": "web",
+        "immediately": true
+      },
+      "conditional": false
+    },
+    {
+      "id": "shortcuts",
+      "package": "@deepseek-ai/dsh-client-shortcuts",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "shortcuts",
+        "name": "@deepseek-ai/dsh-client-shortcuts"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-locale"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-shortcuts",
+      "package": "@deepseek-ai/dsh-client-ui-shortcuts",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-shortcuts",
+        "name": "@deepseek-ai/dsh-client-ui-shortcuts"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-shortcuts",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-layout",
+          "@deepseek-ai/dsh-client-ui-settings"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-layout",
+      "package": "@deepseek-ai/dsh-client-ui-layout",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-layout",
+        "name": "@deepseek-ai/dsh-client-ui-layout"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-session",
+          "@deepseek-ai/dsh-client-ui-theme",
+          "@deepseek-ai/dsh-client-shortcuts"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-renderer",
+      "package": "@deepseek-ai/dsh-client-ui-renderer",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-renderer",
+        "name": "@deepseek-ai/dsh-client-ui-renderer"
+      },
+      "client": {
+        "platform": "web",
+        "immediately": true
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-session",
+      "package": "@deepseek-ai/dsh-client-ui-session",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-session",
+        "name": "@deepseek-ai/dsh-client-ui-session"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-api-session-controller",
+          "@deepseek-ai/dsh-client-ui-renderer"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "resources",
+      "package": "@deepseek-ai/dsh-client-resources",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "resources",
+        "name": "@deepseek-ai/dsh-client-resources"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-ui-renderer"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-sidebar",
+      "package": "@deepseek-ai/dsh-client-ui-sidebar",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-sidebar",
+        "name": "@deepseek-ai/dsh-client-ui-sidebar"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-workspace-controller",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-layout",
+          "@deepseek-ai/dsh-client-ui-session",
+          "@deepseek-ai/dsh-client-ui-workspace",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-shortcuts"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-sidebar-right",
+      "package": "@deepseek-ai/dsh-client-ui-sidebar-right",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-sidebar-right",
+        "name": "@deepseek-ai/dsh-client-ui-sidebar-right"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-session-controller",
+          "@deepseek-ai/dsh-client-resources",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-client-ui-layout",
+          "@deepseek-ai/dsh-client-ui-session",
+          "@deepseek-ai/dsh-client-shortcuts"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-sidebar-documentpreview",
+      "package": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-sidebar-documentpreview",
+        "name": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-gateway",
+          "@deepseek-ai/dsh-api-workspace-files",
+          "@deepseek-ai/dsh-client-resources",
+          "@deepseek-ai/dsh-client-ui-sidebar-right",
+          "@deepseek-ai/dsh-client-ui-session",
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-settings"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-sidebar-browser",
+      "package": "@deepseek-ai/dsh-client-ui-sidebar-browser",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-sidebar-browser",
+        "name": "@deepseek-ai/dsh-client-ui-sidebar-browser",
+        "disabled": "ctx.get('profileContext')?.name !== 'desktop'"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-workspace-controller",
+          "@deepseek-ai/dsh-client-ui-sidebar-right",
+          "@deepseek-ai/dsh-client-ui-session"
+        ],
+        "platform": "web"
+      },
+      "conditional": true
+    },
+    {
+      "id": "ui-sidebar-terminal",
+      "package": "@deepseek-ai/dsh-client-ui-sidebar-terminal",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-sidebar-terminal",
+        "name": "@deepseek-ai/dsh-client-ui-sidebar-terminal"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-terminal-controller",
+          "@deepseek-ai/dsh-client-ui-sidebar-right",
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-client-ui-theme",
+          "@deepseek-ai/dsh-client-shortcuts"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-sidebar-files",
+      "package": "@deepseek-ai/dsh-client-ui-sidebar-files",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-sidebar-files",
+        "name": "@deepseek-ai/dsh-client-ui-sidebar-files"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-workspace-files",
+          "@deepseek-ai/dsh-client-ui-sidebar-right",
+          "@deepseek-ai/dsh-client-ui-session",
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-client-shortcuts"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-settings",
+      "package": "@deepseek-ai/dsh-client-ui-settings",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-settings",
+        "name": "@deepseek-ai/dsh-client-ui-settings"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-remotes"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-settings-general",
+      "package": "@deepseek-ai/dsh-client-ui-settings-general",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-settings-general",
+        "name": "@deepseek-ai/dsh-client-ui-settings-general"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-ui-settings",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-connection",
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-client-ui-sidebar",
+          "@deepseek-ai/dsh-client-shortcuts"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-settings-models",
+      "package": "@deepseek-ai/dsh-client-ui-settings-models",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-settings-models",
+        "name": "@deepseek-ai/dsh-client-ui-settings-models"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-ui-settings",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-api-remotes"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-plugin-manager",
+      "package": "@deepseek-ai/dsh-client-ui-plugin-manager",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-plugin-manager",
+        "name": "@deepseek-ai/dsh-client-ui-plugin-manager"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-layout",
+          "@deepseek-ai/dsh-client-ui-sidebar"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-settings-plugin-inventory",
+      "package": "@deepseek-ai/dsh-client-ui-settings-plugin-inventory",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-settings-plugin-inventory",
+        "name": "@deepseek-ai/dsh-client-ui-settings-plugin-inventory"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-client-ui-settings",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-agent-preset",
+          "@deepseek-ai/dsh-client-modules"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-conversation",
+      "package": "@deepseek-ai/dsh-client-ui-conversation",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-conversation",
+        "name": "@deepseek-ai/dsh-client-ui-conversation"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-session-controller",
+          "@deepseek-ai/dsh-client-file-upload",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-layout",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-session",
+          "@deepseek-ai/dsh-client-ui-settings",
+          "@deepseek-ai/dsh-client-ui-workspace"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-approval",
+      "package": "@deepseek-ai/dsh-client-ui-approval",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-approval",
+        "name": "@deepseek-ai/dsh-client-ui-approval"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-api-session-controller",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-session"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-chat",
+      "package": "@deepseek-ai/dsh-client-ui-chat",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-chat",
+        "name": "@deepseek-ai/dsh-client-ui-chat"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-session-controller",
+          "@deepseek-ai/dsh-api-workspace-controller",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-client-ui-input-trigger",
+          "@deepseek-ai/dsh-client-ui-layout",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-session",
+          "@deepseek-ai/dsh-client-ui-settings",
+          "@deepseek-ai/dsh-client-ui-sidebar-right",
+          "@deepseek-ai/dsh-client-ui-workspace"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-brand-official",
+      "package": "@deepseek-ai/dsh-client-ui-brand-official",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-brand-official",
+        "name": "@deepseek-ai/dsh-client-ui-brand-official"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-sidebar"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-attachment",
+      "package": "@deepseek-ai/dsh-client-ui-attachment",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-attachment",
+        "name": "@deepseek-ai/dsh-client-ui-attachment"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-ui-chat",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-trajectory",
+          "@deepseek-ai/dsh-client-ui-tool"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-tool",
+      "package": "@deepseek-ai/dsh-client-ui-tool",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-tool",
+        "name": "@deepseek-ai/dsh-client-ui-tool"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-workspace-controller",
+          "@deepseek-ai/dsh-client-connection",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-conversation"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-cordis",
+      "package": "@deepseek-ai/dsh-client-ui-cordis",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-cordis",
+        "name": "@deepseek-ai/dsh-client-ui-cordis"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-connection",
+          "@deepseek-ai/dsh-cordis-client-runner",
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-session",
+          "@deepseek-ai/dsh-client-ui-tool",
+          "@deepseek-ai/dsh-client-ui-sidebar"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-deliverables",
+      "package": "@deepseek-ai/dsh-client-ui-deliverables",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-deliverables",
+        "name": "@deepseek-ai/dsh-client-ui-deliverables"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-client-connection",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-chat",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-sidebar-right",
+          "@deepseek-ai/dsh-client-ui-tool",
+          "@deepseek-ai/dsh-client-ui-settings"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-workspace",
+      "package": "@deepseek-ai/dsh-client-ui-workspace",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-workspace",
+        "name": "@deepseek-ai/dsh-client-ui-workspace"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-api-session-controller",
+          "@deepseek-ai/dsh-api-workspace-controller",
+          "@deepseek-ai/dsh-client-connection",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-shortcuts",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-client-ui-layout",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-session",
+          "@deepseek-ai/dsh-client-ui-sidebar"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-workflow-run",
+      "package": "@deepseek-ai/dsh-client-ui-workflow-run",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-workflow-run",
+        "name": "@deepseek-ai/dsh-client-ui-workflow-run"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-session-controller",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-chat",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-session",
+          "@deepseek-ai/dsh-client-ui-workspace"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-input-trigger",
+      "package": "@deepseek-ai/dsh-client-ui-input-trigger",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-input-trigger",
+        "name": "@deepseek-ai/dsh-client-ui-input-trigger"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-session-controller",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-client-ui-renderer"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-commands",
+      "package": "@deepseek-ai/dsh-client-ui-commands",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-commands",
+        "name": "@deepseek-ai/dsh-client-ui-commands"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-input-trigger",
+          "@deepseek-ai/dsh-client-ui-conversation"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-skill",
+      "package": "@deepseek-ai/dsh-client-ui-skill",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-skill",
+        "name": "@deepseek-ai/dsh-client-ui-skill"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-session-controller",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-tool",
+          "@deepseek-ai/dsh-client-ui-input-trigger",
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-client-ui-sidebar-right"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-subagent",
+      "package": "@deepseek-ai/dsh-client-ui-subagent",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-subagent",
+        "name": "@deepseek-ai/dsh-client-ui-subagent"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-session-controller",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-resources",
+          "@deepseek-ai/dsh-client-ui-chat",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-client-ui-primitives",
+          "@deepseek-ai/dsh-client-ui-sidebar-right",
+          "@deepseek-ai/dsh-client-ui-input-trigger",
+          "@deepseek-ai/dsh-client-ui-workspace"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-reference",
+      "package": "@deepseek-ai/dsh-client-ui-reference",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-reference",
+        "name": "@deepseek-ai/dsh-client-ui-reference"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-api-session-controller",
+          "@deepseek-ai/dsh-client-connection",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-input-trigger",
+          "@deepseek-ai/dsh-client-ui-sidebar-right"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-jobs",
+      "package": "@deepseek-ai/dsh-client-ui-jobs",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-jobs",
+        "name": "@deepseek-ai/dsh-client-ui-jobs"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-job-controller",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-client-ui-primitives"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-goal",
+      "package": "@deepseek-ai/dsh-client-ui-goal",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-goal",
+        "name": "@deepseek-ai/dsh-client-ui-goal"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-api-session-controller",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-chat",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-session"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-message-feedback",
+      "package": "@deepseek-ai/dsh-client-ui-message-feedback",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-message-feedback",
+        "name": "@deepseek-ai/dsh-client-ui-message-feedback"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-commands"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-model-selection",
+      "package": "@deepseek-ai/dsh-client-ui-model-selection",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-model-selection",
+        "name": "@deepseek-ai/dsh-client-ui-model-selection"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-session-controller",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-commands",
+          "@deepseek-ai/dsh-api-remotes"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-permission",
+      "package": "@deepseek-ai/dsh-client-ui-permission-presets",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-permission",
+        "name": "@deepseek-ai/dsh-client-ui-permission-presets"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-session-controller",
+          "@deepseek-ai/dsh-client-connection",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-commands",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-client-ui-settings"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-agent-preset",
+      "package": "@deepseek-ai/dsh-client-ui-agent-preset",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-agent-preset",
+        "name": "@deepseek-ai/dsh-client-ui-agent-preset"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-session-controller",
+          "@deepseek-ai/dsh-client-connection",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-client-ui-session",
+          "@deepseek-ai/dsh-client-ui-settings",
+          "@deepseek-ai/dsh-client-ui-workspace",
+          "@deepseek-ai/dsh-api-remotes"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-settings-session-log",
+      "package": "@deepseek-ai/dsh-client-ui-settings-session-log",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-settings-session-log",
+        "name": "@deepseek-ai/dsh-client-ui-settings-session-log"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-settings",
+          "@deepseek-ai/dsh-client-ui-layout"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-settings-plugins",
+      "package": "@deepseek-ai/dsh-client-ui-settings-plugins",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-settings-plugins",
+        "name": "@deepseek-ai/dsh-client-ui-settings-plugins"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-settings"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-settings-shell",
+      "package": "@deepseek-ai/dsh-client-ui-settings-shell",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-settings-shell",
+        "name": "@deepseek-ai/dsh-client-ui-settings-shell"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-settings",
+          "@deepseek-ai/dsh-client-ui-plugin-manager"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-settings-agent-loop",
+      "package": "@deepseek-ai/dsh-client-ui-settings-agent-loop",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-settings-agent-loop",
+        "name": "@deepseek-ai/dsh-client-ui-settings-agent-loop"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-settings",
+          "@deepseek-ai/dsh-client-ui-plugin-manager"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-settings-subagent",
+      "package": "@deepseek-ai/dsh-client-ui-settings-subagent",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-settings-subagent",
+        "name": "@deepseek-ai/dsh-client-ui-settings-subagent"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-settings",
+          "@deepseek-ai/dsh-client-ui-plugin-manager",
+          "@deepseek-ai/dsh-api-remotes"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-settings-web-search",
+      "package": "@deepseek-ai/dsh-client-ui-settings-web-search",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-settings-web-search",
+        "name": "@deepseek-ai/dsh-client-ui-settings-web-search"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-settings",
+          "@deepseek-ai/dsh-client-ui-plugin-manager",
+          "@deepseek-ai/dsh-api-remotes"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-plan",
+      "package": "@deepseek-ai/dsh-client-ui-plan",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-plan",
+        "name": "@deepseek-ai/dsh-client-ui-plan"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-client-ui-sidebar-right",
+          "@deepseek-ai/dsh-client-ui-chat",
+          "@deepseek-ai/dsh-client-ui-user-questions",
+          "@deepseek-ai/dsh-client-resources",
+          "@deepseek-ai/dsh-api-session-controller"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-user-questions",
+      "package": "@deepseek-ai/dsh-client-ui-user-questions",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-user-questions",
+        "name": "@deepseek-ai/dsh-client-ui-user-questions"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-api-session-controller",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-session",
+          "@deepseek-ai/dsh-client-ui-chat"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    },
+    {
+      "id": "ui-trajectory",
+      "package": "@deepseek-ai/dsh-client-ui-trajectory",
+      "version": "0.2.0-rc.2",
+      "source": "@deepseek-ai/dsh-web-app/cordis.patch.yml",
+      "row": {
+        "id": "ui-trajectory",
+        "name": "@deepseek-ai/dsh-client-ui-trajectory"
+      },
+      "client": {
+        "inject": [
+          "@deepseek-ai/dsh-api-session-controller",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-session"
+        ],
+        "platform": "web"
+      },
+      "conditional": false
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "name": "workdsh-ui",
+  "version": "0.1.0-alpha.7",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "node ../../scripts/generate-brand-assets.mjs && tsc -p tsconfig.json",
+    "typecheck": "node ../../scripts/generate-brand-assets.mjs --check && tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "react": "^19.2.4",
+    "@deepseek-ai/dsh-client-ui-primitives": "0.2.0-rc.2"
+  },
+  "devDependencies": {
+    "react": "19.2.4",
+    "@types/react": "19.2.14",
+    "@deepseek-ai/dsh-client-ui-primitives": "0.2.0-rc.2",
+    "@types/node": "22.19.0"
+  },
+  "sideEffects": false
+}

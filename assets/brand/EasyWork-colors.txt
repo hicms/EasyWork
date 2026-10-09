@@ -1,0 +1,4 @@
+Teal: #00B793
+Charcoal: #2C3738
+White: #FFFFFF
+SVG files contain editable vector paths, no embedded bitmap and no font dependency.

@@ -1,0 +1,415 @@
+{
+  "schemaVersion": 1,
+  "requirements": [
+    {
+      "id": "R01",
+      "title": "官方运行版本与完整 Web",
+      "sourceOwner": "package.json",
+      "entryPoints": [
+        "personal-web",
+        "personal-desktop",
+        "enterprise-web",
+        "enterprise-desktop"
+      ],
+      "delivery": "infrastructure",
+      "dataBoundary": "官方运行代码只读；安装空间、运行数据与凭据分离。",
+      "contract": "同一精确官方版本族；完整 Web 清单从锁定官方包导出，保留条件标签。",
+      "checks": [
+        "scripts/check-published-versions.mjs",
+        "scripts/check-official-web-clients.mjs"
+      ],
+      "acceptance": [
+        "A01",
+        "A12",
+        "E05"
+      ]
+    },
+    {
+      "id": "R02",
+      "title": "安装、交付闭包与卸载",
+      "sourceOwner": "scripts/install-project-release.mjs",
+      "entryPoints": [
+        "personal-web",
+        "personal-desktop",
+        "enterprise-web",
+        "enterprise-desktop"
+      ],
+      "delivery": "infrastructure",
+      "dataBoundary": "安装不能污染共享运行包；保留用户显式插件与数据。",
+      "contract": "默认与可选制品明确；安装依赖精确声明，资源与 exports 完整。",
+      "checks": [
+        "scripts/check-plugin-delivery.mjs"
+      ],
+      "acceptance": [
+        "A00",
+        "A01",
+        "A02",
+        "Q04"
+      ]
+    },
+    {
+      "id": "R03",
+      "title": "真实主体、授权与审计",
+      "sourceOwner": "../../packages/plugins/access",
+      "entryPoints": [
+        "personal-web",
+        "personal-desktop",
+        "enterprise-web",
+        "enterprise-desktop"
+      ],
+      "delivery": "infrastructure",
+      "dataBoundary": "服务端可信主体拥有资源；Profile、UI 隐藏或 scope 不生成授权。",
+      "contract": "页面、工具、文件、订阅与执行入口逐次校验；撤权失败关闭。",
+      "checks": [],
+      "acceptance": [
+        "A10",
+        "A19",
+        "A20",
+        "T01",
+        "T02",
+        "T03",
+        "T04",
+        "T05",
+        "T06",
+        "T07",
+        "T08",
+        "T09",
+        "T10",
+        "T11",
+        "T12",
+        "T13",
+        "T09-P2",
+        "T10-P3",
+        "B02",
+        "Q02",
+        "Q03",
+        "A20-P3",
+        "EC02",
+        "EC03",
+        "E03"
+      ]
+    },
+    {
+      "id": "R04",
+      "title": "专家、修订与原生执行组合",
+      "sourceOwner": "../../packages/plugins/experts",
+      "entryPoints": [
+        "personal-web",
+        "personal-desktop",
+        "enterprise-web",
+        "enterprise-desktop"
+      ],
+      "delivery": "default",
+      "dataBoundary": "作品共享不共享私有会话、连接账号或资产；子任务重新授权。",
+      "contract": "草稿与不可变修订分离；通过原生 preset/Session/Team 执行，固定绑定不可静默切换。",
+      "checks": [],
+      "acceptance": [
+        "A03",
+        "A04",
+        "A06",
+        "A07",
+        "A08",
+        "A14",
+        "A16",
+        "A17",
+        "B04",
+        "Q01",
+        "EC01",
+        "EC02",
+        "EC04",
+        "EC05"
+      ]
+    },
+    {
+      "id": "R05",
+      "title": "技能管理与官方运行目录",
+      "sourceOwner": "../../packages/plugins/skills",
+      "entryPoints": [
+        "personal-web",
+        "personal-desktop",
+        "enterprise-web",
+        "enterprise-desktop"
+      ],
+      "delivery": "default",
+      "dataBoundary": "导入只检查数据；受控根、大小限制、暂存与取消；不执行上传脚本。",
+      "contract": "官方 Skill registry/provider 为运行权威；启停不修改原文，修订冲突可见。",
+      "checks": [],
+      "acceptance": [
+        "A03",
+        "A05",
+        "A06",
+        "A07",
+        "A14",
+        "A16",
+        "J08",
+        "UI03",
+        "UI08",
+        "EC04"
+      ]
+    },
+    {
+      "id": "R06",
+      "title": "MCP 与连接账号绑定",
+      "sourceOwner": "../../packages/plugins/connectors",
+      "entryPoints": [
+        "personal-web",
+        "personal-desktop",
+        "enterprise-web",
+        "enterprise-desktop"
+      ],
+      "delivery": "default",
+      "dataBoundary": "凭据仅在授权执行时解析；连接实例属于实际成员，禁止跨账号回退。",
+      "contract": "复用官方 MCP/Tools/Credentials；执行绑定包含配置修订、目标与外部主体，未知写入先核对。",
+      "checks": [],
+      "acceptance": [
+        "A06",
+        "A09",
+        "A13",
+        "A16",
+        "J07",
+        "UI04",
+        "J07-P3",
+        "B01",
+        "EC07"
+      ]
+    },
+    {
+      "id": "R07",
+      "title": "资料与成果的单一正文源",
+      "sourceOwner": "../../packages/plugins/library",
+      "entryPoints": [
+        "personal-web",
+        "personal-desktop",
+        "enterprise-web",
+        "enterprise-desktop"
+      ],
+      "delivery": "default",
+      "dataBoundary": "读取、搜索、预览和修订均检查资源所有权；预览不获得 Host 权限。",
+      "contract": "资料库拥有原件和修订；项目仅保存引用，建议接受与当前修订切换需要 CAS。",
+      "checks": [],
+      "acceptance": [
+        "A08",
+        "A11",
+        "A16",
+        "J03",
+        "J09",
+        "UI14",
+        "B02",
+        "B03",
+        "O04"
+      ]
+    },
+    {
+      "id": "R08",
+      "title": "项目配置与业务待办",
+      "sourceOwner": "../../packages/plugins/projects",
+      "entryPoints": [
+        "personal-web",
+        "personal-desktop",
+        "enterprise-web",
+        "enterprise-desktop"
+      ],
+      "delivery": "optional",
+      "dataBoundary": "项目关联不授予会话正文或个人连接的访问权。",
+      "contract": "配置固定修订与来源；待办、执行任务与资产独立；取消不提交，冲突不覆盖。",
+      "checks": [],
+      "acceptance": [
+        "J01",
+        "J02",
+        "J03",
+        "J04",
+        "J05",
+        "J06",
+        "J07",
+        "J08",
+        "J09",
+        "J10",
+        "UI01",
+        "UI02",
+        "UI03",
+        "UI04",
+        "UI05",
+        "UI06",
+        "UI07",
+        "UI08",
+        "UI09",
+        "UI11",
+        "UI12",
+        "UI13",
+        "UI14",
+        "UI15",
+        "J07-P3",
+        "J10-P2",
+        "J10-P3"
+      ]
+    },
+    {
+      "id": "R09",
+      "title": "Office 工作副本与文件交付",
+      "sourceOwner": "../../packages/plugins/office",
+      "entryPoints": [
+        "personal-web",
+        "personal-desktop",
+        "enterprise-web",
+        "enterprise-desktop"
+      ],
+      "delivery": "optional",
+      "dataBoundary": "授权读取和编辑工作副本，租约与 CAS 防止覆盖；导出沿用官方执行授权。",
+      "contract": "页面与工具使用同一模型；导出固定已保存修订，以官方文件写入和 present 回执结算。",
+      "checks": [],
+      "acceptance": [
+        "O01",
+        "O02",
+        "O03",
+        "O04"
+      ]
+    },
+    {
+      "id": "R10",
+      "title": "活动投影与企业协作",
+      "sourceOwner": "../../packages/plugins/activity",
+      "entryPoints": [
+        "personal-web",
+        "personal-desktop",
+        "enterprise-web",
+        "enterprise-desktop"
+      ],
+      "delivery": "optional",
+      "dataBoundary": "活动仅投影授权可见的持久事实；成员交接重新验证接收人与资源权限。",
+      "contract": "活动可选安装；企业协作独立外置安装，原生 Team 状态不自动完成业务待办。",
+      "checks": [],
+      "acceptance": [
+        "UI10",
+        "C01",
+        "C02"
+      ]
+    },
+    {
+      "id": "R11",
+      "title": "受管浏览器会话",
+      "sourceOwner": "../../packages/providers/browser-session",
+      "entryPoints": [
+        "personal-web",
+        "personal-desktop",
+        "enterprise-web",
+        "enterprise-desktop"
+      ],
+      "delivery": "infrastructure",
+      "dataBoundary": "浏览器会话绑定实际 Agent Session 与账号，不能借页面跳转跨主体控制。",
+      "contract": "生命周期、取消和清理由运行提供方拥有；页面和 Agent 使用同一浏览器状态。",
+      "checks": [],
+      "acceptance": [
+        "H01"
+      ]
+    },
+    {
+      "id": "R12",
+      "title": "企业身份与执行适配",
+      "sourceOwner": "../../packages/providers/identity-enterprise",
+      "entryPoints": [
+        "enterprise-web",
+        "enterprise-desktop"
+      ],
+      "delivery": "mode-specific",
+      "dataBoundary": "企业 Web 按账号进程；Desktop 本机企业空间与个人分离；后台按真实成员凭据授权。",
+      "contract": "同一账号插件与页面；Desktop 不可变携带、仅企业激活，拒绝成员同名覆盖；正文同步范围显式。",
+      "checks": [],
+      "acceptance": [
+        "T01",
+        "T02",
+        "T03",
+        "T04",
+        "T05",
+        "T06",
+        "T07",
+        "T08",
+        "T09",
+        "T10",
+        "T11",
+        "T12",
+        "T13",
+        "UI10",
+        "T09-P2",
+        "T10-P3",
+        "C02",
+        "E01",
+        "E02",
+        "E03",
+        "E04",
+        "E05"
+      ]
+    },
+    {
+      "id": "R13",
+      "title": "自动化去重与恢复契约",
+      "sourceOwner": "../../packages/plugins/automations",
+      "entryPoints": [
+        "personal-web",
+        "personal-desktop",
+        "enterprise-web",
+        "enterprise-desktop"
+      ],
+      "delivery": "planned",
+      "dataBoundary": "自动化属于实际创建者；触发不扩大授权，取消与撤权有明确结算。",
+      "contract": "业务规则、幂等键和运行历史由自动化领域拥有；HTTP 接收或 Job snapshot 不等于业务完成。",
+      "checks": [
+        "scripts/check-plan.mjs"
+      ],
+      "acceptance": [
+        "A18",
+        "UI09",
+        "J10-P2",
+        "B05",
+        "EC06"
+      ]
+    },
+    {
+      "id": "R14",
+      "title": "未实现扩展保持不可加载",
+      "sourceOwner": "../../packages/plugins/applications",
+      "entryPoints": [
+        "personal-web",
+        "personal-desktop",
+        "enterprise-web",
+        "enterprise-desktop"
+      ],
+      "delivery": "planned",
+      "dataBoundary": "共享、组织资产与第三方能力需各自明确授权，不能因目录存在公开数据。",
+      "contract": "应用、表格、页面、SSO 与团队资产等骨架不得声明可执行入口；实现前定义有限场景。",
+      "checks": [
+        "scripts/check-plan.mjs"
+      ],
+      "acceptance": [
+        "A06",
+        "A15",
+        "A21",
+        "T12",
+        "T13",
+        "J10-P3",
+        "A20-P3",
+        "EC03"
+      ]
+    },
+    {
+      "id": "R15",
+      "title": "共同契约、页面与源码所有权",
+      "sourceOwner": "../../packages/contracts",
+      "entryPoints": [
+        "personal-web",
+        "personal-desktop",
+        "enterprise-web",
+        "enterprise-desktop"
+      ],
+      "delivery": "infrastructure",
+      "dataBoundary": "跨插件只消费公开契约；领域服务拥有数据与授权，展示不拥有持久事实。",
+      "contract": "一个业务插件、服务和页面；身份、存储、执行、同步差异只在明确适配边界；更新调用方和包版本。",
+      "checks": [
+        "scripts/check-plan.mjs"
+      ],
+      "acceptance": [
+        "A00",
+        "EC01"
+      ]
+    }
+  ]
+}
