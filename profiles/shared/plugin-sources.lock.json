@@ -1,0 +1,866 @@
+{
+  "schemaVersion": 1,
+  "repository": "https://github.com/hicms/easywork-plugins.git",
+  "revision": "b3164a36076305b8ffbaeb53ffc12498f9a5822d",
+  "plugins": [
+    "connectors",
+    "experts",
+    "library",
+    "projects",
+    "skills"
+  ],
+  "files": {
+    "packages/plugins/connectors/CHANGELOG.md": {
+      "source": "plugins/connectors/CHANGELOG.md",
+      "sha256": "ca6304f421bfd3fe8eb3c37e54ddc6c01567a51790c1fe83c836064cac310281"
+    },
+    "packages/plugins/connectors/README.md": {
+      "source": "plugins/connectors/README.md",
+      "sha256": "53f6d4e301171016ddb92d891414367753da6c56cbaa76792b7d2ff5c2cb797d"
+    },
+    "packages/plugins/connectors/cordis.patch.yml": {
+      "source": "plugins/connectors/cordis.patch.yml",
+      "sha256": "8c618bb73d6f4c0236050363f2ddc840635c2c439f6998076c831e761908ca0f"
+    },
+    "packages/plugins/connectors/locale/en.json": {
+      "source": "plugins/connectors/locale/en.json",
+      "sha256": "13ad26eaface1b4c6f073ec0bbc8dfdeee86575e727e799a0f14db0ed17f76cc"
+    },
+    "packages/plugins/connectors/locale/zh.json": {
+      "source": "plugins/connectors/locale/zh.json",
+      "sha256": "17bedef87f68203a8a9d5f08c5e5cfe9f269da939d76effbc670db72c15180d0"
+    },
+    "packages/plugins/connectors/package.json": {
+      "source": "plugins/connectors/package.json",
+      "sha256": "5144be578ad9b7ebfb2939d111293cb36afc5a93e5abbcf30eb1bddba8bd59dc"
+    },
+    "packages/plugins/connectors/src/client.tsx": {
+      "source": "plugins/connectors/src/client.tsx",
+      "sha256": "54d26ccd3fc38e585fce21843c9c0a086495b44b8d6d2e9b39ae16c4ed504669"
+    },
+    "packages/plugins/connectors/src/client/ConnectorPicker.tsx": {
+      "source": "plugins/connectors/src/client/ConnectorPicker.tsx",
+      "sha256": "5657fe9bcd4c7b9446cb59a03453e85aeb4b4101b9dfc9032ec36dc034a4a014"
+    },
+    "packages/plugins/connectors/src/client/ConnectorsPanel.tsx": {
+      "source": "plugins/connectors/src/client/ConnectorsPanel.tsx",
+      "sha256": "6009e3143dedfc3be2b7ce243a96f4eb98d13ef8f784115ca25dacb905bb5099"
+    },
+    "packages/plugins/connectors/src/client/components/.gitkeep": {
+      "source": "plugins/connectors/src/client/components/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/connectors/src/client/management.ts": {
+      "source": "plugins/connectors/src/client/management.ts",
+      "sha256": "89928a27f73dbd282528b92a8bf83bb3d267abf1092ccbf364770ac03b9cb279"
+    },
+    "packages/plugins/connectors/src/client/styles.ts": {
+      "source": "plugins/connectors/src/client/styles.ts",
+      "sha256": "028f118c5760c3010817c84f2dbaed8d766a867b093dfd4effbe88339583a8ed"
+    },
+    "packages/plugins/connectors/src/connection-api.ts": {
+      "source": "plugins/connectors/src/connection-api.ts",
+      "sha256": "379b5ecede73b64afc5662acc1be6b56e3553ff5ac506f6cd1bace599391d74a"
+    },
+    "packages/plugins/connectors/src/domain/.gitkeep": {
+      "source": "plugins/connectors/src/domain/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/connectors/src/example-server.mjs": {
+      "source": "plugins/connectors/src/example-server.mjs",
+      "sha256": "503b020a07466870bb418caa0008c40849da4907fcf6527ced53ce8dcbb233fe"
+    },
+    "packages/plugins/connectors/src/harness/.gitkeep": {
+      "source": "plugins/connectors/src/harness/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/connectors/src/index.ts": {
+      "source": "plugins/connectors/src/index.ts",
+      "sha256": "583d38e1664ef44698de3f05425942af22d71e0d5eb33c8f26bd8c0d84afc48e"
+    },
+    "packages/plugins/connectors/src/manager.ts": {
+      "source": "plugins/connectors/src/manager.ts",
+      "sha256": "35c3ba0f244546be3516db636ced7df55a3c18895c1153ef2aaf140ce6b0b1bd"
+    },
+    "packages/plugins/connectors/src/remote/.gitkeep": {
+      "source": "plugins/connectors/src/remote/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/connectors/src/services/.gitkeep": {
+      "source": "plugins/connectors/src/services/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/connectors/src/shared.ts": {
+      "source": "plugins/connectors/src/shared.ts",
+      "sha256": "93f9705680ce6841d8a7941758bab822643e3b5a1a325b86ce63762f795fb3a5"
+    },
+    "packages/plugins/connectors/src/storage.ts": {
+      "source": "plugins/connectors/src/storage.ts",
+      "sha256": "00dd3edfb3bca36f45f3b9e0c38e97c88bcaf98779762920da361bd9b7dcd5be"
+    },
+    "packages/plugins/connectors/src/storage/.gitkeep": {
+      "source": "plugins/connectors/src/storage/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/connectors/src/tools/.gitkeep": {
+      "source": "plugins/connectors/src/tools/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/connectors/tsconfig.json": {
+      "source": "plugins/connectors/tsconfig.json",
+      "sha256": "e83881e9deb8c695b0b0d22e48ce61d0047c5866b71f6cc1a76135424e5671ec"
+    },
+    "packages/plugins/experts/CHANGELOG.md": {
+      "source": "plugins/experts/CHANGELOG.md",
+      "sha256": "5303ab6b1556210a1d403e7d39f36ea14518598154bcbd3f24e5fef3a72c8019"
+    },
+    "packages/plugins/experts/README.md": {
+      "source": "plugins/experts/README.md",
+      "sha256": "61172185637b96e005c26cfb4bc25a68148f49351e77bfdd18368006b2fe71e5"
+    },
+    "packages/plugins/experts/cordis.patch.yml": {
+      "source": "plugins/experts/cordis.patch.yml",
+      "sha256": "99e85a604768c3516441fe82a5a952e5292726aa398a62b6167f36b471bbbb91"
+    },
+    "packages/plugins/experts/locale/en.json": {
+      "source": "plugins/experts/locale/en.json",
+      "sha256": "ca039a8f758a1b55efc471cb1e67688085fddfb0188638a79bd0397ef892443a"
+    },
+    "packages/plugins/experts/locale/zh.json": {
+      "source": "plugins/experts/locale/zh.json",
+      "sha256": "f2c4093fb32b48bd6e99111ce60f392c95d80376dbf13fc57cd4d8305d5c6c87"
+    },
+    "packages/plugins/experts/package.json": {
+      "source": "plugins/experts/package.json",
+      "sha256": "5f36541d5708be688c9a37e762f81cf2779a4d27ebadec22dfa7bfd5d4baedbb"
+    },
+    "packages/plugins/experts/resources/skills/easywork-expert-manager/LICENSE.workbuddy.txt": {
+      "source": "plugins/experts/resources/skills/easywork-expert-manager/LICENSE.workbuddy.txt",
+      "sha256": "ef715b0cdf10700ae842e88844989391dc3bd9efd397bd399212d32f8862f633"
+    },
+    "packages/plugins/experts/resources/skills/easywork-expert-manager/NOTICE.md": {
+      "source": "plugins/experts/resources/skills/easywork-expert-manager/NOTICE.md",
+      "sha256": "00179dc37ec9e79e6eb43329e197ece5992e476f6c21c403d91f6a8225f3e4b9"
+    },
+    "packages/plugins/experts/resources/skills/easywork-expert-manager/SKILL.md": {
+      "source": "plugins/experts/resources/skills/easywork-expert-manager/SKILL.md",
+      "sha256": "0db22d12d8e900952b5e93a3ece4294ae4f4df3798aee4a200427000e8ec0bfd"
+    },
+    "packages/plugins/experts/resources/skills/easywork-expert-manager/references/agent-md-spec.md": {
+      "source": "plugins/experts/resources/skills/easywork-expert-manager/references/agent-md-spec.md",
+      "sha256": "ec7373578a5f84d73ba16dcc71e73755e57aa4170cb07cd9bf379627c0f9c007"
+    },
+    "packages/plugins/experts/resources/skills/easywork-expert-manager/references/authoring-api.md": {
+      "source": "plugins/experts/resources/skills/easywork-expert-manager/references/authoring-api.md",
+      "sha256": "fb2afaabefb0d917a7787056a4669ac8ad17ddb269f7d6f85259261a81a64c65"
+    },
+    "packages/plugins/experts/resources/skills/easywork-expert-manager/references/avatar-spec.md": {
+      "source": "plugins/experts/resources/skills/easywork-expert-manager/references/avatar-spec.md",
+      "sha256": "0b42762e05e311632b2f89af35f34458f851a03cce3fcc0300ca0a75e9f8890e"
+    },
+    "packages/plugins/experts/resources/skills/easywork-expert-manager/references/plugin-json-spec.md": {
+      "source": "plugins/experts/resources/skills/easywork-expert-manager/references/plugin-json-spec.md",
+      "sha256": "b680fb86361efd562298aa817e97fe906dff7da1d4dcea55f29d804555ddde3d"
+    },
+    "packages/plugins/experts/resources/skills/easywork-expert-manager/references/team-spec.md": {
+      "source": "plugins/experts/resources/skills/easywork-expert-manager/references/team-spec.md",
+      "sha256": "1400af007c6b1179429c6d8c856dc1d45ae25dae63645097ddbc801d25d324f9"
+    },
+    "packages/plugins/experts/resources/skills/easywork-expert-manager/runtime/team-lead.md": {
+      "source": "plugins/experts/resources/skills/easywork-expert-manager/runtime/team-lead.md",
+      "sha256": "b51f014edec6416f49c88845ee8652c468b14124aa1b3fdb7070fd0c305a7c7e"
+    },
+    "packages/plugins/experts/resources/templates/.gitkeep": {
+      "source": "plugins/experts/resources/templates/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/experts/src/authoring/documents.ts": {
+      "source": "plugins/experts/src/authoring/documents.ts",
+      "sha256": "e8b6c55a46c7f7775aba9b87316141b1825e9dd75cd85db0c2d9b5f05e1aa706"
+    },
+    "packages/plugins/experts/src/authoring/guide.ts": {
+      "source": "plugins/experts/src/authoring/guide.ts",
+      "sha256": "416afb13b33f8ccf582eed247045b23a92cce63c23d6e6300690365db78ed284"
+    },
+    "packages/plugins/experts/src/authoring/package-resources.ts": {
+      "source": "plugins/experts/src/authoring/package-resources.ts",
+      "sha256": "8a5ea4d6002f29ee323545e2c43e4cd03cf4bf6944117982b9c14be17a7f05dd"
+    },
+    "packages/plugins/experts/src/client.tsx": {
+      "source": "plugins/experts/src/client.tsx",
+      "sha256": "8bc13b93595cb635f6d2c29d22d776f6e256e746a0e072f0e1fad141f8c4b061"
+    },
+    "packages/plugins/experts/src/client/ConversationExperts.tsx": {
+      "source": "plugins/experts/src/client/ConversationExperts.tsx",
+      "sha256": "cbf409d10b38f7f4786d8ec61c85ab180bb2b47cbd567ed774c2c944960f5ca3"
+    },
+    "packages/plugins/experts/src/client/ExpertDetailModal.tsx": {
+      "source": "plugins/experts/src/client/ExpertDetailModal.tsx",
+      "sha256": "f1fe9b58ae4845b3b849a5752cdfdca5b2494f3f51b52c39cb7ab665b3155e93"
+    },
+    "packages/plugins/experts/src/client/ExpertDraftEditor.tsx": {
+      "source": "plugins/experts/src/client/ExpertDraftEditor.tsx",
+      "sha256": "d907a2774c1ce6bbba4990bf5a843690dd4bdf21703be8fa492f915bc11085a9"
+    },
+    "packages/plugins/experts/src/client/ExpertUsagePreview.tsx": {
+      "source": "plugins/experts/src/client/ExpertUsagePreview.tsx",
+      "sha256": "a65b54ed1f87bcaab9ce8967c0cfa54561ba0a755c678eaf72d72278e81b85ce"
+    },
+    "packages/plugins/experts/src/client/ExpertWorkSummary.tsx": {
+      "source": "plugins/experts/src/client/ExpertWorkSummary.tsx",
+      "sha256": "d07b23c8441fb4a3447526fe4c03cceaa1418f3217480c9abbb421c59d83f000"
+    },
+    "packages/plugins/experts/src/client/ExpertsPanel.tsx": {
+      "source": "plugins/experts/src/client/ExpertsPanel.tsx",
+      "sha256": "3c3d68bd08add4c885eaf76a8b32a6c28e7ee603b7a8a0bba489ff820551b73b"
+    },
+    "packages/plugins/experts/src/client/ImportExportModals.tsx": {
+      "source": "plugins/experts/src/client/ImportExportModals.tsx",
+      "sha256": "4e4e5c18881c458fc2c6c83ab31068bd3c83a4f7d11ecd7cc749c8fc1c57081e"
+    },
+    "packages/plugins/experts/src/client/PresetMenu.tsx": {
+      "source": "plugins/experts/src/client/PresetMenu.tsx",
+      "sha256": "29cd767eb2461be96bc7aff39a6f5bee8d16c7930255593adbb581f97f60d56a"
+    },
+    "packages/plugins/experts/src/client/PublishConfirmDialog.tsx": {
+      "source": "plugins/experts/src/client/PublishConfirmDialog.tsx",
+      "sha256": "7786eab19ab9feb43dfdbcdec83085e00779bbba220a5837f581fa60f620dbf1"
+    },
+    "packages/plugins/experts/src/client/SkillPicker.tsx": {
+      "source": "plugins/experts/src/client/SkillPicker.tsx",
+      "sha256": "3b3a34933838252c0f778adbe58ef743f9f45151f21fddf555283ae5c1181d00"
+    },
+    "packages/plugins/experts/src/client/TeamContent.tsx": {
+      "source": "plugins/experts/src/client/TeamContent.tsx",
+      "sha256": "6b386d51d19e22fbc2e20cb162287b465ee0de6f634f69fc1aac8e4701a7c29a"
+    },
+    "packages/plugins/experts/src/client/TeamOverview.tsx": {
+      "source": "plugins/experts/src/client/TeamOverview.tsx",
+      "sha256": "bdee92c9e60e80fe60c1bb4a76a26aec2a4896a7e8a09fee9b04e69947953b5f"
+    },
+    "packages/plugins/experts/src/client/components/.gitkeep": {
+      "source": "plugins/experts/src/client/components/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/experts/src/client/drafts.tsx": {
+      "source": "plugins/experts/src/client/drafts.tsx",
+      "sha256": "0dd3c2f74483683dee2b9f5788edb9ab61cd81995faf23b10cd202682bd7f735"
+    },
+    "packages/plugins/experts/src/client/management.ts": {
+      "source": "plugins/experts/src/client/management.ts",
+      "sha256": "b3d98b88e309dd2304e397772aa1170fe4285414b0aea0f67b9cefbb518fd2f1"
+    },
+    "packages/plugins/experts/src/client/preset-policy.ts": {
+      "source": "plugins/experts/src/client/preset-policy.ts",
+      "sha256": "0d51e2fa3ce6a7ed1177f1d11b3db9a75617b64f8317958e7c32e1d2a909feea"
+    },
+    "packages/plugins/experts/src/client/styles.ts": {
+      "source": "plugins/experts/src/client/styles.ts",
+      "sha256": "23e3038433947f9d2a859f4faf94eda0cdcad85f850f3e79de75bb47176149b1"
+    },
+    "packages/plugins/experts/src/domain/definition.ts": {
+      "source": "plugins/experts/src/domain/definition.ts",
+      "sha256": "a0aa1e48703f1eee067884a1fa99466679c7157f89bbd4f8bd681a1bb3597f33"
+    },
+    "packages/plugins/experts/src/domain/digest.ts": {
+      "source": "plugins/experts/src/domain/digest.ts",
+      "sha256": "c43d90491899bcfd103417b62ba898217e7a6c88bc88ee9981653d5ba5936f5b"
+    },
+    "packages/plugins/experts/src/domain/navigation.ts": {
+      "source": "plugins/experts/src/domain/navigation.ts",
+      "sha256": "1d2deefec100e6cbdaf075298e2dd0a22fc2d9829a2c64a8f432845b2da1f63f"
+    },
+    "packages/plugins/experts/src/domain/team-workflow.ts": {
+      "source": "plugins/experts/src/domain/team-workflow.ts",
+      "sha256": "1c8ea4590eb49d8046f14c963bb661060b19b858b9ff71f4a39d1b5b337929dd"
+    },
+    "packages/plugins/experts/src/domain/templates.ts": {
+      "source": "plugins/experts/src/domain/templates.ts",
+      "sha256": "40c2423109a973716558efec7467f5bffb61582a25cd71e41a0b8bb7da0d02f8"
+    },
+    "packages/plugins/experts/src/domain/values.ts": {
+      "source": "plugins/experts/src/domain/values.ts",
+      "sha256": "cb52c2059fc0d888d12e645f6cfb82403495c371c76a3f1f0ca520dc8dd4a5cd"
+    },
+    "packages/plugins/experts/src/harness/.gitkeep": {
+      "source": "plugins/experts/src/harness/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/experts/src/index.ts": {
+      "source": "plugins/experts/src/index.ts",
+      "sha256": "50239e40c5696ce1d4845f51176fbe1d766abb1ce1b05f0b1be88ecbea71f7e8"
+    },
+    "packages/plugins/experts/src/remote/.gitkeep": {
+      "source": "plugins/experts/src/remote/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/experts/src/runtime/confirmation.ts": {
+      "source": "plugins/experts/src/runtime/confirmation.ts",
+      "sha256": "910861904981cb75dcaffeddd696461e8dccee2629c57db4f7fbe83c24995f7a"
+    },
+    "packages/plugins/experts/src/runtime/execution-guard.ts": {
+      "source": "plugins/experts/src/runtime/execution-guard.ts",
+      "sha256": "2fa8a726a49e1b9c4808d4edda9c0b174b4428ff2c46e1891f50c2e37ebbe619"
+    },
+    "packages/plugins/experts/src/runtime/plans.ts": {
+      "source": "plugins/experts/src/runtime/plans.ts",
+      "sha256": "4e2a1fe8f262767d5febc4598b0d21022844c59dddc84e0a81290b74a4564a54"
+    },
+    "packages/plugins/experts/src/runtime/preset-compiler.ts": {
+      "source": "plugins/experts/src/runtime/preset-compiler.ts",
+      "sha256": "8eb6bc073b635c14888c3b57af3d677106781f48e84ea9532ed669543d275190"
+    },
+    "packages/plugins/experts/src/services/connection-api.ts": {
+      "source": "plugins/experts/src/services/connection-api.ts",
+      "sha256": "0deb0aa39ef710f63691e0027d15666ed2ef5ec72782b5200f3377cc45d32ab9"
+    },
+    "packages/plugins/experts/src/services/experts-manager.ts": {
+      "source": "plugins/experts/src/services/experts-manager.ts",
+      "sha256": "142a3c43d4c7237fe3ea25f7446913c47055fbe977380f18ebf0c28451b02f2c"
+    },
+    "packages/plugins/experts/src/services/portability.ts": {
+      "source": "plugins/experts/src/services/portability.ts",
+      "sha256": "9a20adc5be322fb56389ac6d48461e13c0db5afc6608b1d73750672ffad54ac7"
+    },
+    "packages/plugins/experts/src/services/preferences/.gitkeep": {
+      "source": "plugins/experts/src/services/preferences/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/experts/src/shared.ts": {
+      "source": "plugins/experts/src/shared.ts",
+      "sha256": "ddbb998c3139cf967280325b275f680020e47bf2ea8b99d301d61318663ac90f"
+    },
+    "packages/plugins/experts/src/storage/domain.ts": {
+      "source": "plugins/experts/src/storage/domain.ts",
+      "sha256": "740caa68d360d036482edbf07bf5a05787b849dca354201d848f913fe0e12291"
+    },
+    "packages/plugins/experts/src/tools/management-tools.ts": {
+      "source": "plugins/experts/src/tools/management-tools.ts",
+      "sha256": "a87ea632da04c01c19d5be72e8307fec27df103b9181c6e6953388d1efbfa97f"
+    },
+    "packages/plugins/experts/tsconfig.json": {
+      "source": "plugins/experts/tsconfig.json",
+      "sha256": "4f12a03b07005f4fab0656ea25709653973c3fb117f6960e8799b75502663bd1"
+    },
+    "packages/plugins/library/CHANGELOG.md": {
+      "source": "plugins/library/CHANGELOG.md",
+      "sha256": "61a86f16e5b9aaa91cc9f01a166da2b3655f5c8aca8c1b55a25f81e4f8493fa2"
+    },
+    "packages/plugins/library/README.md": {
+      "source": "plugins/library/README.md",
+      "sha256": "e3276492c239655e7a87a181a071fac40402627e4ec37df047e71a9071564344"
+    },
+    "packages/plugins/library/cordis.patch.yml": {
+      "source": "plugins/library/cordis.patch.yml",
+      "sha256": "1ad1910573488cffd76a12db8ff539a30d5f0878012a8cd0069bb1ec5c3213d4"
+    },
+    "packages/plugins/library/locale/en.json": {
+      "source": "plugins/library/locale/en.json",
+      "sha256": "3423c4a6b4dd52c49f1743dd78b58ef36187b0379101b7a20c05eb9c3bcd718b"
+    },
+    "packages/plugins/library/locale/zh.json": {
+      "source": "plugins/library/locale/zh.json",
+      "sha256": "487b4df4215a0c042f4e84b583524a9b49ab3ec3d39ca8829dab3f6a3f735fb4"
+    },
+    "packages/plugins/library/package.json": {
+      "source": "plugins/library/package.json",
+      "sha256": "16276895205f2d2e47eb4b9f8feff5e2fe79698d7f20eaf5fb3d8a41de9c6cd6"
+    },
+    "packages/plugins/library/src/client.tsx": {
+      "source": "plugins/library/src/client.tsx",
+      "sha256": "1d3379b124c72a06d72f9a46b6fc83cf75c7fcd59a9b95e8cf6d34deb65fbb49"
+    },
+    "packages/plugins/library/src/client/LibraryPanel.tsx": {
+      "source": "plugins/library/src/client/LibraryPanel.tsx",
+      "sha256": "ccc11cc2fae53b18a78ea60aff839dba4b4b06b63a870572dea8223f14105fd3"
+    },
+    "packages/plugins/library/src/client/LibraryPicker.tsx": {
+      "source": "plugins/library/src/client/LibraryPicker.tsx",
+      "sha256": "b308453bfc088c4c79d33b333fc0f05efc46ce1aff901bb440fd3d1366a65839"
+    },
+    "packages/plugins/library/src/client/LibraryReferencePage.tsx": {
+      "source": "plugins/library/src/client/LibraryReferencePage.tsx",
+      "sha256": "5adc593b3fa4d03655e49c8f4705e28045fcb3c382546170bebd1f065400b165"
+    },
+    "packages/plugins/library/src/client/LibrarySelectionChips.tsx": {
+      "source": "plugins/library/src/client/LibrarySelectionChips.tsx",
+      "sha256": "93741f0ea74283ec52b0de85843761be49ac514ee20904d9f65c91aa2f88d00d"
+    },
+    "packages/plugins/library/src/client/components/.gitkeep": {
+      "source": "plugins/library/src/client/components/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/library/src/client/management.ts": {
+      "source": "plugins/library/src/client/management.ts",
+      "sha256": "bb84d2b878b809c3a4ab860d49024ea4967c43bbf62a449f117b26e68194eed7"
+    },
+    "packages/plugins/library/src/client/preview-registry.ts": {
+      "source": "plugins/library/src/client/preview-registry.ts",
+      "sha256": "51307056b740fcdd4ca571b9af82640bb3bf5ba000d984c6db953dd763244d3c"
+    },
+    "packages/plugins/library/src/client/sections/review/.gitkeep": {
+      "source": "plugins/library/src/client/sections/review/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/library/src/client/selection-events.ts": {
+      "source": "plugins/library/src/client/selection-events.ts",
+      "sha256": "89481856e06b2fd75ffa7ae47184fb95feffaf47523cd3276719c6402ab9e649"
+    },
+    "packages/plugins/library/src/client/styles.ts": {
+      "source": "plugins/library/src/client/styles.ts",
+      "sha256": "823144d3e307a01b4621aabb6b6f417584e67d311ab88220f4fcdefb84a9a119"
+    },
+    "packages/plugins/library/src/domain/.gitkeep": {
+      "source": "plugins/library/src/domain/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/library/src/harness/.gitkeep": {
+      "source": "plugins/library/src/harness/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/library/src/index.ts": {
+      "source": "plugins/library/src/index.ts",
+      "sha256": "f5c3fb56a0461eb4b6e03ed0a81a524f502dc9c88f2ab6af4d80b13e0cd7ee3f"
+    },
+    "packages/plugins/library/src/remote/connection-api.ts": {
+      "source": "plugins/library/src/remote/connection-api.ts",
+      "sha256": "3933c5c79777c82f4298f2f68f8216f77cfa3a0e0801661c1c141266e6fd2894"
+    },
+    "packages/plugins/library/src/runtime/context-injection.ts": {
+      "source": "plugins/library/src/runtime/context-injection.ts",
+      "sha256": "ff86ace03a23e069c52f0012efef96fdc7d79a384c1f75a830dae352da1566a8"
+    },
+    "packages/plugins/library/src/services/converters.ts": {
+      "source": "plugins/library/src/services/converters.ts",
+      "sha256": "34d94136337b7d5f1c2a6d93a8b0be82757cd6adf8d64bed07c9f6ab8e15be4a"
+    },
+    "packages/plugins/library/src/services/library-manager.ts": {
+      "source": "plugins/library/src/services/library-manager.ts",
+      "sha256": "912cd790655220f05b2c5c2940243408de808d033ffbae7d4c59e24b0949fd25"
+    },
+    "packages/plugins/library/src/services/revisions/.gitkeep": {
+      "source": "plugins/library/src/services/revisions/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/library/src/services/search/.gitkeep": {
+      "source": "plugins/library/src/services/search/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/library/src/storage/domain.ts": {
+      "source": "plugins/library/src/storage/domain.ts",
+      "sha256": "cf08983058d7f2f5d23d58e4fd5e91a8894c9b5bec4f86f6e441fe0b96d3cd6f"
+    },
+    "packages/plugins/library/src/tools/library-tools.ts": {
+      "source": "plugins/library/src/tools/library-tools.ts",
+      "sha256": "3615ad5378d03194f4a80b633e550a3dcf0d4353882841637d7cadf029240fb1"
+    },
+    "packages/plugins/library/tsconfig.json": {
+      "source": "plugins/library/tsconfig.json",
+      "sha256": "e83881e9deb8c695b0b0d22e48ce61d0047c5866b71f6cc1a76135424e5671ec"
+    },
+    "packages/plugins/projects/CHANGELOG.md": {
+      "source": "plugins/projects/CHANGELOG.md",
+      "sha256": "f5509ed627bd0ae1137656f00d38a4e0f932fffcb8738aed4fe7497afa5716dd"
+    },
+    "packages/plugins/projects/README.md": {
+      "source": "plugins/projects/README.md",
+      "sha256": "2f2e67b610c6f0bf1fadfb9c9877cd50c2d591f3a10fa6f74e7c381a7d043cec"
+    },
+    "packages/plugins/projects/cordis.patch.yml": {
+      "source": "plugins/projects/cordis.patch.yml",
+      "sha256": "a6a354ea90ad59f91caa23f39b24df4dc8f96115952f24b64d890ee3558c6755"
+    },
+    "packages/plugins/projects/locale/en.json": {
+      "source": "plugins/projects/locale/en.json",
+      "sha256": "c763f673d4a20d2c162498ee88b04e83cf84a417efff76a40bc27afb2f3323ae"
+    },
+    "packages/plugins/projects/locale/zh.json": {
+      "source": "plugins/projects/locale/zh.json",
+      "sha256": "5e3302fd9d49f207ed0a1ab7852050a02288d25941c94b946a9df42f917b3388"
+    },
+    "packages/plugins/projects/package.json": {
+      "source": "plugins/projects/package.json",
+      "sha256": "932d7936111aef6b92f820e57b24f3d41dc74f879e680373a848eaa717e3c690"
+    },
+    "packages/plugins/projects/resources/skills/project-manager/.gitkeep": {
+      "source": "plugins/projects/resources/skills/project-manager/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/projects/resources/templates/.gitkeep": {
+      "source": "plugins/projects/resources/templates/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/projects/src/capability-selection.ts": {
+      "source": "plugins/projects/src/capability-selection.ts",
+      "sha256": "dad44f0b3375ec6774de11cca25bdf36d3b81720ad515c272b64050a1cdfe758"
+    },
+    "packages/plugins/projects/src/client.tsx": {
+      "source": "plugins/projects/src/client.tsx",
+      "sha256": "8d36d8628659655feb7d70db67ec2e3b408b1f0cedc85f36aa9b2bd98924561a"
+    },
+    "packages/plugins/projects/src/client/ProjectsPanel.tsx": {
+      "source": "plugins/projects/src/client/ProjectsPanel.tsx",
+      "sha256": "2fafc863a7e8f91559964362ad8d5687139ac2c88eb42cacb26bb7972d9c1c28"
+    },
+    "packages/plugins/projects/src/client/components/capability-picker/.gitkeep": {
+      "source": "plugins/projects/src/client/components/capability-picker/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/projects/src/client/components/config-panel/.gitkeep": {
+      "source": "plugins/projects/src/client/components/config-panel/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/projects/src/client/components/project-composer/ProjectConversationMenu.tsx": {
+      "source": "plugins/projects/src/client/components/project-composer/ProjectConversationMenu.tsx",
+      "sha256": "2fd264745b37b890f36afdc9820ed56da6921a294b1d8d1511112fceac8366a4"
+    },
+    "packages/plugins/projects/src/client/components/project-composer/ProjectMenu.tsx": {
+      "source": "plugins/projects/src/client/components/project-composer/ProjectMenu.tsx",
+      "sha256": "aebecba50682374541a5daf9251371f362e6785cd966a2d21f6b8683dab6d579"
+    },
+    "packages/plugins/projects/src/client/components/project-lineage/ProjectLineageChip.tsx": {
+      "source": "plugins/projects/src/client/components/project-lineage/ProjectLineageChip.tsx",
+      "sha256": "61ec4fefa7cb8af727916bcd98b5c1a4d01468730c7d8819f6ea59450fa02a8f"
+    },
+    "packages/plugins/projects/src/client/management.ts": {
+      "source": "plugins/projects/src/client/management.ts",
+      "sha256": "01d496aa0e93944b3396e2b8a08d8540b6aaa1bed563a51b6cfa027bf497065d"
+    },
+    "packages/plugins/projects/src/client/sections/activity/.gitkeep": {
+      "source": "plugins/projects/src/client/sections/activity/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/projects/src/client/sections/assets/.gitkeep": {
+      "source": "plugins/projects/src/client/sections/assets/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/projects/src/client/sections/members/.gitkeep": {
+      "source": "plugins/projects/src/client/sections/members/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/projects/src/client/sections/overview/.gitkeep": {
+      "source": "plugins/projects/src/client/sections/overview/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/projects/src/client/sections/settings/.gitkeep": {
+      "source": "plugins/projects/src/client/sections/settings/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/projects/src/client/sections/tasks/.gitkeep": {
+      "source": "plugins/projects/src/client/sections/tasks/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/projects/src/client/sections/work-items/.gitkeep": {
+      "source": "plugins/projects/src/client/sections/work-items/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/projects/src/client/styles.ts": {
+      "source": "plugins/projects/src/client/styles.ts",
+      "sha256": "83d0b837d2f46e93c0693ae6cf4937ba002373053b3c6d49f409bb950a2d0a42"
+    },
+    "packages/plugins/projects/src/domain/.gitkeep": {
+      "source": "plugins/projects/src/domain/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/projects/src/domain/discussions/.gitkeep": {
+      "source": "plugins/projects/src/domain/discussions/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/projects/src/harness/.gitkeep": {
+      "source": "plugins/projects/src/harness/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/projects/src/index.ts": {
+      "source": "plugins/projects/src/index.ts",
+      "sha256": "8c84cb4457107764658d6fa76d4f638bf5c9a66b97280c1043728df0c0d7f4e6"
+    },
+    "packages/plugins/projects/src/instruction-budget.ts": {
+      "source": "plugins/projects/src/instruction-budget.ts",
+      "sha256": "85b15d19c2af41a19b920e954aea8f882979fef715ac363ab22a5de3c312e298"
+    },
+    "packages/plugins/projects/src/remote/connection-api.ts": {
+      "source": "plugins/projects/src/remote/connection-api.ts",
+      "sha256": "bf850d4c92ebb5717542cadd41172db519e626f040dfa6b7f1e41e3c82e3519a"
+    },
+    "packages/plugins/projects/src/runtime/context-injection.ts": {
+      "source": "plugins/projects/src/runtime/context-injection.ts",
+      "sha256": "1dc1c262c9f58d325d9c32884496f01a6c698483a1c5f95081373fa5b637afd5"
+    },
+    "packages/plugins/projects/src/runtime/deliverable-attribution.ts": {
+      "source": "plugins/projects/src/runtime/deliverable-attribution.ts",
+      "sha256": "ed4cf2087f5e15dbf3fd809ba019b6705ddb9c8be7cb318996d8f4efe196b5fd"
+    },
+    "packages/plugins/projects/src/runtime/project-workspace.ts": {
+      "source": "plugins/projects/src/runtime/project-workspace.ts",
+      "sha256": "9369b3b8d84140813a2f1bd27a5cfa5b8f9efc11014d2d82a8383fdbf906a2cb"
+    },
+    "packages/plugins/projects/src/services/project-manager.ts": {
+      "source": "plugins/projects/src/services/project-manager.ts",
+      "sha256": "49409c33ec1b6003f3351ec6caeed4e23cbc427f321a9425df9174fa62153403"
+    },
+    "packages/plugins/projects/src/storage/domain.ts": {
+      "source": "plugins/projects/src/storage/domain.ts",
+      "sha256": "86f286a13fe37ea5f8b20c982213750d862d1594a92921052adde25e0e6d5371"
+    },
+    "packages/plugins/projects/src/tools/.gitkeep": {
+      "source": "plugins/projects/src/tools/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/projects/tsconfig.json": {
+      "source": "plugins/projects/tsconfig.json",
+      "sha256": "dad20b26222b1504cd34af2e6dd449bf0836b967879c4226612f014e1a7cf3a9"
+    },
+    "packages/plugins/skills/CHANGELOG.md": {
+      "source": "plugins/skills/CHANGELOG.md",
+      "sha256": "b1e2925c7f5514d491141ac373ab61a14f602e17612fbcae38d35247be57adba"
+    },
+    "packages/plugins/skills/README.md": {
+      "source": "plugins/skills/README.md",
+      "sha256": "6b9bd0e825a239c3b0f51b65c49b47fac4d45eb39e2248d7faf5446d30292ec5"
+    },
+    "packages/plugins/skills/cordis.patch.yml": {
+      "source": "plugins/skills/cordis.patch.yml",
+      "sha256": "4270ee2d1850c0a83f14935e83ac86f08edf468f211173ccc605c9f77e166d17"
+    },
+    "packages/plugins/skills/locale/en.json": {
+      "source": "plugins/skills/locale/en.json",
+      "sha256": "ae74d4e31eb07bb695cb8bcfb6615b3dd26431a71a6ef4d3f08dec6b8c910d8f"
+    },
+    "packages/plugins/skills/locale/zh.json": {
+      "source": "plugins/skills/locale/zh.json",
+      "sha256": "3bb81d0b2ef471580435ca44266403234856d796f24a0320ff58e69ca9448c3d"
+    },
+    "packages/plugins/skills/package.json": {
+      "source": "plugins/skills/package.json",
+      "sha256": "760902f3552d3b183fcff4697cf099baa3bd8b123b0197c0231e85f7b286001f"
+    },
+    "packages/plugins/skills/resources/skills/easywork-excel-design/SKILL.md": {
+      "source": "plugins/skills/resources/skills/easywork-excel-design/SKILL.md",
+      "sha256": "fb1fee95ca1bb3241a47b42fcaa9cebcd826e30b77d3a28955cce51b876356ab"
+    },
+    "packages/plugins/skills/resources/skills/easywork-excel-design/references/audit-and-usability.md": {
+      "source": "plugins/skills/resources/skills/easywork-excel-design/references/audit-and-usability.md",
+      "sha256": "56c66e3cfc0d7029fafc000c43df11f6f80a6cfe965fec6d729c3a954f9af833"
+    },
+    "packages/plugins/skills/resources/skills/easywork-excel-design/references/schema-and-formulas.md": {
+      "source": "plugins/skills/resources/skills/easywork-excel-design/references/schema-and-formulas.md",
+      "sha256": "98c137228befb2ba73166d28f15df082f2e2a44255ee201b6237f42dc542115a"
+    },
+    "packages/plugins/skills/resources/skills/easywork-ppt-design/SKILL.md": {
+      "source": "plugins/skills/resources/skills/easywork-ppt-design/SKILL.md",
+      "sha256": "651d198d3b9f6b382414b46e9507def313a195a977dad3103c7615a91c551b38"
+    },
+    "packages/plugins/skills/resources/skills/easywork-ppt-design/references/charts-and-delivery.md": {
+      "source": "plugins/skills/resources/skills/easywork-ppt-design/references/charts-and-delivery.md",
+      "sha256": "0d6db7f144243d1af012cb0d4685f4df5779ff6178461e31b33a5914a11b2fff"
+    },
+    "packages/plugins/skills/resources/skills/easywork-ppt-design/references/design-principle.md": {
+      "source": "plugins/skills/resources/skills/easywork-ppt-design/references/design-principle.md",
+      "sha256": "d140986c14ba66cbe85bc7dd8c713732bd54e456625dd8f0df5d055a66b935a0"
+    },
+    "packages/plugins/skills/resources/skills/easywork-ppt-design/references/designs/design-principle.academic.md": {
+      "source": "plugins/skills/resources/skills/easywork-ppt-design/references/designs/design-principle.academic.md",
+      "sha256": "464fc6a077bd225a666a329a8fe56195a99362bca478d3fb5f636c1cab4db3b1"
+    },
+    "packages/plugins/skills/resources/skills/easywork-ppt-design/references/designs/design-principle.consulting.md": {
+      "source": "plugins/skills/resources/skills/easywork-ppt-design/references/designs/design-principle.consulting.md",
+      "sha256": "e6a3fc22f707dc9ddacd5ec3b383abf369831c85d924e7964717cd8ec010da3a"
+    },
+    "packages/plugins/skills/resources/skills/easywork-ppt-design/references/designs/design-principle.redgold.md": {
+      "source": "plugins/skills/resources/skills/easywork-ppt-design/references/designs/design-principle.redgold.md",
+      "sha256": "ccf77026cc457e1daa22fed04c121c1befd34d19c2e104345681d7eacdd1e7dd"
+    },
+    "packages/plugins/skills/resources/skills/easywork-ppt-design/references/easywork-execution.md": {
+      "source": "plugins/skills/resources/skills/easywork-ppt-design/references/easywork-execution.md",
+      "sha256": "7fba389d07400d801d22de5c093e2803fd61e03507f0529f563b0361705e2c91"
+    },
+    "packages/plugins/skills/resources/skills/easywork-ppt-design/references/human-alignment.md": {
+      "source": "plugins/skills/resources/skills/easywork-ppt-design/references/human-alignment.md",
+      "sha256": "de82e33f647037a9dcee454848024dcc2e8db657bd04e3c29305a95065fc0ca0"
+    },
+    "packages/plugins/skills/resources/skills/easywork-ppt-design/references/story-and-design.md": {
+      "source": "plugins/skills/resources/skills/easywork-ppt-design/references/story-and-design.md",
+      "sha256": "5ca6f65207ab06246416192cc22a04e70befaad26a73c968f989c4dc6f17de90"
+    },
+    "packages/plugins/skills/resources/skills/easywork-ppt-design/references/story-principle.md": {
+      "source": "plugins/skills/resources/skills/easywork-ppt-design/references/story-principle.md",
+      "sha256": "bc450f47203e9a15cccc161f2572b231d2d3372a6206c43e82cc2031a7596d23"
+    },
+    "packages/plugins/skills/resources/skills/easywork-skill-creator/LICENSE.workbuddy.txt": {
+      "source": "plugins/skills/resources/skills/easywork-skill-creator/LICENSE.workbuddy.txt",
+      "sha256": "58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd"
+    },
+    "packages/plugins/skills/resources/skills/easywork-skill-creator/NOTICE.md": {
+      "source": "plugins/skills/resources/skills/easywork-skill-creator/NOTICE.md",
+      "sha256": "a9b56be9c3b26118852b18c5068d2afd02a1ba8f1f11997249cc96a548860e1d"
+    },
+    "packages/plugins/skills/resources/skills/easywork-skill-creator/SKILL.md": {
+      "source": "plugins/skills/resources/skills/easywork-skill-creator/SKILL.md",
+      "sha256": "6256db5dac54a2c8a3ee651445ac06df590c31cb2469b642b36e038672f31f5b"
+    },
+    "packages/plugins/skills/resources/skills/easywork-skill-creator/references/bundle-production.md": {
+      "source": "plugins/skills/resources/skills/easywork-skill-creator/references/bundle-production.md",
+      "sha256": "0896a89bbdb93d79e872263ecbd3d50287ff45a07603c8235d7527da84ce7d1c"
+    },
+    "packages/plugins/skills/resources/skills/easywork-skill-creator/references/creation-methods.md": {
+      "source": "plugins/skills/resources/skills/easywork-skill-creator/references/creation-methods.md",
+      "sha256": "7486ebed9eb4a0ab6a2d38bd5fe6f83f3f797e7f264da39bffe6c4209b6647eb"
+    },
+    "packages/plugins/skills/resources/skills/easywork-skill-creator/references/dsh-authoring.md": {
+      "source": "plugins/skills/resources/skills/easywork-skill-creator/references/dsh-authoring.md",
+      "sha256": "fb1a0880fc5d50255f20d60c3b2297db771d5ad161727bd76a0370c211a781bb"
+    },
+    "packages/plugins/skills/resources/skills/easywork-skill-creator/references/editing-and-delivery.md": {
+      "source": "plugins/skills/resources/skills/easywork-skill-creator/references/editing-and-delivery.md",
+      "sha256": "db9d7cb4b2a7c1ca2fc29b07f1d082986fa22b4d7e20bac980a17c34faba2ca5"
+    },
+    "packages/plugins/skills/resources/skills/easywork-skill-creator/scripts/init_skill.py": {
+      "source": "plugins/skills/resources/skills/easywork-skill-creator/scripts/init_skill.py",
+      "sha256": "e99480c6f6201de53b254817c4e27a30b38f8c52964765436adc7ce9dead8704"
+    },
+    "packages/plugins/skills/resources/skills/easywork-skill-creator/scripts/package_skill.py": {
+      "source": "plugins/skills/resources/skills/easywork-skill-creator/scripts/package_skill.py",
+      "sha256": "fb79d9990b5582c05e5c712c84ad4470257b84a1ccf94e20ffad961fd8483a17"
+    },
+    "packages/plugins/skills/resources/skills/easywork-skill-creator/scripts/quick_validate.py": {
+      "source": "plugins/skills/resources/skills/easywork-skill-creator/scripts/quick_validate.py",
+      "sha256": "89edbed09daf153eb0f9f33418293b10a8c7992891ee5d2b1bf92ad6c12bc799"
+    },
+    "packages/plugins/skills/resources/skills/easywork-web-design/SKILL.md": {
+      "source": "plugins/skills/resources/skills/easywork-web-design/SKILL.md",
+      "sha256": "de306226a431f41f8cb8a440bf6d0ba9fa1717a947da807dcecd5a4de483134f"
+    },
+    "packages/plugins/skills/resources/skills/easywork-web-design/references/brief-and-design.md": {
+      "source": "plugins/skills/resources/skills/easywork-web-design/references/brief-and-design.md",
+      "sha256": "3a3c89d12551bca62cce80de1276ef8408919ad9223f1d3cd922c8e97416cc30"
+    },
+    "packages/plugins/skills/resources/skills/easywork-web-design/references/implementation-and-review.md": {
+      "source": "plugins/skills/resources/skills/easywork-web-design/references/implementation-and-review.md",
+      "sha256": "a939289dc2c104a315b9415982c682c058842ea5e2c2100db0879dff42b73bb9"
+    },
+    "packages/plugins/skills/resources/skills/easywork-web-design/references/workflow-and-delivery.md": {
+      "source": "plugins/skills/resources/skills/easywork-web-design/references/workflow-and-delivery.md",
+      "sha256": "bce98aee52c4ad85620df6f7e3003084df1b3d1763ff0189231a4c0cea8c8f52"
+    },
+    "packages/plugins/skills/resources/skills/easywork-word-design/SKILL.md": {
+      "source": "plugins/skills/resources/skills/easywork-word-design/SKILL.md",
+      "sha256": "5c729f33e2516b028f08b2cc4e5003920dc5e1e078145603ca875076afa8bcdb"
+    },
+    "packages/plugins/skills/resources/skills/easywork-word-design/references/genre-and-typesetting.md": {
+      "source": "plugins/skills/resources/skills/easywork-word-design/references/genre-and-typesetting.md",
+      "sha256": "494f80a4daeaa6e6c2f176e77c4d6bc628d1c43302b690687f76298866a00915"
+    },
+    "packages/plugins/skills/resources/skills/easywork-word-design/references/review-and-delivery.md": {
+      "source": "plugins/skills/resources/skills/easywork-word-design/references/review-and-delivery.md",
+      "sha256": "9a12c3b3ea696595f61ce29f62528702be6acf2a3aea973e39cc0a8b6ee58dcd"
+    },
+    "packages/plugins/skills/resources/templates/.gitkeep": {
+      "source": "plugins/skills/resources/templates/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/skills/src/authoring/professional.ts": {
+      "source": "plugins/skills/src/authoring/professional.ts",
+      "sha256": "c56190e2987c2a1456a6c0990f99caa49b782a1bc51b834e12ad6cb861de0cc7"
+    },
+    "packages/plugins/skills/src/client.tsx": {
+      "source": "plugins/skills/src/client.tsx",
+      "sha256": "49021fcc01ed4334445f1c9b672d47cd3817b39b375185d5b96a93c896b1160d"
+    },
+    "packages/plugins/skills/src/client/CommandMenu.tsx": {
+      "source": "plugins/skills/src/client/CommandMenu.tsx",
+      "sha256": "6055853cf2cfae4adf06dd7866de4c327a153ed88b9fda10bf08efcc1c6a9402"
+    },
+    "packages/plugins/skills/src/client/ImportSkillModal.tsx": {
+      "source": "plugins/skills/src/client/ImportSkillModal.tsx",
+      "sha256": "823cb4271225aaa09f8e5b96fbaf12b6fa56b30c61244cc001b413c4145e44b3"
+    },
+    "packages/plugins/skills/src/client/SkillHubPanel.tsx": {
+      "source": "plugins/skills/src/client/SkillHubPanel.tsx",
+      "sha256": "cb377564c399b54b29980ad134d8b8083ba151ac625a7596113ccb94e21b8034"
+    },
+    "packages/plugins/skills/src/client/SkillNavigationIcon.tsx": {
+      "source": "plugins/skills/src/client/SkillNavigationIcon.tsx",
+      "sha256": "730594308aebd3ff6e94745acd69c5e74eee1a0009b60a9b9f52cecafb16b4a0"
+    },
+    "packages/plugins/skills/src/client/SkillsPanel.tsx": {
+      "source": "plugins/skills/src/client/SkillsPanel.tsx",
+      "sha256": "dbd70fbdf9f87817b9b74ef1a71fec748944d407a6241a72f55c97eb20abf9f6"
+    },
+    "packages/plugins/skills/src/client/components/.gitkeep": {
+      "source": "plugins/skills/src/client/components/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/skills/src/client/drafts.tsx": {
+      "source": "plugins/skills/src/client/drafts.tsx",
+      "sha256": "a3df112978e2c7bcb1abcf9ae7236d2367b38ff64769295fd12bc584c0539569"
+    },
+    "packages/plugins/skills/src/client/management.ts": {
+      "source": "plugins/skills/src/client/management.ts",
+      "sha256": "0ef58e99ec62111a0e4cdfd5ed6a2f0179f07bead1908a21db9e6b057759f463"
+    },
+    "packages/plugins/skills/src/client/styles.ts": {
+      "source": "plugins/skills/src/client/styles.ts",
+      "sha256": "6db603d33e04cec44b3c401b91b043f177a4f8e4b9d792bc68f602ad451e1287"
+    },
+    "packages/plugins/skills/src/domain/.gitkeep": {
+      "source": "plugins/skills/src/domain/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/skills/src/harness/.gitkeep": {
+      "source": "plugins/skills/src/harness/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/skills/src/index.ts": {
+      "source": "plugins/skills/src/index.ts",
+      "sha256": "43bec39bcf82e3ff5b9abf333a0c2a8e97fdc0f6f4a9b8a82729922860a8c823"
+    },
+    "packages/plugins/skills/src/remote/.gitkeep": {
+      "source": "plugins/skills/src/remote/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/skills/src/services/catalog.ts": {
+      "source": "plugins/skills/src/services/catalog.ts",
+      "sha256": "d5b4e27e073d51402fd5b9b7c86854eb315f67552d795e02e8a677bd5ae1281b"
+    },
+    "packages/plugins/skills/src/services/connection-api.ts": {
+      "source": "plugins/skills/src/services/connection-api.ts",
+      "sha256": "872fa8c20344530c8347ba836b3e60ad0c97edd9594b02848c768a1e0ffdbc4c"
+    },
+    "packages/plugins/skills/src/services/discovery/.gitkeep": {
+      "source": "plugins/skills/src/services/discovery/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/skills/src/services/import-staging.ts": {
+      "source": "plugins/skills/src/services/import-staging.ts",
+      "sha256": "7b2cee32cc988726fd0770b3bf702b39af80548c893cb08500ca56056480508c"
+    },
+    "packages/plugins/skills/src/services/lifecycle-tools.ts": {
+      "source": "plugins/skills/src/services/lifecycle-tools.ts",
+      "sha256": "3d0c6b9d25765e1b74c0c166833e96f19431a87b87c84bff23455b14fddc32ba"
+    },
+    "packages/plugins/skills/src/services/manager.ts": {
+      "source": "plugins/skills/src/services/manager.ts",
+      "sha256": "40782b5f883d9db8658c4b4d805f13e00ef95c0489501131cb7bbc7e837ace5a"
+    },
+    "packages/plugins/skills/src/services/preferences/.gitkeep": {
+      "source": "plugins/skills/src/services/preferences/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/skills/src/shared.ts": {
+      "source": "plugins/skills/src/shared.ts",
+      "sha256": "81ae53318141abf934eb04eda1a70be70c8c7af5e0451d0c997d14303c8b2c02"
+    },
+    "packages/plugins/skills/src/storage/.gitkeep": {
+      "source": "plugins/skills/src/storage/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/skills/src/tools/.gitkeep": {
+      "source": "plugins/skills/src/tools/.gitkeep",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "packages/plugins/skills/tsconfig.json": {
+      "source": "plugins/skills/tsconfig.json",
+      "sha256": "4f12a03b07005f4fab0656ea25709653973c3fb117f6960e8799b75502663bd1"
+    }
+  }
+}

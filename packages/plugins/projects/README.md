@@ -7,13 +7,13 @@
 首个 Alpha 提供与 WorkBuddy 对齐的项目中心，以及持续挂载配置侧栏和任务输入框的详情页。详情包含活动记录、计划、任务、资产四个页签；活动记录自动沉淀本机项目操作，不提供虚假的成员留言或通知。配置保存会生成不可变修订，新任务固定引用创建时的修订。项目归档需要确认，可在“已归档项目”中恢复且不会丢失历史。
 
 - 实现阶段：P1
-- 主任务：P1-11，详见 [需求与范围](../../../apps/web/docs/REQUIREMENTS.md)
+- 主任务：P1-11，详见 [需求与范围](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/REQUIREMENTS.md)
 - 职责：项目说明、任务归属、资产引用及项目访问权限。
 - 边界：项目不等于会话全集自动共享。
 
 ## 开发前阅读
 
-[规则](../../../apps/web/AGENTS.md)、[验收要求](../../../apps/web/docs/ACCEPTANCE.md)、[契约](../../../apps/web/docs/CONTRACTS.md)、[团队设计](../../../apps/web/docs/CONTRACTS.md)。
+[规则](https://github.com/hicms/EasyWork/blob/main/apps/web/AGENTS.md)、[验收要求](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/ACCEPTANCE.md)、[契约](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/CONTRACTS.md)、[团队设计](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/CONTRACTS.md)。
 
 所有业务操作遵守服务端主体和组织上下文；页面与 Agent 工具调用相同领域服务。可选功能接入通过公开契约与生命周期注入。
 
@@ -27,17 +27,17 @@
 
 ## 验收与下一步
 
-完成对应 PLAN 任务及 [验收矩阵](../../../apps/web/docs/ACCEPTANCE.md) 场景，记录真实测试证据后才更新状态。先验证公开接口，再实现；目前仅保留骨架，不声明加载入口、假工具或成功响应。
+完成对应 PLAN 任务及 [验收矩阵](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/ACCEPTANCE.md) 场景，记录真实测试证据后才更新状态。先验证公开接口，再实现；目前仅保留骨架，不声明加载入口、假工具或成功响应。
 
 ## 修订 6 的必做补充
 
-详见 [项目设计](../../../apps/web/docs/ARCHITECTURE.md) 和 [官方依据](../../../apps/web/docs/CONTRACTS.md)。新增目录仍为规划占位；各自实现 PLAN 的 P1 补充项并验证 J01—J10 适用项。
+详见 [项目设计](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/ARCHITECTURE.md) 和 [官方依据](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/CONTRACTS.md)。新增目录仍为规划占位；各自实现 PLAN 的 P1 补充项并验证 J01—J10 适用项。
 
 ## 项目界面联动
 
-按 [项目设计第 7 节](../../../apps/web/docs/ARCHITECTURE.md) 实现本领域相关交互，验收 UI01—UI08 适用项。领域对象与项目关联分离，取消不提交选择，个人连接按当前主体解析。新增目录仍为 planned。
+按 [项目设计第 7 节](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/ARCHITECTURE.md) 实现本领域相关交互，验收 UI01—UI08 适用项。领域对象与项目关联分离，取消不提交选择，个人连接按当前主体解析。新增目录仍为 planned。
 
-实现前必须阅读 [ADR-0007](../../../apps/web/docs/CONTRACTS.md)，完成相应 B/Q 边界用例；不可只用提示词或 UI 达成权限保障。
+实现前必须阅读 [ADR-0007](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/CONTRACTS.md)，完成相应 B/Q 边界用例；不可只用提示词或 UI 达成权限保障。
 
 页面及配置弹窗随 Harness 原生主题变化；文件类型图标与文档原文保留自身颜色。
 

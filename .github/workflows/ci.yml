@@ -98,6 +98,7 @@ jobs:
         working-directory: apps/web
         run: |
           node ../../scripts/verify-product-names.mjs
+          node ../../scripts/verify-plugin-sources.mjs
           corepack pnpm build
           corepack pnpm --filter easywork-provider-identity-enterprise build
           corepack pnpm --filter easywork-plugin-enterprise-collaboration build

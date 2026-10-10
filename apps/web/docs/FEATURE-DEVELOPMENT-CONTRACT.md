@@ -14,6 +14,8 @@
 
 先扩展现有合适模块；只有独立领域或交付生命周期需要新包。新模块登记 [modules.json](modules.json)，与 workspace、包入口、依赖和对应要求同步。默认、可选、企业激活携带与外置安装沿用 [交付边界](EXTERNAL-PLUGINS.md)。共同功能清单不意味着所有功能默认安装。
 
+五个独立更新插件（skills、experts、library、connectors、projects）的业务源码维护在 `hicms/easywork-plugins`；表中的对应本地路径是 `profiles/shared/plugin-sources.lock.json` 固定提交的生成副本。先在源仓库修改并提交，再同步、执行来源校验和两个应用入口的验收。
+
 每个功能变更必须有有限且可审查的契约：
 
 - 源码所有者、目标与需求来源；声明复用的业务服务、页面和官方公开接口。
