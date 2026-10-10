@@ -1,4 +1,4 @@
-import type { ExpertTeamDefinition } from 'workdsh-contracts';
+import type { ExpertTeamDefinition } from 'easywork-contracts';
 
 /** Validate authored instructions only; runtime tasks and transitions belong to DSH. */
 export function validateTeamWorkflow(stages: ExpertTeamDefinition['workflows'][number]['stages']): void {

@@ -8,11 +8,11 @@ import type {
   ExecutionBinding,
   Operation,
   SkillRevisionRef,
-} from 'workdsh-contracts';
+} from 'easywork-contracts';
 import { expertDefinitionSchema } from '../domain/definition.js';
 
 /**
- * Storage layout for the `workdsh_experts` domain (G06).
+ * Storage layout for the `easywork_experts` domain (G06).
  *
  * `per-record` layout keeps each object independently addressable; authoritative
  * tables reject invalid records on read (default `invalidRecords`) rather than
@@ -125,7 +125,7 @@ const operationSchema: z.ZodType<Operation> = z.object({
 });
 
 export const expertsDomainSpec = defineDomain({
-  name: 'workdsh_experts',
+  name: 'easywork_experts',
   version: 1,
   layout: 'per-record',
   tables: {

@@ -24,5 +24,5 @@ export function installFreshSessionNavigation(ctx: Context): void {
     };
     owner.startSession = start;
     return () => { disposed = true; if (owner.startSession === start) owner.startSession = original; };
-  }, 'workdsh.fresh-session-navigation'));
+  }, 'easywork.fresh-session-navigation'));
 }

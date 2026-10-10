@@ -13,19 +13,20 @@ export function selectCommandSpace(context: { personalHome: string; active?: unk
   return { mode: 'personal', home: context.personalHome, label: '个人工作区' }
 }
 async function main(): Promise<void> {
-  const userData = process.env.WORKDSH_DESKTOP_USER_DATA ?? (process.platform === 'win32' ? join(process.env.APPDATA ?? '', USER_DATA_DIRECTORY_NAME) : join(homedir(), 'Library/Application Support', USER_DATA_DIRECTORY_NAME))
+  const appData = process.platform === 'win32' ? process.env.APPDATA ?? '' : join(homedir(), 'Library/Application Support')
+  const userData = process.env.EASYWORK_DESKTOP_USER_DATA ?? join(appData, USER_DATA_DIRECTORY_NAME)
   const context = JSON.parse(readFileSync(join(userData, 'command-context.json'), 'utf8')) as { personalHome: string; active?: CommandSpace }
-  const args = process.argv.slice(2), spaceOption = args.findIndex(value => value.startsWith('--workdsh-space='))
-  const request = spaceOption < 0 ? undefined : args.splice(spaceOption, 1)[0]!.slice('--workdsh-space='.length)
+  const args = process.argv.slice(2), spaceOption = args.findIndex(value => value.startsWith('--easywork-space='))
+  const request = spaceOption < 0 ? undefined : args.splice(spaceOption, 1)[0]!.slice('--easywork-space='.length)
   const space = selectCommandSpace(context, request)
-  const launcher = join(space.home, '.workdsh-launch.mjs')
+  const launcher = join(space.home, '.easywork-launch.mjs')
   if (!existsSync(launcher)) throw new Error('请先在 Desktop 打开此工作区，完成官方 Profile 初始化')
   const runtime = dirname(dirname(dirname(fileURLToPath(import.meta.url)))), primary = join(runtime, 'primary-runtime')
-  const basePatch = join(runtime, 'profiles/workdsh/cordis.patch.yml')
+  const basePatch = join(runtime, 'profiles/easywork/cordis.patch.yml')
   const patches = existsSync(basePatch) ? ['--patch', basePatch] : []
   const env = { ...process.env, DSH_HOME: space.home, DSH_AGENTS_HOME: join(space.home, 'agents'), DSH_BUNDLED_PRIMARY_RUNTIME: primary, ELECTRON_RUN_AS_NODE: undefined }
   process.stderr.write(`${PRODUCT_NAME}：${space.label}\n`)
-  const child = spawn(process.execPath, [launcher, '--profile', 'workdsh', ...patches, ...args], { cwd: space.home, env, stdio: 'inherit' })
+  const child = spawn(process.execPath, [launcher, '--profile', 'easywork', ...patches, ...args], { cwd: space.home, env, stdio: 'inherit' })
   child.once('error', error => { process.stderr.write(error.message + '\n'); process.exitCode = 1 })
   child.once('exit', code => { process.exitCode = code ?? 1 })
 }

@@ -1,4 +1,4 @@
-import type {OfficeHtmlSnapshot} from "workdsh-contracts/office";
+import type {OfficeHtmlSnapshot} from "easywork-contracts/office";
 export const previewPolicy="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src data:; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'";
 /** Policy precedes all generated markup and is never persisted or exported. */
 export function previewHtml(html:string){return `<!doctype html><meta http-equiv="Content-Security-Policy" content="${previewPolicy}">`+html;}

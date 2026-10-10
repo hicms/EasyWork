@@ -19,7 +19,7 @@
 - Companion for Experts alpha.1: standalone Host composition, shared Skill revisions and governed task entry points.
 
 
-- 增加 `workdshSessionAccess` 受控 Host 入口，在调用官方 Session Controller 创建前持久绑定稳定 owner。
+- 增加 `easyworkSessionAccess` 受控 Host 入口，在调用官方 Session Controller 创建前持久绑定稳定 owner。
 - Session 恢复在激活官方 Agent 前重新检查当前成员关系和 grant，拒绝请求不会触达 Controller。
 - 创建失败保留不可替换的 owner 预留，允许同一主体安全重试并阻止其他主体接管 Session id。
 - 显式 Session id 在首次绑定前使用官方冷读 `inspect()` 排除已存在但无 owner 的会话，阻止历史会话被补绑接管。

@@ -3,21 +3,21 @@
  *
  * ADR-0019 (installable Host self-containment): an installed Host `dist/*.js` may
  * only import official `@deepseek-ai/*` packages, declared npm dependencies, Node
- * builtins and its own workspace source — never the private `workdsh-contracts`
+ * builtins and its own workspace source — never the private `easywork-contracts`
  * package, which is not packed or installed. The pure domain values therefore live
  * here (mirroring how the skills plugin keeps its runtime values local), while
- * `workdsh-contracts/experts` stays the single source of the shared TYPES, imported
+ * `easywork-contracts/experts` stays the single source of the shared TYPES, imported
  * `type`-only below and erased from the emitted JavaScript.
  *
  * `assertActorContext` is a minimal structural guard replicated from the governance
  * contract so the Host can validate a Host-resolved actor without a runtime
- * dependency on `workdsh-contracts/governance`. It deliberately keeps the
+ * dependency on `easywork-contracts/governance`. It deliberately keeps the
  * `governance/invalid-context` code (AT-22/AT-15 traceability) and is NOT an
  * `ExpertsError`, so the transport maps it exactly as before. The trusted actor is
  * still established by the injected IdentityService at the transport boundary; this
  * guard is defence in depth, not the authority.
  */
-import type { AccessAction, ActorContext, ExpertAction, ExpertErrorCode } from 'workdsh-contracts';
+import type { AccessAction, ActorContext, ExpertAction, ExpertErrorCode } from 'easywork-contracts';
 
 /** Definition field limits (Unicode code points for string maxLength; total UTF-8 bytes checked at publish). */
 export const EXPERT_LIMITS = Object.freeze({

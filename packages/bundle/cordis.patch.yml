@@ -1,6 +1,6 @@
 - insert:
-    - id: workdsh-installation-probe
-      name: workdsh-bundle
+    - id: easywork-installation-probe
+      name: easywork-bundle
     - id: computer-use
       name: '@deepseek-ai/dsh-computer-use'
     - id: computer-use-cua-driver-native
@@ -14,12 +14,12 @@
         mode: launch
         headless: true
         executablePath: !!js "process.env.DSH_BROWSER_EXECUTABLE ?? (process.platform === 'darwin' ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' : undefined)"
-    - id: workdsh-browser-session
-      name: workdsh-provider-browser-session
+    - id: easywork-browser-session
+      name: easywork-provider-browser-session
       disabled: !!js "!process.env.DSH_ELECTRON_EXECUTABLE"
       config:
         electronExecutable: !!js "process.env.DSH_ELECTRON_EXECUTABLE"
-        electronAppPath: !!js "process.env.WORKDSH_ELECTRON_APP_PATH"
+        electronAppPath: !!js "process.env.EASYWORK_ELECTRON_APP_PATH"
     - id: auto-review
       name: '@deepseek-ai/dsh-experimental-auto-review'
 - id: ui-sidebar-browser

@@ -146,7 +146,7 @@ export interface LibraryService {
   remove(actor: ActorContext, nodeId: string, signal?: AbortSignal): Promise<void>;
 }
 
-/** Payload of the workdsh-library native input-trigger reference; URI-encoded JSON in ReferenceInsert.ref. */
+/** Payload of the easywork-library native input-trigger reference; URI-encoded JSON in ReferenceInsert.ref. */
 export interface LibraryComposerReference {
   readonly assetId: string;
   readonly revisionId: string;

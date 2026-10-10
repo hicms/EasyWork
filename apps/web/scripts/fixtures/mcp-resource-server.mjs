@@ -2,13 +2,13 @@ import readline from 'node:readline';
 
 const resources = [
   {
-    uri: 'workdsh://guide/start',
+    uri: 'easywork://guide/start',
     name: 'EasyWork resource probe',
     description: 'A deterministic text resource used to verify the official DSH MCP resource bridge.',
     mimeType: 'text/plain',
   },
   {
-    uri: 'workdsh://guide/second-page',
+    uri: 'easywork://guide/second-page',
     name: 'EasyWork paginated resource',
     description: 'The second page used to verify MCP resource cursors.',
     mimeType: 'text/plain',
@@ -43,7 +43,7 @@ input.on('line', (line) => {
       result(request.id, {
         protocolVersion: request.params?.protocolVersion ?? '2025-06-18',
         capabilities: { resources: {} },
-        serverInfo: { name: 'workdsh-resource-probe', version: '1.0.0' },
+        serverInfo: { name: 'easywork-resource-probe', version: '1.0.0' },
         instructions: 'This local server exists only for EasyWork integration verification.',
       });
       break;
@@ -58,7 +58,7 @@ input.on('line', (line) => {
     case 'resources/templates/list':
       result(request.id, {
         resourceTemplates: [{
-          uriTemplate: 'workdsh://guide/{topic}',
+          uriTemplate: 'easywork://guide/{topic}',
           name: 'EasyWork topic guide',
           description: 'Reads a deterministic guide for the selected topic.',
           mimeType: 'text/plain',
@@ -67,10 +67,10 @@ input.on('line', (line) => {
       break;
     case 'resources/read': {
       const uri = request.params?.uri;
-      if (uri === 'workdsh://guide/start') {
+      if (uri === 'easywork://guide/start') {
         result(request.id, { contents: [{ uri, mimeType: 'text/plain', text: 'EasyWork MCP resources are ready.' }] });
-      } else if (typeof uri === 'string' && uri.startsWith('workdsh://guide/')) {
-        const topic = decodeURIComponent(uri.slice('workdsh://guide/'.length));
+      } else if (typeof uri === 'string' && uri.startsWith('easywork://guide/')) {
+        const topic = decodeURIComponent(uri.slice('easywork://guide/'.length));
         result(request.id, { contents: [{ uri, mimeType: 'text/plain', text: `EasyWork guide topic: ${topic}` }] });
       } else {
         failure(request.id, -32002, `Resource not found: ${String(uri)}`);

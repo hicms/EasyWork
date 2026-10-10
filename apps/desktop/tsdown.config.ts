@@ -2,7 +2,7 @@ import { defineConfig } from 'tsdown'
 
 // Installers ship this Electron carrier and the bundled EasyWork Profile only.
 export default defineConfig([{
-  entry: { 'workdsh-main': 'src/workdsh-main.ts' },
+  entry: { 'easywork-main': 'src/easywork-main.ts' },
   outDir: 'lib',
   format: 'esm',
   platform: 'node',

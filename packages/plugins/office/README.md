@@ -35,8 +35,8 @@ Word 预览版 `0.1.0-alpha.2`（表格/图片增量；历史文本预览版为 
 Word/PPT 修改基于原始 ZIP 包，未修改条目保留；多文字 run 保持原有格式边界，编辑面板显示文字片段，不把它们混成整段而丢失格式。复杂对象与高级 Office 保真仍未签收。暂不支持旧 `.doc/.ppt/.xls`、密码文档，当前文件上限10MB；压缩展开限制等生产保护仍待完善。
 
 ```sh
-corepack pnpm --filter workdsh-plugin-office build
-corepack pnpm --filter workdsh-plugin-office typecheck
+corepack pnpm --filter easywork-plugin-office build
+corepack pnpm --filter easywork-plugin-office typecheck
 corepack pnpm probe:office
 corepack pnpm probe:office:native
 corepack pnpm probe:office:live
@@ -77,21 +77,21 @@ corepack pnpm preview:install
 
 ## 安装、卸载与内容保留
 
-发布物是独立 `.tgz`：Host入口、Client模块、`cordis.patch.yml`、编辑器资源、版本说明和许可说明都随包交付。安装使用官方 `dsh plugin --profile <名称> add <Office.tgz>`，并显式提供本地身份、授权、审计基础插件及匹配 Harness `0.1.6-alpha.2` Web Profile。已有 EasyWork Profile 可复用这些治理依赖，不需要装专家、技能管理或工作台插件。Word-only 预览制品见 [GitHub prerelease](https://github.com/techflag/workdsh/releases/tag/office-v0.1.0-alpha.1)；不将其宣称为完整 Office 正式版。
+发布物是独立 `.tgz`：Host入口、Client模块、`cordis.patch.yml`、编辑器资源、版本说明和许可说明都随包交付。安装使用官方 `dsh plugin --profile <名称> add <Office.tgz>`，并显式提供本地身份、授权、审计基础插件及匹配 Harness `0.1.6-alpha.2` Web Profile。已有 EasyWork Profile 可复用这些治理依赖，不需要装专家、技能管理或工作台插件。Word-only 预览制品见 [GitHub prerelease](https://github.com/techflag/easywork/releases/tag/office-v0.1.0-alpha.1)；不将其宣称为完整 Office 正式版。
 
-通过官方 `dsh plugin --profile <名称> remove workdsh-plugin-office` 移除安装，按官方Profile流程重新启动/加载配置。Office菜单、文档引用来源、六个工具、写作guide、预览与实时页注册一起撤销；保留用户已保存内容和原文件。已存在输入标签属于草稿，不能替用户删除，插件缺失时引用无法解析、发送失败；删除标签后可正常输入。重装对应制品后入口恢复，同一Profile中已保存记录和修订保留；未承诺自动恢复卸载时未保存的浏览器缓冲。
+通过官方 `dsh plugin --profile <名称> remove easywork-plugin-office` 移除安装，按官方Profile流程重新启动/加载配置。Office菜单、文档引用来源、六个工具、写作guide、预览与实时页注册一起撤销；保留用户已保存内容和原文件。已存在输入标签属于草稿，不能替用户删除，插件缺失时引用无法解析、发送失败；删除标签后可正常输入。重装对应制品后入口恢复，同一Profile中已保存记录和修订保留；未承诺自动恢复卸载时未保存的浏览器缓冲。
 
 ### 安装与卸载 Office 候选包
 
 以下命令用于本仓库已配置的 `preview` Profile，要求完成开发环境准备，先运行 `corepack pnpm release:office:pack` 生成当前完整 Office 候选 `.tgz`。已发布旧版本的能力范围以对应版本说明为准。使用 Node.js 22.23.2。先在运行预览的终端按 `Ctrl+C` 停止应用，再执行安装和启动：
 
 ```bash
-cd /Users/techflag/project/workdsh
+cd /Users/techflag/project/easywork
 
 # 安装本地候选包 / Install the local candidate
 DSH_HOME="$PWD/.test-runtime/preview" \
   corepack pnpm exec dsh plugin --profile preview add \
-  "$PWD/.artifacts/office-release/workdsh-plugin-office-0.1.0-alpha.8.tgz"
+  "$PWD/.artifacts/office-release/easywork-plugin-office-0.1.0-alpha.8.tgz"
 
 # 启动 / Start
 corepack pnpm preview
@@ -100,7 +100,7 @@ corepack pnpm preview
 
 ```bash
 DSH_HOME="$PWD/.test-runtime/preview" \
-  corepack pnpm exec dsh plugin --profile preview remove workdsh-plugin-office
+  corepack pnpm exec dsh plugin --profile preview remove easywork-plugin-office
 ```
 请保持安装、卸载和启动使用同一 `DSH_HOME` 与 Profile。卸载撤销 Office 入口及工具，保留已保存文档和原文件；重新安装恢复入口。新建 Word 无需 `@` 引用，在任务输入框选择 `/office` → Word 即可。
 

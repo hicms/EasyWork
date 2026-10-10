@@ -1,4 +1,4 @@
-import type {OfficeContentSnapshot,OfficePresentationSnapshot,OfficeReceipt} from 'workdsh-contracts/office';
+import type {OfficeContentSnapshot,OfficePresentationSnapshot,OfficeReceipt} from 'easywork-contracts/office';
 import type {DocumentOptions,Rpc} from '../live/model.js';
 import {mountNativePpt} from './frame.js';
 /** Read mirror and local edit transaction; all durable writes use the Office service. */

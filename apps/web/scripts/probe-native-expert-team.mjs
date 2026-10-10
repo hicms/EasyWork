@@ -115,13 +115,13 @@ try {
     }
   }
   for (const [name, config] of [['dsh-storage'], ['dsh-storage-json', { root: join(home, 'storage') }], ['dsh-storage-domain', { backend: 'json' }], ['dsh-skill'], ['dsh-skill-filesystem', { watch: false }], ['dsh-agent-presets', { default: 'standard', roots: [{ path: presetRoot, trust: 'user' }], includeShippedRoot: false, includeUserRoot: false }]]) await load(`@deepseek-ai/${name}`, config);
-  ctx.provide('workdshIdentity', { id: actor.resolvedBy, async resolve() { return actor; }, membership(org, principal) { return org === actor.organizationId && principal === actor.principalId ? { organizationId: org, principalId: principal, principalKind: 'human', role: 'owner', state: 'active', revision: 'fixture-v1' } : undefined; } });
+  ctx.provide('easyworkIdentity', { id: actor.resolvedBy, async resolve() { return actor; }, membership(org, principal) { return org === actor.organizationId && principal === actor.principalId ? { organizationId: org, principalId: principal, principalKind: 'human', role: 'owner', state: 'active', revision: 'fixture-v1' } : undefined; } });
   for (const plugin of [AuditJournal, AccessManager]) await ctx.plugin(plugin);
   await ctx.plugin({ name: 'fixture-skills-host', inject: ['skills'], apply(scope) { new SkillManager(scope); } });
   ctx.provide('sessionController', { async inspect(id) { return { sessionId: id }; } });
-  ctx.provide('workdshSessionAccess', { async create(request) { await rootAgent(request.sessionId, request.agentPreset); return { sessionId: request.sessionId }; } });
+  ctx.provide('easyworkSessionAccess', { async create(request) { await rootAgent(request.sessionId, request.agentPreset); return { sessionId: request.sessionId }; } });
   await ctx.plugin(ExpertsManager);
-  const composition = ctx.plugin({ name: 'production-expert-adapter', inject: ['workdshExperts', 'workdshIdentity', 'tools', 'agentTeams', 'agentPresets', 'agents', 'skills', 'systemPrompt', 'workdshSkills'], apply(scope) { registerExpertExecutionGuard(scope); registerExpertManagementTools(scope); } });
+  const composition = ctx.plugin({ name: 'production-expert-adapter', inject: ['easyworkExperts', 'easyworkIdentity', 'tools', 'agentTeams', 'agentPresets', 'agents', 'skills', 'systemPrompt', 'easyworkSkills'], apply(scope) { registerExpertExecutionGuard(scope); registerExpertManagementTools(scope); } });
   await composition;
   let lead, preset, expertId;
   if (cold) {
@@ -138,24 +138,24 @@ try {
     }
     pass('cold-resume-keeps-native-member-ids-and-fresh-fork-roles', saved.ids);
   } else {
-    const draft = await ctx.workdshExperts.createDraft(actor, { ...definition('lead'), team: { members: roleNames.map(key => ({ key, definition: definition(key) })), workflows: [{ id: 'review', title: 'Review fixture', trigger: 'Review', deliverable: 'Checked report', stages: [{ id: 'draft', worker: 'alpha', reviewer: 'reviewer', dependsOn: [] }] }] } }, { operationId: 'team-create' });
+    const draft = await ctx.easyworkExperts.createDraft(actor, { ...definition('lead'), team: { members: roleNames.map(key => ({ key, definition: definition(key) })), workflows: [{ id: 'review', title: 'Review fixture', trigger: 'Review', deliverable: 'Checked report', stages: [{ id: 'draft', worker: 'alpha', reviewer: 'reviewer', dependsOn: [] }] }] } }, { operationId: 'team-create' });
     expertId = draft.expertId;
-    const validation = await ctx.workdshExperts.validate(actor, expertId, draft.revision);
+    const validation = await ctx.easyworkExperts.validate(actor, expertId, draft.revision);
     assert.equal(validation.publishable, true, JSON.stringify(validation.issues));
-    const confirmation = await ctx.workdshExperts.requestPublishConfirmation(actor, expertId, draft.revision);
-    const proof = await ctx.workdshExperts.confirmPublish(actor, confirmation.confirmationToken);
-    const published = await ctx.workdshExperts.publish(actor, expertId, draft.revision, validation.dependencyLockDigest, proof, { operationId: 'team-publish' });
+    const confirmation = await ctx.easyworkExperts.requestPublishConfirmation(actor, expertId, draft.revision);
+    const proof = await ctx.easyworkExperts.confirmPublish(actor, confirmation.confirmationToken);
+    const published = await ctx.easyworkExperts.publish(actor, expertId, draft.revision, validation.dependencyLockDigest, proof, { operationId: 'team-publish' });
     preset = published.presetRevisionRef;
-    const plan = await ctx.workdshExperts.prepareExecution(actor, expertId, undefined, home);
-    const created = await ctx.workdshExperts.createExecution(actor, plan.executionPlanId, { operationId: 'team-start' });
+    const plan = await ctx.easyworkExperts.prepareExecution(actor, expertId, undefined, home);
+    const created = await ctx.easyworkExperts.createExecution(actor, plan.executionPlanId, { operationId: 'team-start' });
     leadId = created.sessionId; lead = ctx.agents.get(leadId);
     lead.followup(createMessage({ role: 'user', source: { kind: 'user' }, content: blocks('Prepare this team fixture.') }));
     await settled(leadId);
     const schemas = report.requests.find(r => r.id === leadId).schemas;
     for (const name of ['spawn_teammate', 'send_message', 'list_agents', 'wait_agent', 'interrupt_agent', 'team_task_create', 'team_task_list', 'team_task_get', 'team_task_update']) assert.ok(schemas.includes(name), name);
-    assert.ok(!schemas.some(name => name.startsWith('workdsh_expert_team') || ['subagent', 'subagent_fork'].includes(name)));
-    assert.equal(ctx.subagents.getProvider('workdsh-expert'), undefined);
-    assert.ok(schemas.includes('workdsh_expert_list'), 'production management plugin activated');
+    assert.ok(!schemas.some(name => name.startsWith('easywork_expert_team') || ['subagent', 'subagent_fork'].includes(name)));
+    assert.equal(ctx.subagents.getProvider('easywork-expert'), undefined);
+    assert.ok(schemas.includes('easywork_expert_list'), 'production management plugin activated');
     pass('published-team-native-tools-only-and-no-legacy-provider', { preset, schemas });
     const pair = await Promise.all(['alpha', 'beta'].map(name => ctx.agentTeams.spawnTeammate(lead, { name, description: name, prompt: blocks('Load your own method.'), context: 'fresh', provider: 'spawn', signal })));
     for (const result of pair) await settled(result.member.id);
@@ -167,8 +167,8 @@ try {
     pass('fork-member-overrides-lead-persona', fork.member.id);
     await assert.rejects(ctx.agentTeams.spawnTeammate(lead, { name: 'unknown', description: 'negative', prompt: blocks('Must not run'), context: 'fresh', provider: 'spawn', signal }));
     assert.ok(!report.requests.some(request => request.name === 'unknown'), 'unknown member must never reach the model');
-    await assert.rejects(ctx.workdshExperts.resolveNativeRole({ ...actor, principalId: 'other' }, leadId, 'alpha'), e => e.code === 'experts/forbidden');
-    await assert.rejects(ctx.workdshExperts.resolveNativeRole({ ...actor, organizationId: 'other-org' }, leadId, 'alpha'), e => e.code === 'experts/forbidden');
+    await assert.rejects(ctx.easyworkExperts.resolveNativeRole({ ...actor, principalId: 'other' }, leadId, 'alpha'), e => e.code === 'experts/forbidden');
+    await assert.rejects(ctx.easyworkExperts.resolveNativeRole({ ...actor, organizationId: 'other-org' }, leadId, 'alpha'), e => e.code === 'experts/forbidden');
     pass('unknown-member-and-cross-owner-cross-org-denied-before-model');
     const first = await ctx.agentTeams.createTask(lead, { subject: 'Draft', description: 'Prepare draft' });
     const next = await ctx.agentTeams.createTask(lead, { subject: 'Review', description: 'Review draft', blockedBy: [first.id] });

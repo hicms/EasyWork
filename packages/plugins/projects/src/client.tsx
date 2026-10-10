@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { Icon } from 'workdsh-ui';
+import { Icon } from 'easywork-ui';
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client';
-import type { LibraryComposerReference } from 'workdsh-contracts/library';
+import type { LibraryComposerReference } from 'easywork-contracts/library';
 import type { Context } from '@deepseek-ai/cordis';
 import type {} from '@deepseek-ai/dsh-client-connection/client';
 import type {} from '@deepseek-ai/dsh-client-ui-slots';
@@ -13,20 +13,20 @@ import type {} from '@deepseek-ai/dsh-client-ui-workspace/client';
 import type {} from '@deepseek-ai/dsh-api-session-controller/client';
 import type {} from '@deepseek-ai/dsh-api-workspace-controller/client';
 import type { ISessions } from '@deepseek-ai/dsh-api-session-controller/client';
-import type { ProjectInputRef, ProjectSnapshot, ProjectCapabilityRef, ProjectTaskContext } from 'workdsh-contracts/projects';
+import type { ProjectInputRef, ProjectSnapshot, ProjectCapabilityRef, ProjectTaskContext } from 'easywork-contracts/projects';
 import { createProjectClient } from './client/management.js';
 import { publishProjectFocus, ProjectsPanel } from './client/ProjectsPanel.js';
 import { ProjectConversationMenu, projectApi } from './client/components/project-composer/ProjectConversationMenu.js';
 import type {} from '@deepseek-ai/dsh-client-ui-input-trigger/client';
 import { ProjectLineageChip } from './client/components/project-lineage/ProjectLineageChip.js';
 
-declare module '@deepseek-ai/dsh-api-session-controller/client' { interface SessionReferenceSourceMap { workdshProjectTaskStart: unknown; } }
-export const name = 'workdsh-projects-client';
+declare module '@deepseek-ai/dsh-api-session-controller/client' { interface SessionReferenceSourceMap { easyworkProjectTaskStart: unknown; } }
+export const name = 'easywork-projects-client';
 export const inject = ['slots', 'layout', 'connection', 'sessions', 'workspaces', 'conversation', 'uiWorkspace', 'inputTriggers'];
 
 export function apply(ctx: Context): void {
   const lifetime = new AbortController();
-  ctx.effect(() => () => lifetime.abort(), 'workdsh.projects.client');
+  ctx.effect(() => () => lifetime.abort(), 'easywork.projects.client');
   const management = createProjectClient(lifetime.signal);
   const sessions = ctx.sessions as unknown as ISessions;
   const wait = (milliseconds: number) => new Promise<void>((resolve, reject) => {
@@ -37,9 +37,9 @@ export function apply(ctx: Context): void {
   });
   const createExpertSession = async (projectId: string, expert: ProjectCapabilityRef) => {
     const workspace = await management.ensureWorkspace(projectId);
-    const plan = await projectApi<{executionPlanId:string;missing:{message:string}[]}>('/api/workdsh-experts','prepare-execution',{expertId:expert.id,revisionId:expert.revision,workspaceRef:workspace.path,workspaceId:String(workspace.workspaceId)});
+    const plan = await projectApi<{executionPlanId:string;missing:{message:string}[]}>('/api/easywork-experts','prepare-execution',{expertId:expert.id,revisionId:expert.revision,workspaceRef:workspace.path,workspaceId:String(workspace.workspaceId)});
     if(plan.missing.length)throw new Error(plan.missing.map(x=>x.message).join('；'));
-    const created=await projectApi<{sessionId:string}>('/api/workdsh-experts','create-execution',{executionPlanId:plan.executionPlanId,operationId:crypto.randomUUID()});
+    const created=await projectApi<{sessionId:string}>('/api/easywork-experts','create-execution',{executionPlanId:plan.executionPlanId,operationId:crypto.randomUUID()});
     await sessions.refresh();
     return created.sessionId as Awaited<ReturnType<ISessions['create']>>;
   };
@@ -57,14 +57,14 @@ export function apply(ctx: Context): void {
       if (!response.ok || !result?.ok) throw new Error(result?.error?.message ?? `任务选择同步失败（${response.status}）`);
     };
     const selectedAssetIds = new Set(validated.filter(row => row.kind === 'asset').map(row => row.id)), assets = snapshot.assets.filter(row => selectedAssetIds.has(row.id));
-    if (assets.length) await invoke('/api/workdsh-library', 'set-task-selection', { sessionId: id, nodeIds: assets.map(row => row.nodeId) });
+    if (assets.length) await invoke('/api/easywork-library', 'set-task-selection', { sessionId: id, nodeIds: assets.map(row => row.nodeId) });
     const connectors = snapshot.config.capabilities.filter(row => row.kind === 'connector').map(row => row.id);
-    if (connectors.length) await invoke('/api/workdsh-connectors', 'set-selection', { sessionId: id, connectorIds: connectors });
+    if (connectors.length) await invoke('/api/easywork-connectors', 'set-selection', { sessionId: id, connectorIds: connectors });
     const visibleReferences = validated.map(row => row.kind==='skill'?`/${row.id}`:`${row.kind === 'asset' ? '@资料库' : '@项目'}/${row.label}`).join(' ');
     // alpha.2: scopes only borrow retained generations, so hold an owned reference across
     // the shared initial open and the send, releasing it on every path. Session scopes
     // expose services through get(); property access needs an inject accessor those contexts never get.
-    const reference = sessions.retain(sessionId, { source: 'workdshProjectTaskStart', signal: lifetime.signal });
+    const reference = sessions.retain(sessionId, { source: 'easyworkProjectTaskStart', signal: lifetime.signal });
     try {
       // A failed shared open must stay a recoverable retry, not a raw controller error.
       try { await reference.ready; } catch { throw new Error('项目会话尚未就绪，请重试。'); }
@@ -108,7 +108,7 @@ export function apply(ctx: Context): void {
     window.history.replaceState(window.history.state, '', url);
     publishProjectFocus(projectId);
     const attemptPanel = (remaining: number): void => {
-      try { ctx.layout.selectPanel('workdsh-project-detail' as Parameters<typeof ctx.layout.selectPanel>[0]); }
+      try { ctx.layout.selectPanel('easywork-project-detail' as Parameters<typeof ctx.layout.selectPanel>[0]); }
       catch { if (remaining > 0) window.setTimeout(() => attemptPanel(remaining - 1), 200); }
     };
     attemptPanel(25);
@@ -123,16 +123,16 @@ export function apply(ctx: Context): void {
     throw new Error('新任务已创建，请从项目任务列表打开。');
   };
   ctx.slots.inject('conversation.input.overlay',()=>ctx.slots.register({
-    name:'conversation.input.overlay',id:'workdsh-project-menu-bridge',order:-10,
+    name:'conversation.input.overlay',id:'easywork-project-menu-bridge',order:-10,
     inject:(sessionId)=>{
       const binding=sessions.binding(sessionId);if(!binding)throw new Error('项目会话尚未就绪');
       return {management,startExpert,controller:ctx.inputTriggers.sessionOf(binding.ctx),
         mountChrome:(anchor:(element:HTMLDivElement|null)=>void)=>{
-          const disposers=[ctx.slots.register({name:'conversation.input.left',id:'workdsh-connectors-picker',priority:-20},()=>null),ctx.slots.register({name:'conversation.input.left',id:'workdsh-library-picker',priority:-20},()=>null),ctx.slots.register({name:'conversation.input.dock',id:'workdsh-project-selection-chips'},()=> <div style={{width:'100%',maxWidth:'var(--dsh-composer-card-max-width)',margin:'0 auto',boxSizing:'border-box'}} ref={anchor}/>)];
+          const disposers=[ctx.slots.register({name:'conversation.input.left',id:'easywork-connectors-picker',priority:-20},()=>null),ctx.slots.register({name:'conversation.input.left',id:'easywork-library-picker',priority:-20},()=>null),ctx.slots.register({name:'conversation.input.dock',id:'easywork-project-selection-chips'},()=> <div style={{width:'100%',maxWidth:'var(--dsh-composer-card-max-width)',margin:'0 auto',boxSizing:'border-box'}} ref={anchor}/>)];
           return()=>{for(const dispose of disposers.reverse())dispose()};
         },
         mountMenu:(anchor:(element:HTMLDivElement|null)=>void)=>ctx.slots.register({name:'conversation.input.overlay',id:'slash-menu',priority:-20},()=> <div ref={anchor}/>),
-        insertAsset:(snapshot:ProjectSnapshot,id:string)=>{const asset=snapshot.assets.find(x=>x.id===id);if(!asset)return false;const input=ctx.conversation.input.for(binding.ctx);const state=input.state.getSnapshot();return binding.ctx.bail(binding.ctx,'slash/input-insert-reference',{reference:{source:'workdsh-library',ref:encodeURIComponent(JSON.stringify({assetId:asset.assetId,revisionId:asset.revisionId,nodeId:asset.nodeId,name:asset.name,kind:asset.kind,sessionId:String(sessionId)} satisfies LibraryComposerReference)),label:asset.name,appearance:'file',clipboardText:`@资料库/${asset.name}`},span:{start:state.draft.length,end:state.draft.length,draftRev:state.draftRev}})===true},
+        insertAsset:(snapshot:ProjectSnapshot,id:string)=>{const asset=snapshot.assets.find(x=>x.id===id);if(!asset)return false;const input=ctx.conversation.input.for(binding.ctx);const state=input.state.getSnapshot();return binding.ctx.bail(binding.ctx,'slash/input-insert-reference',{reference:{source:'easywork-library',ref:encodeURIComponent(JSON.stringify({assetId:asset.assetId,revisionId:asset.revisionId,nodeId:asset.nodeId,name:asset.name,kind:asset.kind,sessionId:String(sessionId)} satisfies LibraryComposerReference)),label:asset.name,appearance:'file',clipboardText:`@资料库/${asset.name}`},span:{start:state.draft.length,end:state.draft.length,draftRev:state.draftRev}})===true},
       };
     },
   },ProjectConversationMenu));
@@ -141,11 +141,11 @@ export function apply(ctx: Context): void {
   ctx.slots.inject('conversation.session.header.actions', () =>
     ctx.slots.register({
       name: 'conversation.session.header.actions',
-      id: 'workdsh-project-lineage',
+      id: 'easywork-project-lineage',
       order: -20,
       inject: () => ({ management, focusProject }),
     }, ProjectLineageChip));
-  ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({name:'sidebar.panellist',id:'workdsh-projects',label:'项目',order:20}, () => <Icon name="project" />));
-  ctx.slots.inject('main', () => ctx.slots.register({ name: 'main', key: 'workdsh-projects', inject: () => ({ management, startTask, openTask, focusProject, goHome: () => ctx.layout.selectPanel('workdsh-projects' as Parameters<typeof ctx.layout.selectPanel>[0]) }) }, ProjectsPanel));
-  ctx.slots.inject('main', () => ctx.slots.register({ name: 'main', key: 'workdsh-project-detail', inject: () => ({ management, startTask, openTask, detail: true, focusProject, goHome: () => ctx.layout.selectPanel('workdsh-projects' as Parameters<typeof ctx.layout.selectPanel>[0]) }) }, ProjectsPanel));
+  ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({name:'sidebar.panellist',id:'easywork-projects',label:'项目',order:20}, () => <Icon name="project" />));
+  ctx.slots.inject('main', () => ctx.slots.register({ name: 'main', key: 'easywork-projects', inject: () => ({ management, startTask, openTask, focusProject, goHome: () => ctx.layout.selectPanel('easywork-projects' as Parameters<typeof ctx.layout.selectPanel>[0]) }) }, ProjectsPanel));
+  ctx.slots.inject('main', () => ctx.slots.register({ name: 'main', key: 'easywork-project-detail', inject: () => ({ management, startTask, openTask, detail: true, focusProject, goHome: () => ctx.layout.selectPanel('easywork-projects' as Parameters<typeof ctx.layout.selectPanel>[0]) }) }, ProjectsPanel));
 }

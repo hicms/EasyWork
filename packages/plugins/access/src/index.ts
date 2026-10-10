@@ -30,7 +30,7 @@ import type {
   RuntimeBindingRequest,
   RuntimeBindingService,
   SessionOwnerBinding,
-} from 'workdsh-contracts';
+} from 'easywork-contracts';
 
 type SessionAgentResult = Awaited<ReturnType<Context['sessionController']['resolveAgent']>>;
 
@@ -54,14 +54,14 @@ const sessionOwnerSchema: z.ZodType<SessionOwnerBinding> = z.object({
 });
 
 export const accessDomainSpec = defineDomain({
-  name: 'workdsh_access',
+  name: 'easywork_access',
   version: 1,
   layout: 'per-record',
   tables: { grants: domainTable<string, AccessGrant>(accessGrantSchema) },
 });
 
 export const runtimeBindingDomainSpec = defineDomain({
-  name: 'workdsh_runtime_binding',
+  name: 'easywork_runtime_binding',
   version: 1,
   layout: 'per-record',
   tables: { sessions: domainTable<string, SessionOwnerBinding>(sessionOwnerSchema) },
@@ -69,11 +69,11 @@ export const runtimeBindingDomainSpec = defineDomain({
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
-    workdshIdentity: IdentityService;
-    workdshAudit: AuditService;
-    workdshAccess: AccessManager;
-    workdshSessionAccess: SessionAccessBridge;
-    workdshToolAccess: ToolAccessBridge;
+    easyworkIdentity: IdentityService;
+    easyworkAudit: AuditService;
+    easyworkAccess: AccessManager;
+    easyworkSessionAccess: SessionAccessBridge;
+    easyworkToolAccess: ToolAccessBridge;
   }
 }
 
@@ -106,21 +106,21 @@ function authorizationRevision(membershipRevision: string | undefined, grants: r
 }
 
 export class AccessManager extends Service implements AccessService, RuntimeBindingService {
-  static inject = ['storageDomain', 'workdshIdentity', 'workdshAudit'];
+  static inject = ['storageDomain', 'easyworkIdentity', 'easyworkAudit'];
   private grants?: KvTable<string, AccessGrant>;
   private sessionOwners?: KvTable<string, SessionOwnerBinding>;
   private mutationTail: Promise<void> = Promise.resolve();
 
   constructor(ctx: Context) {
-    super(ctx, 'workdshAccess');
+    super(ctx, 'easyworkAccess');
   }
 
   async [Service.init](): Promise<void> {
     const domain = await this.ctx.storageDomain.open(accessDomainSpec);
-    this.ctx.effect(() => () => domain.close(), 'workdshAccess.domainClose');
+    this.ctx.effect(() => () => domain.close(), 'easyworkAccess.domainClose');
     this.grants = domain.table('grants');
     const runtimeDomain = await this.ctx.storageDomain.open(runtimeBindingDomainSpec);
-    this.ctx.effect(() => () => runtimeDomain.close(), 'workdshAccess.runtimeDomainClose');
+    this.ctx.effect(() => () => runtimeDomain.close(), 'easyworkAccess.runtimeDomainClose');
     this.sessionOwners = runtimeDomain.table('sessions');
   }
 
@@ -133,7 +133,7 @@ export class AccessManager extends Service implements AccessService, RuntimeBind
       signal?.throwIfAborted();
       assertActorContext(actor);
       validateRuntimeRequest({ ...request, runtimeId: 'binding', isolation: 'local-trusted' });
-      const membership = this.ctx.workdshIdentity.membership(actor.organizationId, actor.principalId);
+      const membership = this.ctx.easyworkIdentity.membership(actor.organizationId, actor.principalId);
       if (!membership || membership.state !== 'active') {
         throw new GovernanceContractError('access/inactive-membership', 'Session owner is not an active member.');
       }
@@ -222,7 +222,7 @@ export class AccessManager extends Service implements AccessService, RuntimeBind
       .filter((grant) => grant.organizationId === request.owner.organizationId
         && grant.subjectPrincipalId === request.actor.principalId
         && sameResource(grant.resource, request.resource));
-    const membership = this.ctx.workdshIdentity.membership(request.actor.organizationId, request.actor.principalId);
+    const membership = this.ctx.easyworkIdentity.membership(request.actor.organizationId, request.actor.principalId);
     let decision: AuthorizationDecision;
     if (request.actor.organizationId !== request.owner.organizationId) {
       decision = this.deny('access/cross-organization', membership?.revision, grants);
@@ -257,7 +257,7 @@ export class AccessManager extends Service implements AccessService, RuntimeBind
       if (grant.organizationId !== owner.organizationId) {
         throw new GovernanceContractError('access/cross-organization', 'Grant and resource owner must share an organization.');
       }
-      const subject = this.ctx.workdshIdentity.membership(grant.organizationId, grant.subjectPrincipalId);
+      const subject = this.ctx.easyworkIdentity.membership(grant.organizationId, grant.subjectPrincipalId);
       if (!subject || subject.state !== 'active') {
         throw new GovernanceContractError('access/inactive-subject', 'Grant subject is not an active member.');
       }
@@ -321,7 +321,7 @@ export class AccessManager extends Service implements AccessService, RuntimeBind
     code: string,
     references: Readonly<Record<string, string>>,
   ): Promise<void> {
-    await this.ctx.workdshAudit.append({
+    await this.ctx.easyworkAudit.append({
       id: randomUUID(),
       occurredAt: new Date().toISOString(),
       requestId: actor.requestId,
@@ -396,21 +396,21 @@ export interface SessionAccessBridgeConfig {
 
 /** Trusted Host ingress for EasyWork Session creation and resume. */
 export class SessionAccessBridge extends Service {
-  static inject = ['sessionController', 'workdshIdentity', 'workdshAccess', 'workdshAudit'];
+  static inject = ['sessionController', 'easyworkIdentity', 'easyworkAccess', 'easyworkAudit'];
   private readonly runtimeId: string;
   private readonly isolation: RuntimeBindingRequest['isolation'];
 
   constructor(ctx: Context, private readonly config: SessionAccessBridgeConfig = {}) {
-    super(ctx, 'workdshSessionAccess');
-    this.runtimeId = config.runtimeId ?? `workdsh-session-runtime-${randomUUID()}`;
+    super(ctx, 'easyworkSessionAccess');
+    this.runtimeId = config.runtimeId ?? `easywork-session-runtime-${randomUUID()}`;
     this.isolation = config.isolation ?? 'local-trusted';
   }
 
   async create(request: SessionCreateRequest, signal?: AbortSignal): Promise<SessionCreateValue> {
     signal?.throwIfAborted();
     const sessionId = request.sessionId ?? (`session-${randomUUID()}` as SessionId);
-    const actor = await this.ctx.workdshIdentity.resolve({ sessionId: String(sessionId) }, signal);
-    if (request.sessionId !== undefined && !this.ctx.workdshAccess.sessionOwner(String(sessionId))) {
+    const actor = await this.ctx.easyworkIdentity.resolve({ sessionId: String(sessionId) }, signal);
+    if (request.sessionId !== undefined && !this.ctx.easyworkAccess.sessionOwner(String(sessionId))) {
       let exists = false;
       try {
         await this.ctx.sessionController.inspect(sessionId, signal);
@@ -426,7 +426,7 @@ export class SessionAccessBridge extends Service {
         );
       }
     }
-    await this.ctx.workdshAccess.bindSession(actor, {
+    await this.ctx.easyworkAccess.bindSession(actor, {
       sessionId: String(sessionId),
       ...(request.workspaceId === undefined ? {} : { workspaceId: String(request.workspaceId) }),
     }, signal);
@@ -447,20 +447,20 @@ export class SessionAccessBridge extends Service {
   /** Private enterprise Session reads never inherit admin or material-sharing grants. */
   async inspect(sessionId: SessionId, signal?: AbortSignal): Promise<Awaited<ReturnType<Context['sessionController']['inspect']>>> {
     signal?.throwIfAborted();
-    const actor = await this.ctx.workdshIdentity.resolve({ sessionId: String(sessionId) }, signal);
-    const personal = this.ctx.workdshIdentity.profile().organization.kind === 'personal';
-    const unbound = !this.ctx.workdshAccess.sessionOwner(String(sessionId));
+    const actor = await this.ctx.easyworkIdentity.resolve({ sessionId: String(sessionId) }, signal);
+    const personal = this.ctx.easyworkIdentity.profile().organization.kind === 'personal';
+    const unbound = !this.ctx.easyworkAccess.sessionOwner(String(sessionId));
     if (!personal && !(unbound && this.canBindFixedMemberSession(actor))) {
       this.assertPrivateSessionOwner(actor, String(sessionId));
     }
     const result = await this.ctx.sessionController.inspect(sessionId, signal);
     signal?.throwIfAborted();
     if (!personal) {
-      const current = await this.ctx.workdshIdentity.resolve({ sessionId: String(sessionId) }, signal);
+      const current = await this.ctx.easyworkIdentity.resolve({ sessionId: String(sessionId) }, signal);
       if (current.principalId !== actor.principalId || current.organizationId !== actor.organizationId) throw new ApiSessionNotFound('Session not found');
       if (unbound) {
         if (!this.canBindFixedMemberSession(current)) throw new ApiSessionNotFound('Session not found');
-        await this.ctx.workdshAccess.bindSession(current, { sessionId: String(sessionId) }, signal);
+        await this.ctx.easyworkAccess.bindSession(current, { sessionId: String(sessionId) }, signal);
       }
       this.assertPrivateSessionOwner(current, String(sessionId));
     }
@@ -469,29 +469,29 @@ export class SessionAccessBridge extends Service {
 
   async list(request: Parameters<Context['sessionController']['list']>[0], signal: AbortSignal): Promise<Awaited<ReturnType<Context['sessionController']['list']>>> {
     signal.throwIfAborted();
-    const actor = await this.ctx.workdshIdentity.resolve(undefined, signal);
-    const personal = this.ctx.workdshIdentity.profile().organization.kind === 'personal';
+    const actor = await this.ctx.easyworkIdentity.resolve(undefined, signal);
+    const personal = this.ctx.easyworkIdentity.profile().organization.kind === 'personal';
     const result = await this.ctx.sessionController.list(request, signal);
     signal.throwIfAborted();
     if (personal) return result;
-    const current = await this.ctx.workdshIdentity.resolve(undefined, signal);
+    const current = await this.ctx.easyworkIdentity.resolve(undefined, signal);
     if (current.principalId !== actor.principalId || current.organizationId !== actor.organizationId) throw new ApiSessionNotFound('Session not found');
     return { items: result.items.filter(item => {
-      const owner = this.ctx.workdshAccess.sessionOwner(String(item.sessionId));
+      const owner = this.ctx.easyworkAccess.sessionOwner(String(item.sessionId));
       return owner?.organizationId === actor.organizationId && owner.ownerPrincipalId === actor.principalId;
     }) };
   }
 
   private canBindFixedMemberSession(actor: ActorContext): boolean {
-    if (!this.config.autoBindFixedMemberSessions || !['workdsh-enterprise-process', 'workdsh-enterprise-desktop'].includes(this.ctx.workdshIdentity.id)) return false;
-    const profile = this.ctx.workdshIdentity.profile();
+    if (!this.config.autoBindFixedMemberSessions || !['easywork-enterprise-process', 'easywork-enterprise-desktop'].includes(this.ctx.easyworkIdentity.id)) return false;
+    const profile = this.ctx.easyworkIdentity.profile();
     return profile.organization.kind === 'team'
       && profile.principalId === actor.principalId
       && profile.organization.id === actor.organizationId;
   }
 
   private assertPrivateSessionOwner(actor: ActorContext, sessionId: string): void {
-    const owner = this.ctx.workdshAccess.sessionOwner(sessionId);
+    const owner = this.ctx.easyworkAccess.sessionOwner(sessionId);
     if (!owner || owner.organizationId !== actor.organizationId || owner.ownerPrincipalId !== actor.principalId) {
       throw new ApiSessionNotFound('Session not found');
     }
@@ -500,9 +500,9 @@ export class SessionAccessBridge extends Service {
   async resolveAgent(sessionId: SessionId, signal?: AbortSignal): Promise<SessionAgentResult> {
     signal?.throwIfAborted();
     const id = String(sessionId);
-    const actor = await this.ctx.workdshIdentity.resolve({ sessionId: id }, signal);
-    const owner = this.ctx.workdshAccess.sessionOwner(id);
-    await this.ctx.workdshAccess.resolveRuntime(actor, {
+    const actor = await this.ctx.easyworkIdentity.resolve({ sessionId: id }, signal);
+    const owner = this.ctx.easyworkAccess.sessionOwner(id);
+    await this.ctx.easyworkAccess.resolveRuntime(actor, {
       sessionId: id,
       runtimeId: this.runtimeId,
       isolation: this.isolation,
@@ -524,7 +524,7 @@ export class SessionAccessBridge extends Service {
   }
 
   private async audit(actor: ActorContext, action: string, outcome: AuditEvent['outcome'], code: string): Promise<void> {
-    await this.ctx.workdshAudit.append({
+    await this.ctx.easyworkAudit.append({
       id: randomUUID(),
       occurredAt: new Date().toISOString(),
       requestId: actor.requestId,
@@ -552,7 +552,7 @@ function hasErrorCode(error: unknown, code: string): boolean {
 
 /** Binds the official tool pipeline to Host identity, Session ownership, Access and Audit. */
 export class ToolAccessBridge extends Service {
-  static inject = ['tools', 'workdshIdentity', 'workdshAccess', 'workdshAudit'];
+  static inject = ['tools', 'easyworkIdentity', 'easyworkAccess', 'easyworkAudit'];
   private readonly runtimeId: string;
   private readonly isolation: RuntimeBindingRequest['isolation'];
   private readonly autoBindPersonalSessions: boolean;
@@ -561,8 +561,8 @@ export class ToolAccessBridge extends Service {
   private resultAuditTail: Promise<void> = Promise.resolve();
 
   constructor(ctx: Context, config: ToolAccessBridgeConfig = {}) {
-    super(ctx, 'workdshToolAccess');
-    this.runtimeId = config.runtimeId ?? `workdsh-runtime-${randomUUID()}`;
+    super(ctx, 'easyworkToolAccess');
+    this.runtimeId = config.runtimeId ?? `easywork-runtime-${randomUUID()}`;
     this.isolation = config.isolation ?? 'local-trusted';
     this.autoBindPersonalSessions = config.autoBindPersonalSessions ?? true;
     this.autoBindFixedMemberSessions = config.autoBindFixedMemberSessions ?? false;
@@ -572,12 +572,12 @@ export class ToolAccessBridge extends Service {
       return undefined;
     });
     ctx.on('session/flush', async () => this.flush());
-    ctx.effect(() => async () => this.flush(), 'workdshToolAccess.flush');
+    ctx.effect(() => async () => this.flush(), 'easyworkToolAccess.flush');
   }
 
   async flush(): Promise<void> {
     await this.resultAuditTail;
-    await this.ctx.workdshAudit.flush();
+    await this.ctx.easyworkAudit.flush();
   }
 
   private async authorizeTool(exec: ToolExecution, next: () => Promise<PreToolDecision>): Promise<PreToolDecision> {
@@ -585,17 +585,17 @@ export class ToolAccessBridge extends Service {
     const sessionId = String(exec.agent.id);
     let actor: ActorContext | undefined;
     try {
-      actor = await this.ctx.workdshIdentity.resolve({ sessionId }, exec.signal);
-      if (!this.ctx.workdshAccess.sessionOwner(sessionId)) {
-        const profile = this.ctx.workdshIdentity.profile();
+      actor = await this.ctx.easyworkIdentity.resolve({ sessionId }, exec.signal);
+      if (!this.ctx.easyworkAccess.sessionOwner(sessionId)) {
+        const profile = this.ctx.easyworkIdentity.profile();
         if (!(this.autoBindFixedMemberSessions || (this.autoBindPersonalSessions && profile.organization.kind === 'personal'))
           || profile.principalId !== actor.principalId
           || profile.organization.id !== actor.organizationId) {
           throw new GovernanceContractError('access/runtime-unbound', 'Session has no trusted owner binding.');
         }
-        await this.ctx.workdshAccess.bindSession(actor, { sessionId }, exec.signal);
+        await this.ctx.easyworkAccess.bindSession(actor, { sessionId }, exec.signal);
       }
-      const binding = await this.ctx.workdshAccess.resolveRuntime(actor, {
+      const binding = await this.ctx.easyworkAccess.resolveRuntime(actor, {
         sessionId,
         runtimeId: this.runtimeId,
         isolation: this.isolation,
@@ -631,7 +631,7 @@ export class ToolAccessBridge extends Service {
     code: string,
     authorizationRevision?: string,
   ): Promise<void> {
-    await this.ctx.workdshAudit.append({
+    await this.ctx.easyworkAudit.append({
       id: randomUUID(),
       occurredAt: new Date().toISOString(),
       requestId: actor.requestId,

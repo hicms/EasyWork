@@ -1,5 +1,5 @@
 import ExcelJS from "exceljs";
-import type {OfficeSpreadsheetSnapshot} from "workdsh-contracts/office";
+import type {OfficeSpreadsheetSnapshot} from "easywork-contracts/office";
 import {spreadsheetStateSchema} from "./model.js";
 import {parse} from "../content/model.js";
 export async function spreadsheetXlsx(snapshot:OfficeSpreadsheetSnapshot){

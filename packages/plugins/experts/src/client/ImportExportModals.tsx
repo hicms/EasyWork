@@ -1,4 +1,4 @@
-import { Button } from 'workdsh-ui';
+import { Button } from 'easywork-ui';
 import * as React from 'react';
 import { useRef, useState } from 'react';
 import type { ImportPreview } from '../shared.js';

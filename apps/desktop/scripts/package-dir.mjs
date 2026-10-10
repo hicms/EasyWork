@@ -46,6 +46,7 @@ export function unsignedDirectoryBuildEnvironment(environment) {
  *   electronBuilderCli?: string,
  *   electronDistPath?: string,
  *   nodeExecutable?: string,
+ *   outputDirectory?: string,
  *   run?: typeof spawnSync,
  * }} [options]
  */
@@ -59,6 +60,7 @@ export function packageDirectory(options = {}) {
     [
       electronBuilderCli,
       ...UNSIGNED_DIRECTORY_BUILD_ARGS,
+      ...(options.outputDirectory ? [`--config.directories.output=${resolve(options.cwd ?? packageRoot, options.outputDirectory)}`] : []),
       ...(existsSync(configuredElectronDist) ? [`--config.electronDist=${configuredElectronDist}`] : []),
     ],
     {

@@ -13,7 +13,7 @@ export * from './shared.js';
 export { registerSkillManagementConnection } from './services/connection-api.js';
 export { registerSkillLifecycleTools } from './services/lifecycle-tools.js';
 
-export const name = 'workdsh-plugin-skills';
+export const name = 'easywork-plugin-skills';
 export const inject = ['skills', 'connection', 'tools'];
 
 export { skillCreatorContent } from './authoring/professional.js';
@@ -33,7 +33,7 @@ export function applySkillsHost(ctx: Context, options: SkillManagerOptions = {})
     ...skillCreatorMeta,
     source: 'bundled',
     content: skillCreatorContent,
-    resourceBase: { kind: 'directory', path: fileURLToPath(new URL('../resources/skills/workdsh-skill-creator', import.meta.url)) },
+    resourceBase: { kind: 'directory', path: fileURLToPath(new URL('../resources/skills/easywork-skill-creator', import.meta.url)) },
   }));
 }
 

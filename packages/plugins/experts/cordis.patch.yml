@@ -16,5 +16,5 @@
       name: '@deepseek-ai/dsh-experimental-tool-agent-team'
     - id: client-ui-agent-team
       name: '@deepseek-ai/dsh-experimental-client-ui-agent-team'
-    - id: workdsh-experts
-      name: workdsh-plugin-experts
+    - id: easywork-experts
+      name: easywork-plugin-experts

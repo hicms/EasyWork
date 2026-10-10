@@ -1,7 +1,7 @@
 /**
- * Bundled authoring guidance for the `workdsh-expert-manager` skill.
+ * Bundled authoring guidance for the `easywork-expert-manager` skill.
  *
- * The prompt text lives in `resources/skills/workdsh-expert-manager/SKILL.md` so it ships as
+ * The prompt text lives in `resources/skills/easywork-expert-manager/SKILL.md` so it ships as
  * readable Markdown next to the references it cites, and edits happen in the same
  * file the model eventually reads. This module only loads and validates that
  * document for `ctx.skills.register`; it holds no second copy of the wording.
@@ -18,7 +18,7 @@ export interface ExpertManagerSkillMeta {
   readonly whenToUse: string;
 }
 
-const skillUrl = new URL('../../resources/skills/workdsh-expert-manager/SKILL.md', import.meta.url);
+const skillUrl = new URL('../../resources/skills/easywork-expert-manager/SKILL.md', import.meta.url);
 
 function requiredText(frontmatter: Record<string, unknown>, key: string): string {
   const value = frontmatter[key];

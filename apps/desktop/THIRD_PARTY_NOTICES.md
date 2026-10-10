@@ -2,7 +2,7 @@
 
 EasyWork Desktop contains Electron and a pinned DeepSeek Harness runtime Profile.
 The official DeepSeek Harness version is recorded in the repository's
-[`upstream.json`](../../upstream.json); the installed app's `workdsh-runtime` directory
+[`upstream.json`](../../upstream.json); the installed app's `easywork-runtime` directory
 contains the actual Profile package manifests and applicable license files.
 
 DeepSeek Harness is distributed under the MIT License. Its version-specific

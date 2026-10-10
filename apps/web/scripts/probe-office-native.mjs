@@ -11,7 +11,7 @@ import { expertDraftUrl } from '../../../packages/plugins/experts/dist/domain/na
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const artifacts = join(root, '.artifacts/office-native');
-const home = await realpath(await mkdtemp(join(tmpdir(), 'workdsh-office-native-')));
+const home = await realpath(await mkdtemp(join(tmpdir(), 'easywork-office-native-')));
 await mkdir(artifacts, { recursive: true });
 const workspace = join(home, 'workspace');
 await mkdir(workspace);
@@ -68,7 +68,7 @@ async function stop() {
   await stopped; clearTimeout(timer);
 }
 async function api(host, endpoint, payload = {}) {
-  const response = await fetch(`${host.address}/api/workdsh-experts`, { method: 'POST', headers: { cookie: host.cookie, 'content-type': 'application/json' }, body: JSON.stringify({ endpoint, payload }), signal: AbortSignal.timeout(15_000) });
+  const response = await fetch(`${host.address}/api/easywork-experts`, { method: 'POST', headers: { cookie: host.cookie, 'content-type': 'application/json' }, body: JSON.stringify({ endpoint, payload }), signal: AbortSignal.timeout(15_000) });
   assert.equal(response.status, 200);
   const result = await response.json();
   assert.equal(result.ok, true, JSON.stringify(result));
@@ -90,11 +90,11 @@ try {
     tarballs.push(join(artifacts, `${manifest.name}-${manifest.version}.tgz`));
   }
   const fixture = join(home, 'probe-client'); await mkdir(fixture);
-  await writeFile(join(fixture, 'package.json'), JSON.stringify({ name: 'workdsh-office-native-probe', version: '0.0.0', type: 'module', exports: { '.': './index.js', './client': './client.js' }, dsh: { bundle: { patch: './patch.yml' }, client: { platform: 'web', inject: ['@deepseek-ai/dsh-client-ui-sidebar-right', '@deepseek-ai/dsh-client-ui-sidebar-documentpreview'] } } }));
-  await writeFile(join(fixture, 'patch.yml'), '- insert:\n    - id: office-native-probe\n      name: workdsh-office-native-probe\n');
+  await writeFile(join(fixture, 'package.json'), JSON.stringify({ name: 'easywork-office-native-probe', version: '0.0.0', type: 'module', exports: { '.': './index.js', './client': './client.js' }, dsh: { bundle: { patch: './patch.yml' }, client: { platform: 'web', inject: ['@deepseek-ai/dsh-client-ui-sidebar-right', '@deepseek-ai/dsh-client-ui-sidebar-documentpreview'] } } }));
+  await writeFile(join(fixture, 'patch.yml'), '- insert:\n    - id: office-native-probe\n      name: easywork-office-native-probe\n');
   await writeFile(join(fixture, 'index.js'), 'export function apply() {}');
-  await writeFile(join(fixture, 'client.js'), `window.__ModuleLoader__.load({id:'workdsh-office-native-probe',factory:function(){return {inject:['sidebarRight','documentPreviews'],apply:function(ctx){ctx.effect(function(){window.officeNativeProbe={files:function(sid){ctx.sidebarRight.openTabIn(sid,'files')},registered:function(){return ctx.documentPreviews.getSnapshot().map(d=>d.id)}};return function(){delete window.officeNativeProbe}})}}}});`);
-  await command(pnpm, ['pack', '--pack-destination', artifacts], fixture); tarballs.push(join(artifacts, 'workdsh-office-native-probe-0.0.0.tgz'));
+  await writeFile(join(fixture, 'client.js'), `window.__ModuleLoader__.load({id:'easywork-office-native-probe',factory:function(){return {inject:['sidebarRight','documentPreviews'],apply:function(ctx){ctx.effect(function(){window.officeNativeProbe={files:function(sid){ctx.sidebarRight.openTabIn(sid,'files')},registered:function(){return ctx.documentPreviews.getSnapshot().map(d=>d.id)}};return function(){delete window.officeNativeProbe}})}}}});`);
+  await command(pnpm, ['pack', '--pack-destination', artifacts], fixture); tarballs.push(join(artifacts, 'easywork-office-native-probe-0.0.0.tgz'));
   for (const kind of ['docx','pptx','xlsx']) await writeFile(join(workspace, 'input.'+kind), await readFile(join(root, '.artifacts/office-integration/input.'+kind)));
   await writeFile(join(workspace, 'input.csv'), [
     '单号,供应商,物料编码,物料名称,数量,单价,金额,交货日期,备注',
@@ -132,7 +132,7 @@ try {
   page.on('pageerror', error => browserErrors.push(error.message));
   page.on('console', message => { if (message.type() === 'error') browserErrors.push(message.text()); });
   page.on('response', async response => {
-    if (!response.url().endsWith('/api/workdsh-experts')) return;
+    if (!response.url().endsWith('/api/easywork-experts')) return;
     try { const body = await response.json(); if (!body?.ok) browserErrors.push('expert API failure: ' + JSON.stringify(body?.error ?? body).slice(0, 400)); } catch {}
   });
   await page.context().addCookies(host.cookie.split('; ').map(pair => { const at = pair.indexOf('='); return { name: pair.slice(0, at), value: pair.slice(at + 1), url: host.address }; }));
@@ -143,7 +143,7 @@ try {
   await page.locator('[contenteditable="true"]').first().waitFor({ timeout: 20_000 }).catch(() => {});
   await page.waitForTimeout(800);
   await page.waitForFunction(() => window.officeNativeProbe);
-  assert.ok((await page.evaluate(() => window.officeNativeProbe.registered())).includes('workdsh-office'));
+  assert.ok((await page.evaluate(() => window.officeNativeProbe.registered())).includes('easywork-office'));
   // Fresh-load UI race insurance (T10): a pointer click can hang without
   // dispatching anything; a DOM click still runs the real handler.
   const clickWithFallback = async (locator, timeout) => {
@@ -217,7 +217,7 @@ try {
   // the defect. The Office acceptance above already ran on the bound Session.
   await page.getByRole('button', { name: '专家 · 技能 · 连接器', exact: true }).click();
   await page.getByRole('button', { name: '专家', exact: true }).click();
-  await expect(page.getByTestId('workdsh-experts')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId('easywork-experts')).toBeVisible({ timeout: 15_000 });
   const detailButton = page.getByRole('button', { name: `查看专家 ${listed.items[0].name}`, exact: true });
   await detailButton.waitFor({ timeout: 15_000 });
   await clickWithFallback(detailButton, 15_000);
@@ -225,7 +225,7 @@ try {
   await exampleButton.waitFor({ state: 'visible', timeout: 15_000 });
   let prepareSeen = false;
   const isExpertCall = endpoint => response => {
-    if (!response.url().endsWith('/api/workdsh-experts')) return false;
+    if (!response.url().endsWith('/api/easywork-experts')) return false;
     try { const value = response.request().postDataJSON()?.endpoint; if (value === 'prepare-execution') prepareSeen = true; return value === endpoint; } catch { return false; }
   };
   // Each attempt re-arms its own listener pair (born with their own catch), so

@@ -1,5 +1,5 @@
 import React,{useEffect,useRef,useState} from 'react';
-import type {OfficePdfSnapshot,OfficePdfPage,OfficePdfEditInput} from 'workdsh-contracts/office';
+import type {OfficePdfSnapshot,OfficePdfPage,OfficePdfEditInput} from 'easywork-contracts/office';
 import type {OfficeClient,DocumentOptions} from '../live/model.js';
 import {readPdfBytes,downloadPdf} from './download.js';
 import {createPdfTask} from './viewer.js';

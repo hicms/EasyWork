@@ -8,12 +8,12 @@ import type { KvTable } from '@deepseek-ai/dsh-storage-domain';
 import type { ConnectorConfigView, ConnectorInput, ConnectorManagementService, ConnectorState, ConnectorSummary } from './shared.js';
 import { connectorDefinitionSchema, connectorSelectionsDomainSpec, connectorsDomainSpec, type ConnectorDefinition, type ConnectorSelection } from './storage.js';
 
-declare module '@deepseek-ai/cordis' { interface Context { workdshConnectors: ConnectorManagementService; } }
+declare module '@deepseek-ai/cordis' { interface Context { easyworkConnectors: ConnectorManagementService; } }
 
 const serverPath = fileURLToPath(new URL('./example-server.mjs', import.meta.url));
 /** The bundled example belongs to the running package, not its installation path. */
 export function connectorProcess(definition: Pick<ConnectorDefinition, 'id' | 'serverName' | 'transport' | 'command' | 'args' | 'authorizationCredentialRef'>) {
-  const bundledExample = definition.id === 'workdsh-example' && definition.serverName === 'workdsh-example'
+  const bundledExample = definition.id === 'easywork-example' && definition.serverName === 'easywork-example'
     && definition.transport === 'stdio' && !definition.authorizationCredentialRef
     && definition.args?.length === 1 && /(?:^|[\\/])example-server\.mjs$/.test(definition.args[0]!)
     && /(?:^|[\\/])node(?:\.exe)?$/.test(definition.command ?? '');
@@ -33,27 +33,27 @@ export interface ConnectorManagerOptions {
 
 /** Persist connector instances here; delegate protocol, transport, discovery and reconnect to official MCP clients. */
 export class ConnectorManager extends Service implements ConnectorManagementService {
-  static inject = ['storageDomain', 'tools', 'mcpResources', 'agents', 'credentials', 'workdshSessionAccess'];
+  static inject = ['storageDomain', 'tools', 'mcpResources', 'agents', 'credentials', 'easyworkSessionAccess'];
   private definitions?: KvTable<string, ConnectorDefinition>;
   private selections?: KvTable<string, ConnectorSelection>;
   private readonly runtimes = new Map<string, Runtime>();
   private readonly restrictions = new WeakMap<Agent, () => void>();
   private serial: Promise<void> = Promise.resolve();
 
-  constructor(ctx: Context, private readonly options: ConnectorManagerOptions = {}) { super(ctx, 'workdshConnectors'); }
+  constructor(ctx: Context, private readonly options: ConnectorManagerOptions = {}) { super(ctx, 'easyworkConnectors'); }
 
   async [Service.init](): Promise<void> {
     const domain = await this.ctx.storageDomain.open(connectorsDomainSpec);
-    this.ctx.effect(() => () => domain.close(), 'workdshConnectors.domainClose');
+    this.ctx.effect(() => () => domain.close(), 'easyworkConnectors.domainClose');
     this.definitions = domain.table('definitions');
     const selectionDomain = await this.ctx.storageDomain.open(connectorSelectionsDomainSpec);
-    this.ctx.effect(() => () => selectionDomain.close(), 'workdshConnectors.selectionDomainClose');
+    this.ctx.effect(() => () => selectionDomain.close(), 'easyworkConnectors.selectionDomainClose');
     this.selections = selectionDomain.table('selections');
     if (this.options.seedExample !== false && !domain.global.get().seededExample) {
       const now = new Date().toISOString();
-      await this.definitions.put('workdsh-example', {
-        id: 'workdsh-example', title: 'EasyWork MCP 示例', description: '可查询业务目录，并通过 MCP 资源与 URI 模板读取示例资料。',
-        serverName: 'workdsh-example', transport: 'stdio', command: process.execPath, args: [serverPath], enabled: true,
+      await this.definitions.put('easywork-example', {
+        id: 'easywork-example', title: 'EasyWork MCP 示例', description: '可查询业务目录，并通过 MCP 资源与 URI 模板读取示例资料。',
+        serverName: 'easywork-example', transport: 'stdio', command: process.execPath, args: [serverPath], enabled: true,
         createdAt: now, updatedAt: now,
       });
       await domain.global.set({ seededExample: true });
@@ -64,7 +64,7 @@ export class ConnectorManager extends Service implements ConnectorManagementServ
     }
     this.ctx.on('agent/created', ({ agent }) => { this.applyRestriction(agent); return undefined; });
     for (const agent of this.ctx.agents.list()) this.applyRestriction(agent);
-    this.ctx.effect(() => () => this.dispose(), 'workdshConnectors.runtimeClose');
+    this.ctx.effect(() => () => this.dispose(), 'easyworkConnectors.runtimeClose');
   }
 
   async list(signal?: AbortSignal): Promise<readonly ConnectorSummary[]> {
@@ -235,11 +235,11 @@ export class ConnectorManager extends Service implements ConnectorManagementServ
     if ([...this.table().entries()].some(([id, row]) => id !== except && row.serverName === serverName)) throw new Error('connector/server-name-conflict');
   }
   private async authorizeSession(sessionId: string): Promise<void> {
-    const access = this.ctx.reflect.get('workdshSessionAccess') as { inspect(id: string): Promise<unknown> } | undefined;
+    const access = this.ctx.reflect.get('easyworkSessionAccess') as { inspect(id: string): Promise<unknown> } | undefined;
     if (!access) throw new Error('connector/session-access-required');
     await access.inspect(sessionId);
   }
-  private credentialName(serverName: string): string { return `WORKDSH_CONNECTOR_${serverName.replace(/[^A-Za-z0-9]+/g, '_').toUpperCase()}_AUTHORIZATION`; }
+  private credentialName(serverName: string): string { return `EASYWORK_CONNECTOR_${serverName.replace(/[^A-Za-z0-9]+/g, '_').toUpperCase()}_AUTHORIZATION`; }
   private definition(id: string): ConnectorDefinition { const row = this.table().get(id); if (!row) throw new Error('connector/not-found'); return row; }
   private runtime(id: string): Runtime { let row = this.runtimes.get(id); if (!row) { row = { state: 'disabled' }; this.runtimes.set(id, row); } return row; }
   private table(): KvTable<string, ConnectorDefinition> { if (!this.definitions) throw new Error('connector/unavailable'); return this.definitions; }

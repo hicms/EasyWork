@@ -3,7 +3,7 @@ import {createUniver,LocaleType,mergeLocales} from "@univerjs/presets";
 import {UniverSheetsCorePreset} from "@univerjs/preset-sheets-core";
 import ZhCN from "@univerjs/preset-sheets-core/locales/zh-CN";
 import sheetsCss from "@univerjs/preset-sheets-core/lib/index.css";
-import type {OfficeSpreadsheetSnapshot,OfficeSpreadsheetEditInput} from "workdsh-contracts/office";
+import type {OfficeSpreadsheetSnapshot,OfficeSpreadsheetEditInput} from "easywork-contracts/office";
 import type {OfficeClient} from "../live/model.js";
 import {univerSnapshot,stateFromUniver} from "./adapter.js";
 import {downloadSpreadsheet} from "./xlsx.js";
@@ -33,5 +33,5 @@ export function LiveSpreadsheet({documentId,sessionId,office,visible,signal,requ
   return ()=>{disposed=true;clearTimeout(timer);lifetime.abort();engine?.univer.dispose();controller.current=undefined;onEditing(false);};
  },[documentId,sessionId,office,signal,onEditing]);
  async function invoke(action:"begin"|"finish"|"download"){try{await controller.current?.[action]();}catch(e){setView(v=>({...v,problem:e instanceof Error?e.message:String(e)}));}}
- return <><style>{sheetsCss}</style><div className="wd-office-toolbar"><span className="wd-office-title">{view.title}</span><span role="status">{view.status}</span><button disabled={!view.ready||view.busy} onClick={()=>void invoke("download")}>下载 Excel</button><button disabled={!view.ready||view.busy} onClick={()=>void invoke(view.editing?"finish":"begin")}>{view.editing?"完成编辑并保存":"编辑"}</button></div>{view.problem&&<div role="alert" className="wd-office-problem">{view.problem}</div>}<div className="wd-office-status" style={{padding:"6px 12px"}}>支持单元格值、公式和工作表；格式与图表保存待接入。公式由浏览器计算，下载文件在 Excel 中重新计算。</div><div ref={mount} className="workdsh-sheet-editor" data-testid="office-spreadsheet" style={{flex:1,minHeight:320,minWidth:0,overflow:"hidden"}}/></>;
+ return <><style>{sheetsCss}</style><div className="wd-office-toolbar"><span className="wd-office-title">{view.title}</span><span role="status">{view.status}</span><button disabled={!view.ready||view.busy} onClick={()=>void invoke("download")}>下载 Excel</button><button disabled={!view.ready||view.busy} onClick={()=>void invoke(view.editing?"finish":"begin")}>{view.editing?"完成编辑并保存":"编辑"}</button></div>{view.problem&&<div role="alert" className="wd-office-problem">{view.problem}</div>}<div className="wd-office-status" style={{padding:"6px 12px"}}>支持单元格值、公式和工作表；格式与图表保存待接入。公式由浏览器计算，下载文件在 Excel 中重新计算。</div><div ref={mount} className="easywork-sheet-editor" data-testid="office-spreadsheet" style={{flex:1,minHeight:320,minWidth:0,overflow:"hidden"}}/></>;
 }

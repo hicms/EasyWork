@@ -168,7 +168,7 @@ export type SkillManagementResult<T> = { readonly ok: true; readonly value: T } 
 export type SkillDependencyInspector = (name: string) => Promise<readonly SkillDependency[]> | readonly SkillDependency[];
 
 /**
- * Provided as ctx.workdshSkills; consumers inject the service, not its implementation.
+ * Provided as ctx.easyworkSkills; consumers inject the service, not its implementation.
  * Extends the cross-domain revision capability so an expert (or other consumer) can
  * freeze an explicit Skill dependency into an immutable snapshot without walking
  * another plugin's private directories.

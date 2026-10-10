@@ -2,7 +2,7 @@ import type { Context } from "@deepseek-ai/cordis";
 import { ContentService } from "./content/service.js";
 import * as Tools from "./content/tools.js";
 import * as Connection from "./content/connection.js";
-export const name = "workdsh-office";
+export const name = "easywork-office";
 // The Loader entry must declare the services its child modules consume, too.
 export const inject = [
   "fs",
@@ -10,9 +10,9 @@ export const inject = [
   "tools",
   "systemPrompt",
   "connection",
-  "workdshIdentity",
-  "workdshAccess",
-  "workdshAudit",
+  "easyworkIdentity",
+  "easyworkAccess",
+  "easyworkAudit",
 ];
 export interface Config {
   tools?: boolean;

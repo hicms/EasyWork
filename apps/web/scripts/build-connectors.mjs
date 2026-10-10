@@ -8,5 +8,5 @@ const result = await build({
   bundle: true, write: false, format: 'cjs', platform: 'browser', target: 'es2022',
   external: ['@deepseek-ai/dsh-client-ui-primitives', 'react', 'react/jsx-runtime'],
 });
-await writeFile(new URL('dist/client.browser.js', entry), `window.__ModuleLoader__.load({id: "workdsh-plugin-connectors", factory: function(require) {\nconst module = { exports: {} };\n${result.outputFiles[0].text}\nreturn module.exports;\n}});\n`);
+await writeFile(new URL('dist/client.browser.js', entry), `window.__ModuleLoader__.load({id: "easywork-plugin-connectors", factory: function(require) {\nconst module = { exports: {} };\n${result.outputFiles[0].text}\nreturn module.exports;\n}});\n`);
 await copyFile(new URL('src/example-server.mjs', entry), new URL('dist/example-server.mjs', entry));

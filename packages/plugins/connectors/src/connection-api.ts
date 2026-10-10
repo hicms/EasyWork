@@ -1,14 +1,14 @@
 import type { Context } from '@deepseek-ai/cordis';
 import type { ConnectionRpcResult, HostConnectionHandle } from '@deepseek-ai/dsh-client-connection';
 
-export const connectorManagementPath = '/api/workdsh-connectors';
+export const connectorManagementPath = '/api/easywork-connectors';
 const ok = <T>(value: T): ConnectionRpcResult<T> => ({ ok: true, value });
 const fail = (code: string, message: string): ConnectionRpcResult<never> => ({ ok: false, error: { code, message, details: {} } });
 const record = (value: unknown): Record<string, unknown> | undefined => value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : undefined;
 
 export function registerConnectorManagementConnection(ctx: Context): void {
   const connection = (ctx as Context & { connection: HostConnectionHandle }).connection;
-  const manager = ctx.workdshConnectors;
+  const manager = ctx.easyworkConnectors;
   const unregister = connection.fetch.register({
     path: connectorManagementPath,
     methods: ['POST'],
@@ -42,5 +42,5 @@ export function registerConnectorManagementConnection(ctx: Context): void {
       }
     },
   });
-  ctx.effect(() => unregister, 'workdsh.connectors.fetch');
+  ctx.effect(() => unregister, 'easywork.connectors.fetch');
 }

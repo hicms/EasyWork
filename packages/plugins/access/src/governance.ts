@@ -2,15 +2,15 @@
  * Governance runtime primitives, owned locally by the access plugin (D01).
  *
  * ADR-0019 (installable Host self-containment): an installed Host `dist/*.js` may
- * not carry a runtime import of the private `workdsh-contracts` package, which is
- * never packed or installed. `workdsh-contracts/governance` stays the single source
+ * not carry a runtime import of the private `easywork-contracts` package, which is
+ * never packed or installed. `easywork-contracts/governance` stays the single source
  * of truth for these primitives and for the shared TYPES (imported `type`-only below
  * and erased at build); this local copy lets the access Host resolve them without the
  * workspace at runtime, matching the skills and experts plugins. The validation logic
  * is replicated verbatim so the stable `governance/*` and `access/*` codes are
  * unchanged.
  */
-import type { ActorContext, ResourceOwner } from 'workdsh-contracts';
+import type { ActorContext, ResourceOwner } from 'easywork-contracts';
 
 export class GovernanceContractError extends Error {
   constructor(readonly code: string, message: string) {

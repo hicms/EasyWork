@@ -20,13 +20,13 @@ import type {} from '@deepseek-ai/dsh-client-ui-slots';
 import type { InjectFace, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots';
 import type { Colleague, Handoff, MessageEntry, CollaborationNotification } from './index.js';
 
-const path = '/api/workdsh-collaboration';
+const path = '/api/easywork-collaboration';
 async function enterpriseAuthenticated(signal?:AbortSignal):Promise<boolean>{
   const member=await fetch('/api/auth/me',{credentials:'same-origin',signal});
   if(member.ok)return true;
   if(member.status===401)return false;
   if(member.status!==404)throw new Error('暂时无法读取账号状态，请稍后重试');
-  const legacy=await fetch('/api/workdsh-enterprise-identity',{method:'POST',credentials:'same-origin',
+  const legacy=await fetch('/api/easywork-enterprise-identity',{method:'POST',credentials:'same-origin',
     headers:{'content-type':'application/json'},body:JSON.stringify({action:'status'}),signal});
   if(!legacy.ok)throw new Error('暂时无法读取账号状态，请稍后重试');
   return Boolean((await legacy.json()).authenticated);
@@ -69,7 +69,7 @@ const fileSize=(bytes:number)=>bytes<1024?`${bytes} B`:`${(bytes/1024).toFixed(1
 let focusedNotification: CollaborationNotification | undefined;
 
 async function materialRequest<T>(body:object):Promise<T>{
- const response=await fetch('/api/workdsh-collaboration-materials',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(30000)});
+ const response=await fetch('/api/easywork-collaboration-materials',{method:'POST',credentials:'same-origin',headers:{'content-type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(30000)});
  const result=await response.json() as {ok:boolean;value:T;error?:string};
  if(!response.ok||!result.ok)throw new Error(result.error||'共享资料读取失败');return result.value;
 }
@@ -104,21 +104,21 @@ function Panel({toggleNavigation,continueWithAI}:Props){
    if(selection.current!==row.id)return;setThread(messages);setMaterials(shared);
    const notifications=await invoke<CollaborationNotification[]>('notifications');
    await Promise.all(notifications.filter(item=>item.handoffId===row.id).map(item=>invoke('read-notification',{id:item.id})));
-   window.dispatchEvent(new Event('workdsh:collaboration:changed'));
+   window.dispatchEvent(new Event('easywork:collaboration:changed'));
   }catch(e){if(selection.current===row.id)setError(e instanceof Error?e.message:'读取失败');}
   finally{if(selection.current===row.id)setLoading(false);}
  },[]);
- useEffect(()=>{void refresh();const changed=()=>{selection.current='';setSelected(undefined);setMaterials(undefined);setThread([]);setRows([]);setError('');setAccount('checking');void refresh();};window.addEventListener('workdsh:identity:changed',changed);const timer=setInterval(()=>void refresh(),2000);return()=>{refreshVersion.current++;clearInterval(timer);window.removeEventListener('workdsh:identity:changed',changed);};},[refresh]);
+ useEffect(()=>{void refresh();const changed=()=>{selection.current='';setSelected(undefined);setMaterials(undefined);setThread([]);setRows([]);setError('');setAccount('checking');void refresh();};window.addEventListener('easywork:identity:changed',changed);const timer=setInterval(()=>void refresh(),2000);return()=>{refreshVersion.current++;clearInterval(timer);window.removeEventListener('easywork:identity:changed',changed);};},[refresh]);
  useEffect(()=>{
   const focus=async()=>{const notice=focusedNotification;if(!notice)return;focusedNotification=undefined;
    try{const row=await invoke<Handoff>('detail',{handoffId:notice.handoffId});await open(row);}catch(e){setError(e instanceof Error?e.message:'读取失败');}};
-  void focus();window.addEventListener('workdsh:collaboration:open',focus);return()=>window.removeEventListener('workdsh:collaboration:open',focus);
+  void focus();window.addEventListener('easywork:collaboration:open',focus);return()=>window.removeEventListener('easywork:collaboration:open',focus);
  },[open]);
  useEffect(()=>{if(!selected)return;const timer=setInterval(()=>{void invoke<MessageEntry[]>('thread',{handoffId:selected.id}).then(value=>{if(selection.current===selected.id)setThread(value);}).catch(()=>{});},2000);return()=>clearInterval(timer);},[selected]);
  const reply=async()=>{if(!selected||!draft.trim())return;setBusy(true);setError('');
   try{await invoke('reply',{handoffId:selected.id,content:draft.trim(),requestKey:requestKey.current});requestKey.current=crypto.randomUUID();setDraft('');setThread(await invoke<MessageEntry[]>('thread',{handoffId:selected.id}));}
   catch(e){setError(e instanceof Error?e.message:'发送失败');}finally{setBusy(false);}};
- return <section className="wd-collab" data-testid="workdsh-collaboration"><style>{css}</style><div className="wrap">
+ return <section className="wd-collab" data-testid="easywork-collaboration"><style>{css}</style><div className="wrap">
  <header><button className="nav" onClick={toggleNavigation} aria-label="切换导航"><Mark kind="menu"/></button><div><h1>协作</h1><p>查看同事分享的内容，一起交流</p></div></header>
  {error&&<p role="alert" className="error">{error}</p>}
  {account==='required'?<div className="empty"><Mark kind="inbox"/><p>登录企业账号，开启同事协作</p><p className="meta">当前为个人使用。请前往“设置 → 企业账号”登录。</p></div>:account==='checking'?<p className="meta">正在确认账号状态…</p>:selected?<><div className="head"><button className="back" onClick={()=>{selection.current='';setSelected(undefined);}}><Mark kind="back"/>返回列表</button><button className="ai" onClick={()=>void continueWithAI(selected.id).catch(e=>setError(e.message))}><Mark kind="spark"/>用 AI 继续处理</button></div>
@@ -151,10 +151,10 @@ function SidebarMark({ openConversation }: InjectFace<{openConversation:(notific
     };
     void refresh();const timer=window.setInterval(()=>void refresh(),2000);
     const changed=()=>void refresh();
-    window.addEventListener('workdsh:identity:changed',changed);
-    window.addEventListener('workdsh:collaboration:changed',changed);
-    return()=>{abort.abort();window.clearInterval(timer);window.removeEventListener('workdsh:identity:changed',changed);
-      window.removeEventListener('workdsh:collaboration:changed',changed);};
+    window.addEventListener('easywork:identity:changed',changed);
+    window.addEventListener('easywork:collaboration:changed',changed);
+    return()=>{abort.abort();window.clearInterval(timer);window.removeEventListener('easywork:identity:changed',changed);
+      window.removeEventListener('easywork:collaboration:changed',changed);};
   },[]);
   const open=(notification:CollaborationNotification)=>{
     void openConversation(notification).catch(cause=>{setOnline(false);console.error('协作会话打开失败',cause);});
@@ -176,24 +176,24 @@ function SidebarMark({ openConversation }: InjectFace<{openConversation:(notific
     </aside>,document.body)}</>;
 }
 
-export const name = 'workdsh-enterprise-collaboration-client';
+export const name = 'easywork-enterprise-collaboration-client';
 export const inject = ['slots', 'layout', 'connection', 'sessions', 'uiWorkspace', 'workspaces', 'inputTriggers'];
 export function apply(ctx: Context): void {
-  ctx.effect(()=>()=>cancelMaterialReview(),'workdsh.collaboration.material-review');
+  ctx.effect(()=>()=>cancelMaterialReview(),'easywork.collaboration.material-review');
   ctx.effect(() => ctx.inputTriggers.registerSource(colleagueMentionSource(signal => invoke<Colleague[]>('colleagues', {}, signal),async(sessionId,recipientId,name,note)=>{
     const preview=await materialRequest<MaterialPreview>({action:'prepare',sessionId});
     if(!preview.context&&!preview.files.length){
       const result=await invoke<Handoff>('send',{recipientId,summary:note?.trim()||'分享给你',requestKey:crypto.randomUUID()});
-      window.dispatchEvent(new Event('workdsh:collaboration:changed'));
+      window.dispatchEvent(new Event('easywork:collaboration:changed'));
       return `已向 ${name} 发送协作信息，对方可在协作列表中查看。分享编号：${result.id}`;
     }
     const files=await reviewMaterials(name,preview);
     const result=await materialRequest<Handoff>({action:'send',token:preview.token,recipientId,files,note});
-    window.dispatchEvent(new Event('workdsh:collaboration:changed'));
+    window.dispatchEvent(new Event('easywork:collaboration:changed'));
     return `已向 ${name} 分享分析及 ${files.length} 个文件，对方将收到通知。分享编号：${result.id}`;
-  })), 'workdsh.collaboration.colleague-mentions');
+  })), 'easywork.collaboration.colleague-mentions');
   const sessions=ctx.sessions as unknown as ISessions;
-  const lifetime=new AbortController();ctx.effect(()=>()=>lifetime.abort(),'workdsh.collaboration.native-conversations');
+  const lifetime=new AbortController();ctx.effect(()=>()=>lifetime.abort(),'easywork.collaboration.native-conversations');
   const openConversation=async(notification:CollaborationNotification)=>{
     const context=await invoke<{sessionId?:string;handoff:Handoff;messages:MessageEntry[];cwd:string}>('conversation',{handoffId:notification.handoffId});
     let sessionId=context.sessionId as Awaited<ReturnType<ISessions['create']>> | undefined;
@@ -215,7 +215,7 @@ export function apply(ctx: Context): void {
           const input=conversation.input.for(scope);
           if(!input.state.getSnapshot().draft.trim()) input.setDraft(draft);
           if(notification.id)await invoke('read-notification',{id:notification.id});
-          window.dispatchEvent(new Event('workdsh:collaboration:changed'));return;
+          window.dispatchEvent(new Event('easywork:collaboration:changed'));return;
         }catch(cause){if(attempt===59)throw cause;}
       }
       await new Promise<void>((resolve,reject)=>{const abort=()=>{clearTimeout(timer);reject(lifetime.signal.reason);};const timer=setTimeout(()=>{lifetime.signal.removeEventListener('abort',abort);resolve();},100);lifetime.signal.addEventListener('abort',abort,{once:true});});
@@ -223,6 +223,6 @@ export function apply(ctx: Context): void {
     throw new Error('原生会话输入框未就绪，请从会话列表打开');
   };
 
-  ctx.slots.inject('main', () => ctx.slots.register({ name: 'main', key: 'workdsh-collaboration', inject: () => ({ toggleNavigation: () => ctx.layout.toggleSidebar(),continueWithAI:(id:string)=>openConversation({handoffId:id} as CollaborationNotification) }) }, Panel));
-  ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({ name: 'sidebar.panellist', id: 'workdsh-collaboration', label: '协作', order: 35, inject: () => ({openConversation:async(notification:CollaborationNotification)=>{focusedNotification=notification;ctx.layout.selectPanel('workdsh-collaboration' as MainPanelId);window.dispatchEvent(new Event('workdsh:collaboration:open'));}}) }, SidebarMark));
+  ctx.slots.inject('main', () => ctx.slots.register({ name: 'main', key: 'easywork-collaboration', inject: () => ({ toggleNavigation: () => ctx.layout.toggleSidebar(),continueWithAI:(id:string)=>openConversation({handoffId:id} as CollaborationNotification) }) }, Panel));
+  ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({ name: 'sidebar.panellist', id: 'easywork-collaboration', label: '协作', order: 35, inject: () => ({openConversation:async(notification:CollaborationNotification)=>{focusedNotification=notification;ctx.layout.selectPanel('easywork-collaboration' as MainPanelId);window.dispatchEvent(new Event('easywork:collaboration:open'));}}) }, SidebarMark));
 }

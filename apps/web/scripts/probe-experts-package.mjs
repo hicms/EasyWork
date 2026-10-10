@@ -11,7 +11,7 @@ import { expertDraftUrl } from '../../../packages/plugins/experts/dist/domain/na
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const artifacts = join(root, '.artifacts/experts-package');
-const home = await realpath(await mkdtemp(join(tmpdir(), 'workdsh-experts-package-')));
+const home = await realpath(await mkdtemp(join(tmpdir(), 'easywork-experts-package-')));
 await mkdir(artifacts, { recursive: true });
 const workspace = join(home, 'workspace');
 await mkdir(workspace);
@@ -68,7 +68,7 @@ async function stop() {
   await stopped; clearTimeout(timer);
 }
 async function api(host, endpoint, payload = {}) {
-  const response = await fetch(`${host.address}/api/workdsh-experts`, { method: 'POST', headers: { cookie: host.cookie, 'content-type': 'application/json' }, body: JSON.stringify({ endpoint, payload }), signal: AbortSignal.timeout(15_000) });
+  const response = await fetch(`${host.address}/api/easywork-experts`, { method: 'POST', headers: { cookie: host.cookie, 'content-type': 'application/json' }, body: JSON.stringify({ endpoint, payload }), signal: AbortSignal.timeout(15_000) });
   assert.equal(response.status, 200);
   const result = await response.json();
   assert.equal(result.ok, true, JSON.stringify(result));
@@ -110,7 +110,7 @@ try {
   for (const name of ['Continue', 'Configure later']) await page.getByRole('button', { name, exact: true }).click({ timeout: 4000 }).catch(() => {});
   await page.getByRole('button', { name: '专家 · 技能 · 连接器', exact: true }).click();
   await page.getByRole('button', { name: '专家', exact: true }).click();
-  await expect(page.getByTestId('workdsh-experts')).toBeVisible();
+  await expect(page.getByTestId('easywork-experts')).toBeVisible();
   await expect(page.getByText(listed.items[0].name, { exact: true }).first()).toBeVisible();
   await page.screenshot({ path: join(artifacts, 'experts-1440.png'), fullPage: true });
   await page.getByRole('button', { name: `查看专家 ${listed.items[0].name}`, exact: true }).click();
@@ -121,26 +121,26 @@ try {
   await page.screenshot({ path: join(artifacts, 'expert-detail.png'), fullPage: true });
   const detail = await api(host, 'get', { expertId });
   const prompt = detail.revision.definition.examples[0].prompt;
-  const summonedResponse = page.waitForResponse(response => response.url().endsWith('/api/workdsh-experts') && response.request().postDataJSON()?.endpoint === 'create-execution');
+  const summonedResponse = page.waitForResponse(response => response.url().endsWith('/api/easywork-experts') && response.request().postDataJSON()?.endpoint === 'create-execution');
   await page.getByTitle('用此示例召唤专家（仅填入草稿，不会自动发送）', { exact: true }).first().click();
   const summoned = (await (await summonedResponse).json()).value;
   const editor = page.locator('[contenteditable="true"]').first();
   await expect(editor).toContainText(prompt);
   await page.screenshot({ path: join(artifacts, 'expert-task-draft.png'), fullPage: true });
-  assert.equal(await page.evaluate(() => sessionStorage.getItem('workdsh.pending-expert-task-draft')), null);
+  assert.equal(await page.evaluate(() => sessionStorage.getItem('easywork.pending-expert-task-draft')), null);
   pass('Example summon creates a real task, fills its native draft once and clears handoff');
   await editor.fill('用户已输入的内容');
   const stage = target => page.evaluate(({ target }) => {
-    sessionStorage.setItem('workdsh.pending-expert-task-draft', JSON.stringify({ sessionId: target, text: '不得覆盖', expiresAt: Date.now() + 60_000 }));
-    window.dispatchEvent(new Event('workdsh:expert-draft-staged'));
+    sessionStorage.setItem('easywork.pending-expert-task-draft', JSON.stringify({ sessionId: target, text: '不得覆盖', expiresAt: Date.now() + 60_000 }));
+    window.dispatchEvent(new Event('easywork:expert-draft-staged'));
   }, { target });
   await stage(summoned.sessionId);
-  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('workdsh.pending-expert-task-draft'))).toBe(null);
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('easywork.pending-expert-task-draft'))).toBe(null);
   await expect(editor).toContainText('用户已输入的内容');
   await stage('another-session');
   await expect(editor).toContainText('用户已输入的内容');
-  assert.notEqual(await page.evaluate(() => sessionStorage.getItem('workdsh.pending-expert-task-draft')), null);
-  await page.evaluate(() => sessionStorage.removeItem('workdsh.pending-expert-task-draft'));
+  assert.notEqual(await page.evaluate(() => sessionStorage.getItem('easywork.pending-expert-task-draft')), null);
+  await page.evaluate(() => sessionStorage.removeItem('easywork.pending-expert-task-draft'));
   pass('Addressed draft handoff preserves existing user text and ignores other Sessions');
   await page.getByRole('button', { name: '专家 · 技能 · 连接器', exact: true }).click();
   await page.getByRole('button', { name: '专家', exact: true }).click();
@@ -227,7 +227,7 @@ try {
   assert.equal((await api(host, 'get', { expertId: drafted.expertId })).expert.publishedRevisionRef, undefined);
   await page.getByRole('button', { name: '发布', exact: true }).click();
   let confirmRequests = 0;
-  const countConfirm = request => { if (request.url().endsWith('/api/workdsh-experts') && request.postDataJSON()?.endpoint === 'confirm-publish') confirmRequests++; };
+  const countConfirm = request => { if (request.url().endsWith('/api/easywork-experts') && request.postDataJSON()?.endpoint === 'confirm-publish') confirmRequests++; };
   page.on('request', countConfirm);
   const stalePreview = async route => {
     if (route.request().postDataJSON()?.endpoint !== 'request-publish-confirmation') return route.continue();
@@ -236,12 +236,12 @@ try {
     body.value.definitionDigest = 'changed-after-preview';
     await route.fulfill({ response, json: body });
   };
-  await page.route('**/api/workdsh-experts', stalePreview);
+  await page.route('**/api/easywork-experts', stalePreview);
   await page.getByRole('button', { name: '确认发布此版本', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('待发布内容或技能版本已变化');
   assert.equal(confirmRequests, 0, 'A changed digest must not exchange a proof');
   assert.equal((await api(host, 'get', { expertId: drafted.expertId })).expert.publishedRevisionRef, undefined);
-  await page.unroute('**/api/workdsh-experts', stalePreview);
+  await page.unroute('**/api/easywork-experts', stalePreview);
   page.off('request', countConfirm);
   await page.getByRole('button', { name: '取消', exact: true }).click();
   await page.getByRole('button', { name: '发布', exact: true }).click();
@@ -251,7 +251,7 @@ try {
   await page.screenshot({ path: join(artifacts, 'expert-published.png'), fullPage: true });
   const published = await api(host, 'get', { expertId: drafted.expertId });
   assert.equal(published.revision.dependencyLock.length, 1);
-  const publishedResponse = page.waitForResponse(response => response.url().endsWith('/api/workdsh-experts') && response.request().postDataJSON()?.endpoint === 'create-execution');
+  const publishedResponse = page.waitForResponse(response => response.url().endsWith('/api/easywork-experts') && response.request().postDataJSON()?.endpoint === 'create-execution');
   await page.getByRole('button', { name: '去试试', exact: true }).click();
   const publishedCreation = (await (await publishedResponse).json()).value;
   await expect(page.locator('[contenteditable="true"]').first()).toBeVisible();
@@ -259,7 +259,7 @@ try {
   await api(host, 'verify-binding', { sessionId: publishedCreation.sessionId });
   pass('Draft deep link is read-only until explicit UI confirmation, then publishes a fixed Skill revision and summons a native task');
   await api(host, 'update-draft', { expertId: drafted.expertId, patch: { skillRequirements: [] }, operationId: 'unpublished-skill-removal', expectedRevision: published.expert.revision });
-  await page.goto(`${host.address}/?workdsh-view=experts`);
+  await page.goto(`${host.address}/?easywork-view=experts`);
   await page.getByRole('button', { name: 'Configure later', exact: true }).click({ timeout: 4000 }).catch(() => {});
   await page.getByRole('button', { name: '查看专家 待发布验收专家', exact: true }).click();
   const publishedDetail = page.getByRole('dialog', { name: '专家详情', exact: true });

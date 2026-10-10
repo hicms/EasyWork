@@ -20,6 +20,6 @@ export function ImportedPptx(props:DocumentPreviewProps){
  return <section style={{height:'100%',minHeight:560,display:'flex',flexDirection:'column',minWidth:0}} aria-label="PPTX 编辑">
   <style>{nativeCss+ribbonCss}</style>
   {error&&<div role="alert">{error}</div>}
-  <div ref={host} className="workdsh-ppt-editor" style={{flex:1,minHeight:0,overflow:'hidden'}}/>
+  <div ref={host} className="easywork-ppt-editor" style={{flex:1,minHeight:0,overflow:'hidden'}}/>
  </section>;
 }

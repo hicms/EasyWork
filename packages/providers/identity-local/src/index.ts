@@ -15,7 +15,7 @@ import type {
   IdentityService,
   Membership,
   Organization,
-} from 'workdsh-contracts';
+} from 'easywork-contracts';
 
 export interface LocalIdentityConfig {
   readonly principalId: string;
@@ -55,7 +55,7 @@ const initializedState = z.object({
 type LocalIdentityState = z.infer<typeof uninitializedState> | z.infer<typeof initializedState>;
 
 export const localIdentityDomainSpec = defineDomain({
-  name: 'workdsh_identity_local',
+  name: 'easywork_identity_local',
   version: 1,
   global: {
     schema: z.discriminatedUnion('initialized', [uninitializedState, initializedState]),
@@ -70,7 +70,7 @@ export class LocalIdentityProvider implements IdentityProvider<LocalIdentityEvid
   readonly #organizationId: string;
 
   constructor(config: LocalIdentityConfig) {
-    this.id = config.providerId ?? 'workdsh-identity-local';
+    this.id = config.providerId ?? 'easywork-identity-local';
     this.#principalId = config.principalId;
     this.#organizationId = config.organizationId;
     assertActorContext({
@@ -105,12 +105,12 @@ export const Config: Schema<Config> = Schema.object({
   principalId: Schema.string().required(),
   organizationId: Schema.string().required(),
   organizationName: Schema.string().required(),
-  providerId: Schema.string().default('workdsh-identity-local'),
+  providerId: Schema.string().default('easywork-identity-local'),
 });
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
-    workdshIdentity: IdentityService;
+    easyworkIdentity: IdentityService;
   }
 }
 
@@ -145,15 +145,15 @@ export class LocalIdentityService extends Service implements IdentityService {
   private currentProfile?: IdentityProfile;
 
   constructor(ctx: Context, config: Config) {
-    super(ctx, 'workdshIdentity');
-    this.configured = Object.freeze({ ...config, providerId: config.providerId ?? 'workdsh-identity-local' });
+    super(ctx, 'easyworkIdentity');
+    this.configured = Object.freeze({ ...config, providerId: config.providerId ?? 'easywork-identity-local' });
     this.provider = new LocalIdentityProvider(this.configured);
     this.id = this.provider.id;
   }
 
   async [Service.init](): Promise<void> {
     const domain = await this.ctx.storageDomain.open(localIdentityDomainSpec);
-    this.ctx.effect(() => () => domain.close(), 'workdshIdentity.domainClose');
+    this.ctx.effect(() => () => domain.close(), 'easyworkIdentity.domainClose');
     let state = domain.global.get();
     if (!state.initialized) {
       const revision = randomUUID();

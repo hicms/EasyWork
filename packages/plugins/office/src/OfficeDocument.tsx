@@ -9,10 +9,10 @@ function LegacyOfficeDocument({ content, resourceAddress }: DocumentPreviewProps
   useEffect(() => {
     if (content.kind !== 'bytes') return;
     const onMessage = (event: MessageEvent) => {
-      if (event.source !== frame.current?.contentWindow || event.data?.type !== 'workdsh-office-ready') return;
+      if (event.source !== frame.current?.contentWindow || event.data?.type !== 'easywork-office-ready') return;
       const address = decodeURIComponent(resourceAddress);
       const extension = /\.(xlsx|docx|pptx)(?:$|[?&#/])/i.exec(address)?.[1]?.toLowerCase();
-      frame.current.contentWindow?.postMessage({ type: 'workdsh-office-open', extension, bytes: content.data.slice() }, '*');
+      frame.current.contentWindow?.postMessage({ type: 'easywork-office-open', extension, bytes: content.data.slice() }, '*');
     };
     window.addEventListener('message', onMessage);
     // Owner changes replace the document. The editor stays isolated from the app's DOM/credentials.

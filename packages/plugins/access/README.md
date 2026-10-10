@@ -2,7 +2,7 @@
 
 本包提供Host侧资源授权、持久grant、Session owner/runtime binding、内部受控Session服务及官方工具流水线审计。它是个人与企业共同的业务授权基础；旧enterprise-host和共享多人Host专用Remote/文件/设置装配已退役。
 
-AccessManager消费storageDomain、workdshIdentity与workdshAudit。操作读取可信主体、组织和有效成员资格，owner或同组织/同资源/同操作显式grant决定授权；修订更新与撤销串行处理，结果写入审计。页面过滤不构成授权，组织管理员不自动绕过私有资源规则。
+AccessManager消费storageDomain、easyworkIdentity与easyworkAudit。操作读取可信主体、组织和有效成员资格，owner或同组织/同资源/同操作显式grant决定授权；修订更新与撤销串行处理，结果写入审计。页面过滤不构成授权，组织管理员不自动绕过私有资源规则。
 
 ToolAccessBridge使用官方tools/pre-execute授权及tools/result形成审计，Session flush/插件卸载等待相关记录排空。个人首次调用可使用显式个人自动绑定；固定成员且独立UID/目录的账号进程可显式开启autoBindFixedMemberSessions，不能用于共享多人Host或跳过owner冲突检查。
 

@@ -9,14 +9,14 @@ const fixture = resolve(root, 'examples/remote-probe');
 const evidence = resolve(root, '.artifacts');
 mkdirSync(evidence, { recursive: true });
 const model = new WorkspaceAnalyzer({ root: fixture, faces: ['host'] }).analyze();
-writeFileSync(resolve(evidence, 'workdsh-typert-model.json'), JSON.stringify(model, null, 2));
+writeFileSync(resolve(evidence, 'easywork-typert-model.json'), JSON.stringify(model, null, 2));
 let artifacts;
 try {
-  artifacts = new WorkspaceTypertGenerator(fixture).generate(['workdsh-remote-probe-fixture'], ['host']);
+  artifacts = new WorkspaceTypertGenerator(fixture).generate(['easywork-remote-probe-fixture'], ['host']);
   assert.equal(artifacts.length, 1, 'generator must discover exactly one fixture');
   assert.ok(artifacts[0].remote, 'generator must discover Remote methods');
 } catch (error) {
-  writeFileSync(resolve(evidence, 'workdsh-typert-error.txt'), String(error));
+  writeFileSync(resolve(evidence, 'easywork-typert-error.txt'), String(error));
   throw error; // A known gap remains a failing gate, never a simulated pass.
 }
 for (const artifact of artifacts) {

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots';
 import type { BrowserViewFrame } from '../../browser-view.js';
 
-export const agentBrowserKind = 'workdsh-agent-browser';
+export const agentBrowserKind = 'easywork-agent-browser';
 const buttonStyle: React.CSSProperties = { border: '1px solid var(--dsw-alias-border-l2)', borderRadius: 6, padding: '6px 9px', background: 'var(--dsw-alias-interactive-bg-hover)', color: 'var(--dsw-alias-label-primary)', cursor: 'pointer' };
 
 type BrowserAction =
@@ -16,7 +16,7 @@ type BrowserAction =
   | { kind: 'reload' };
 
 export async function sendAgentBrowserAction(sessionId: string, action: BrowserAction): Promise<void> {
-  const response = await fetch('/api/workdsh-agent-browser', {
+  const response = await fetch('/api/easywork-agent-browser', {
     method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ sessionId, action }),
   });
@@ -24,7 +24,7 @@ export async function sendAgentBrowserAction(sessionId: string, action: BrowserA
 }
 
 export async function readAgentBrowserFrame(sessionId: string, signal?: AbortSignal, afterRevision?: number): Promise<{ frame: BrowserViewFrame | null; unchanged: boolean }> {
-  const response = await fetch('/api/workdsh-agent-browser', {
+  const response = await fetch('/api/easywork-agent-browser', {
     method: 'POST',
     credentials: 'same-origin',
     headers: { 'content-type': 'application/json' },

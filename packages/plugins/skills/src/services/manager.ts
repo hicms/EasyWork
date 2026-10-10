@@ -9,10 +9,10 @@ import type { ManagedSkillDetail, ManagedSkillResource, ManagedSkillSummary, Ski
 import { SkillImportStaging } from './import-staging.js';
 import { SkillCatalogStore } from './catalog.js';
 import type { SkillManagementService, SkillDependencyInspector } from '../shared.js';
-import type { RetainedSkillRevision, SkillConsumerRef, SkillRevisionCheck, SkillRevisionRef, SkillRevisionStatus } from 'workdsh-contracts';
+import type { RetainedSkillRevision, SkillConsumerRef, SkillRevisionCheck, SkillRevisionRef, SkillRevisionStatus } from 'easywork-contracts';
 
 declare module '@deepseek-ai/cordis' {
-  interface Context { workdshSkills: SkillManagementService; }
+  interface Context { easyworkSkills: SkillManagementService; }
 }
 
 const digest = (value: string) => createHash('sha256').update(value).digest('hex');
@@ -170,20 +170,20 @@ export class SkillManager extends Service implements SkillManagementService {
   readonly imports: SkillImportStaging;
 
   constructor(ctx: Context, options: SkillManagerOptions = {}) {
-    super(ctx, 'workdshSkills');
+    super(ctx, 'easyworkSkills');
     this.importRoot = options.importRoot === undefined ? undefined : resolve(options.importRoot);
     const dshHome = resolve(options.dshHome ?? process.env.DSH_HOME ?? join(homedir(), '.dsh'));
     const agentsHome = resolve(options.agentsHome ?? process.env.DSH_AGENTS_HOME ?? join(dshHome, 'agents'));
     this.activeRoots = [join(agentsHome, 'skills'), join(dshHome, 'skills')];
-    this.disabledRoot = join(agentsHome, '.workdsh-disabled', 'skills');
-    this.trashRoot = join(agentsHome, '.workdsh-trash', 'skills');
-    this.stateRoot = join(agentsHome, '.workdsh-state', 'skills');
+    this.disabledRoot = join(agentsHome, '.easywork-disabled', 'skills');
+    this.trashRoot = join(agentsHome, '.easywork-trash', 'skills');
+    this.stateRoot = join(agentsHome, '.easywork-state', 'skills');
     this.lockRoot = join(this.stateRoot, 'locks');
     this.originRoot = join(this.stateRoot, 'disabled-origins');
     this.receiptRoot = join(this.stateRoot, 'trash-receipts');
     this.draftRoot = join(this.stateRoot, 'drafts');
     this.catalogStore = new SkillCatalogStore(options.catalogRoot ??
-      (options.agentsHome === undefined ? process.env.WORKDSH_SKILL_CATALOG : undefined));
+      (options.agentsHome === undefined ? process.env.EASYWORK_SKILL_CATALOG : undefined));
     this.imports = new SkillImportStaging(
       join(this.stateRoot, 'imports'),
       (source, signal) => this.inspectImport(source, signal),
@@ -446,7 +446,7 @@ export class SkillManager extends Service implements SkillManagementService {
       const root = request.scope === 'profile' ? this.activeRoots[1] : this.activeRoots[0];
       const target = join(root, name);
       await this.assertAbsent(target); await this.assertAbsent(`${target}.md`); await mkdir(root, { recursive: true });
-      const temporary = join(root, `.workdsh-import-${name}-${process.pid}-${Date.now()}`);
+      const temporary = join(root, `.easywork-import-${name}-${process.pid}-${Date.now()}`);
       try {
         await copyImportTree(source, temporary, signal);
         const copied = await inspectImportTree(temporary, signal);
@@ -780,7 +780,7 @@ export class SkillManager extends Service implements SkillManagementService {
     } catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined; throw error; }
   }
   private async atomicWrite(path: string, content: string): Promise<void> {
-    const temporary = `${path}.workdsh-${process.pid}-${Date.now()}.tmp`;
+    const temporary = `${path}.easywork-${process.pid}-${Date.now()}.tmp`;
     await writeFile(temporary, content, { encoding: 'utf8', flag: 'wx', mode: 0o600 });
     try { await rename(temporary, path); }
     catch (error) { await unlink(temporary).catch(() => {}); throw error; }

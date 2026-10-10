@@ -24,7 +24,7 @@ export function DiagnosticsPanel({ inspect, returnToConversation }: DiagnosticsP
     inspect().then(
       result => { if (current) setState({ busy: false, result }); },
       (error: unknown) => {
-        console.error('[workdsh:diagnostics] Remote failed', error instanceof Error ? error.message : 'unknown');
+        console.error('[easywork:diagnostics] Remote failed', error instanceof Error ? error.message : 'unknown');
         if (current) setState({ busy: false, error: '读取失败，请检查 Host 连接后重试。' });
       },
     );
@@ -32,9 +32,9 @@ export function DiagnosticsPanel({ inspect, returnToConversation }: DiagnosticsP
   }, [inspect, request]);
 
   return (
-    <section className="wd-diagnostics" data-testid="workdsh-probe">
+    <section className="wd-diagnostics" data-testid="easywork-probe">
       <style>{diagnosticsCss}</style>
-      <p className="wd-diagnostics-eyebrow">WORKDSH / DIAGNOSTICS</p>
+      <p className="wd-diagnostics-eyebrow">EASYWORK / DIAGNOSTICS</p>
       <h1>接入验证</h1>
       <button type="button" onClick={returnToConversation}>返回 Harness 会话</button>
       <p>此开发页面验证官方 Client 插件与 Host 的通信，不属于普通产品导航。</p>

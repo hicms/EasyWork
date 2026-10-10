@@ -6,8 +6,8 @@ import type { Context } from "@deepseek-ai/cordis";
 import type { HostConnectionHandle } from "@deepseek-ai/dsh-client-connection";
 import { z } from "zod";
 import { id, editInput, openInput, contentOpenInput, presentationEditInput, parse, OfficeError } from "./model.js";
-export const name = "workdsh-office-connection";
-export const inject = ["connection", "workdshOfficeContent", "workdshIdentity"];
+export const name = "easywork-office-connection";
+export const inject = ["connection", "easyworkOfficeContent", "easyworkIdentity"];
 const endpoint = z.discriminatedUnion("endpoint", [
   z.object({ endpoint: z.literal("open"), input: contentOpenInput }).strict(),
   z.object({ endpoint: z.literal("read"), documentId: id }).strict(),
@@ -46,7 +46,7 @@ export function apply(ctx: Context) {
   const connection = (ctx as Context & { connection: HostConnectionHandle })
     .connection;
   const unregister = connection.fetch.register({
-    path: "/api/workdsh-office",
+    path: "/api/easywork-office",
     methods: ["POST"],
     requestBody: "buffered",
     fetch(request) {
@@ -63,12 +63,12 @@ export function apply(ctx: Context) {
             z.object({ sessionId: id, request: endpoint }).strict(),
             JSON.parse(text),
           );
-          const actor = await ctx.workdshIdentity.resolve(
+          const actor = await ctx.easyworkIdentity.resolve(
               { sessionId: envelope.sessionId },
               signal,
             ),
             r = envelope.request,
-            s = ctx.workdshOfficeContent;
+            s = ctx.easyworkOfficeContent;
           if (new TextEncoder().encode(text).length > 1500000) {
             const largePresentation = r.endpoint === "open" && r.input.source === "pptx" ||
               r.endpoint === "edit" && (await s.read(actor, r.input.documentId, signal)).kind === "presentation";
@@ -151,6 +151,6 @@ export function apply(ctx: Context) {
       await unregister();
       await Promise.allSettled([...pending]);
     },
-    "workdshOffice.connection",
+    "easyworkOffice.connection",
   );
 }

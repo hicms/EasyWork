@@ -14,7 +14,7 @@ function fit() {
 }
 new ResizeObserver(fit).observe(preview);
 window.addEventListener("message", async event => {
-  if (event.source !== parent || event.data?.type !== "workdsh-office-open") return;
+  if (event.source !== parent || event.data?.type !== "easywork-office-open") return;
   try {
     if (event.data.extension !== "docx") throw new Error("此安装包仅支持 Word。其他文件适配器待后续发布。");
     const bytes = event.data.bytes;
@@ -26,4 +26,4 @@ window.addEventListener("message", async event => {
     fit();
   } catch (error) {status.textContent = String(error);}
 });
-parent.postMessage({type: "workdsh-office-ready"}, "*");
+parent.postMessage({type: "easywork-office-ready"}, "*");

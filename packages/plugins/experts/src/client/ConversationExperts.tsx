@@ -1,9 +1,9 @@
-import type { ComposerHandoffSource } from 'workdsh-contracts/composer';
+import type { ComposerHandoffSource } from 'easywork-contracts/composer';
 import * as React from 'react';
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots';
 import type { ExpertSummary } from '../shared.js';
 import type { ExpertManagementClient } from './management.js';
-import { Icon } from 'workdsh-ui';
+import { Icon } from 'easywork-ui';
 
 const pickerCss = `
 .wd-expert-picker{position:relative;display:flex;align-items:center}

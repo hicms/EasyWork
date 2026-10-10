@@ -58,7 +58,7 @@ export function installExpertPresetMenu(ctx: Context, _management: ExpertManagem
       }
       dispose = ctx.slots.register({ name: key, priority: -10, locale: 'settings.agentPreset', inject: original.inject } as any, PublicPresets);
     };
-    ctx.effect(() => { const stop = ctx.slots.subscribe(key as any, ready); ready(); return () => { stop(); dispose?.(); }; }, 'workdsh.expert-preset-menu.seat');
+    ctx.effect(() => { const stop = ctx.slots.subscribe(key as any, ready); ready(); return () => { stop(); dispose?.(); }; }, 'easywork.expert-preset-menu.seat');
   };
   install('conversation.hero.agentPreset');
 }

@@ -420,6 +420,9 @@ importers:
       '@deepseek-ai/dsh-experimental-computer-use-cua-driver-native':
         specifier: 0.2.0-rc.2
         version: 0.2.0-rc.2(8ab975bb6215827ede9b176a788af517)
+      semver:
+        specifier: 7.8.5
+        version: 7.8.5
       yaml:
         specifier: 2.9.0
         version: 2.9.0
@@ -439,6 +442,12 @@ importers:
       '@deepseek-ai/dsh-api-workspace-controller':
         specifier: 0.2.0-rc.2
         version: 0.2.0-rc.2(7b1cc3b3e03980f49f8901a2ede23841)
+      '@deepseek-ai/dsh-app-boot':
+        specifier: 0.2.0-rc.2
+        version: 0.2.0-rc.2(@deepseek-ai/cordis-plugin-group@1.0.4(@deepseek-ai/cordis-plugin-loader@1.0.5)(@deepseek-ai/cordis@4.0.4))(@deepseek-ai/cordis-plugin-include@1.0.9)(@deepseek-ai/cordis-plugin-loader@1.0.5)(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-home-paths@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))(@deepseek-ai/dsh-launch-environment@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))(@deepseek-ai/dsh-system-prompt@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-invariants@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))(@deepseek-ai/dsh-llm@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))(@deepseek-ai/dsh-scope@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-invariants@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))))
+      '@deepseek-ai/dsh-atomic-write':
+        specifier: 0.2.0-rc.2
+        version: 0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)
       '@deepseek-ai/dsh-attachment':
         specifier: 0.2.0-rc.2
         version: 0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-brand@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))
@@ -475,9 +484,15 @@ importers:
       '@deepseek-ai/dsh-llm':
         specifier: 0.2.0-rc.2
         version: 0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)
+      '@deepseek-ai/dsh-plugin-manager':
+        specifier: 0.2.0-rc.2
+        version: 0.2.0-rc.2(433e42f69f4b56e15e327177e2bbf732)
       '@deepseek-ai/dsh-skill':
         specifier: 0.2.0-rc.2
         version: 0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-llm@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))(@deepseek-ai/dsh-scope@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-invariants@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)))
+      '@deepseek-ai/dsh-subprocess':
+        specifier: 0.2.0-rc.2
+        version: 0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-http-proxy@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))
       '@deepseek-ai/dsh-system-prompt':
         specifier: 0.2.0-rc.2
         version: 0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-invariants@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))(@deepseek-ai/dsh-llm@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))(@deepseek-ai/dsh-scope@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-invariants@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)))
@@ -490,15 +505,18 @@ importers:
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
+      '@types/semver':
+        specifier: 7.7.1
+        version: 7.7.1
+      easywork-plugin-workbench:
+        specifier: workspace:*
+        version: link:../plugins/workbench
+      easywork-ui:
+        specifier: workspace:*
+        version: link:../ui
       react:
         specifier: 19.2.4
         version: 19.2.4
-      workdsh-plugin-workbench:
-        specifier: workspace:*
-        version: link:../plugins/workbench
-      workdsh-ui:
-        specifier: workspace:*
-        version: link:../ui
 
   ../../packages/contracts:
     devDependencies:
@@ -530,7 +548,7 @@ importers:
       '@types/node':
         specifier: 22.19.0
         version: 22.19.0
-      workdsh-contracts:
+      easywork-contracts:
         specifier: workspace:*
         version: link:../../contracts
 
@@ -563,12 +581,12 @@ importers:
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
+      easywork-contracts:
+        specifier: workspace:*
+        version: link:../../contracts
       react:
         specifier: 19.2.4
         version: 19.2.4
-      workdsh-contracts:
-        specifier: workspace:*
-        version: link:../../contracts
 
   ../../packages/plugins/audit:
     dependencies:
@@ -585,7 +603,7 @@ importers:
       '@types/node':
         specifier: 22.19.0
         version: 22.19.0
-      workdsh-contracts:
+      easywork-contracts:
         specifier: workspace:*
         version: link:../../contracts
 
@@ -642,15 +660,15 @@ importers:
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
+      easywork-contracts:
+        specifier: workspace:*
+        version: link:../../contracts
+      easywork-ui:
+        specifier: workspace:*
+        version: link:../../ui
       react:
         specifier: 19.2.4
         version: 19.2.4
-      workdsh-contracts:
-        specifier: workspace:*
-        version: link:../../contracts
-      workdsh-ui:
-        specifier: workspace:*
-        version: link:../../ui
       zod:
         specifier: ^4.3.6
         version: 4.4.3
@@ -727,15 +745,15 @@ importers:
       '@types/react-dom':
         specifier: 19.2.3
         version: 19.2.3(@types/react@19.2.14)
+      easywork-contracts:
+        specifier: workspace:*
+        version: link:../../contracts
       react:
         specifier: 19.2.4
         version: 19.2.4
       react-dom:
         specifier: 19.2.4
         version: 19.2.4(react@19.2.4)
-      workdsh-contracts:
-        specifier: workspace:*
-        version: link:../../contracts
 
   ../../packages/plugins/experts:
     dependencies:
@@ -836,15 +854,15 @@ importers:
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
+      easywork-contracts:
+        specifier: workspace:*
+        version: link:../../contracts
+      easywork-ui:
+        specifier: workspace:*
+        version: link:../../ui
       react:
         specifier: 19.2.4
         version: 19.2.4
-      workdsh-contracts:
-        specifier: workspace:*
-        version: link:../../contracts
-      workdsh-ui:
-        specifier: workspace:*
-        version: link:../../ui
 
   ../../packages/plugins/library:
     dependencies:
@@ -930,21 +948,21 @@ importers:
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
+      easywork-contracts:
+        specifier: workspace:*
+        version: link:../../contracts
+      easywork-plugin-office:
+        specifier: workspace:*
+        version: link:../office
+      easywork-ui:
+        specifier: workspace:*
+        version: link:../../ui
       pdf-lib:
         specifier: 1.17.1
         version: 1.17.1
       react:
         specifier: 19.2.4
         version: 19.2.4
-      workdsh-contracts:
-        specifier: workspace:*
-        version: link:../../contracts
-      workdsh-plugin-office:
-        specifier: workspace:*
-        version: link:../office
-      workdsh-ui:
-        specifier: workspace:*
-        version: link:../../ui
 
   ../../packages/plugins/office:
     dependencies:
@@ -1099,7 +1117,7 @@ importers:
       '@univerjs/slides-ui':
         specifier: 0.25.1
         version: 0.25.1(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(rxjs@7.8.2)
-      workdsh-contracts:
+      easywork-contracts:
         specifier: workspace:*
         version: link:../../contracts
 
@@ -1184,18 +1202,18 @@ importers:
       '@types/react-dom':
         specifier: 19.2.3
         version: 19.2.3(@types/react@19.2.14)
+      easywork-contracts:
+        specifier: workspace:*
+        version: link:../../contracts
+      easywork-ui:
+        specifier: workspace:*
+        version: link:../../ui
       react:
         specifier: 19.2.4
         version: 19.2.4
       react-dom:
         specifier: 19.2.4
         version: 19.2.4(react@19.2.4)
-      workdsh-contracts:
-        specifier: workspace:*
-        version: link:../../contracts
-      workdsh-ui:
-        specifier: workspace:*
-        version: link:../../ui
 
   ../../packages/plugins/skills:
     dependencies:
@@ -1257,15 +1275,15 @@ importers:
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
+      easywork-contracts:
+        specifier: workspace:*
+        version: link:../../contracts
+      easywork-ui:
+        specifier: workspace:*
+        version: link:../../ui
       react:
         specifier: 19.2.4
         version: 19.2.4
-      workdsh-contracts:
-        specifier: workspace:*
-        version: link:../../contracts
-      workdsh-ui:
-        specifier: workspace:*
-        version: link:../../ui
 
   ../../packages/plugins/workbench:
     devDependencies:
@@ -1311,12 +1329,12 @@ importers:
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
+      easywork-ui:
+        specifier: workspace:*
+        version: link:../../ui
       react:
         specifier: 19.2.4
         version: 19.2.4
-      workdsh-ui:
-        specifier: workspace:*
-        version: link:../../ui
 
   ../../packages/providers/browser-session:
     dependencies:
@@ -1375,6 +1393,9 @@ importers:
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
+      easywork-contracts:
+        specifier: workspace:*
+        version: link:../../contracts
       esbuild:
         specifier: 0.25.12
         version: 0.25.12
@@ -1384,9 +1405,6 @@ importers:
       typescript:
         specifier: 5.9.3
         version: 5.9.3
-      workdsh-contracts:
-        specifier: workspace:*
-        version: link:../../contracts
 
   ../../packages/providers/identity-enterprise:
     dependencies:
@@ -1433,12 +1451,12 @@ importers:
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
+      easywork-contracts:
+        specifier: workspace:*
+        version: link:../../contracts
       react:
         specifier: 19.2.4
         version: 19.2.4
-      workdsh-contracts:
-        specifier: workspace:*
-        version: link:../../contracts
 
   ../../packages/providers/identity-local:
     dependencies:
@@ -1458,7 +1476,7 @@ importers:
       '@types/node':
         specifier: 22.19.0
         version: 22.19.0
-      workdsh-contracts:
+      easywork-contracts:
         specifier: workspace:*
         version: link:../../contracts
 
@@ -5392,6 +5410,9 @@ packages:
 
   '@types/retry@0.12.0':
     resolution: {integrity: sha512-wWKOClTTiizcZhXnPY4wikVAwmdYHp8q6DmC+EJUzAMsycb7HB32Kh9RN4+0gExjmPmZSAQjgURXIGATPegAvA==}
+
+  '@types/semver@7.7.1':
+    resolution: {integrity: sha512-FmgJfu+MOcQ370SD0ev7EI8TlCAfKYU+B4m5T3yXc1CiRN94g/SZPtsCkk506aUDtlMnFZvasDwHHUcZUEaYuA==}
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
@@ -12641,6 +12662,8 @@ snapshots:
       csstype: 3.2.3
 
   '@types/retry@0.12.0': {}
+
+  '@types/semver@7.7.1': {}
 
   '@types/trusted-types@2.0.7':
     optional: true

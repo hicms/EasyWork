@@ -1,3 +1,3 @@
 - insert:
-    - id: workdsh-identity-enterprise
-      name: workdsh-provider-identity-enterprise
+    - id: easywork-identity-enterprise
+      name: easywork-provider-identity-enterprise

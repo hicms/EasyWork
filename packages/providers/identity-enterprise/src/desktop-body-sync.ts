@@ -169,6 +169,6 @@ export function observeDesktopSessions(ctx: Context, sync: DesktopBodySync): voi
   });
   ctx.on('session/flush', session => sync.capture(String(session.id)).catch(() => {}));
   // Disposed is a release/rollback event, not an official deletion contract.
-  ctx.effect(() => () => sync.close(), 'workdsh.enterprise-desktop.sync');
+  ctx.effect(() => () => sync.close(), 'easywork.enterprise-desktop.sync');
   void sync.retry().catch(() => {});
 }

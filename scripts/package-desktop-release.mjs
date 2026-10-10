@@ -5,7 +5,7 @@ import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { DSH_VERSION } from '../apps/desktop/scripts/runtime-version.mjs'
-import { RELEASE_PACKAGES } from '../apps/desktop/scripts/workdsh-package-boundary.mjs'
+import { RELEASE_PACKAGES } from '../apps/desktop/scripts/easywork-package-boundary.mjs'
 import { verifyProfileRelease, verifyReleaseArchives } from '../apps/desktop/scripts/verify-profile-release.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -39,7 +39,7 @@ run('Check Desktop packaging', corepack, ['yarn', 'workspace', 'dsh-plugin-deskt
 
 const version = JSON.parse(readFileSync(join(webRoot, 'package.json'), 'utf8')).version
 const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim()
-const releaseDirectory = join(root, 'apps/desktop', 'build', `workdsh-profile-release-${source}-${commit.slice(0, 12)}-${Date.now()}`)
+const releaseDirectory = join(root, 'apps/desktop', 'build', `easywork-profile-release-${source}-${commit.slice(0, 12)}-${Date.now()}`)
 if (source === 'local') {
   run('Install Web dependencies', corepack, ['pnpm', 'install', '--frozen-lockfile'], { cwd: webRoot })
   run('Check Web and Desktop DSH alignment', process.execPath, [join(root, 'scripts/verify-web-desktop-dsh-alignment.mjs')])
@@ -51,7 +51,7 @@ if (source === 'local') {
     const changed = execFileSync('git', ['diff', '--name-only', '--ignore-submodules=dirty', 'HEAD', '--', 'apps/web', 'packages', 'profiles', 'upstream.json'], { cwd: root, encoding: 'utf8' }).trim()
     throw new Error(`The local Web release candidate is not a clean package of this commit: version=${manifest.version}/${version}, commit=${manifest.sourceCommit}/${commit}, sourceDirty=${manifest.sourceDirty}, changed=${changed || '(none)'}`)
   }
-  run('Pack this commit\'s Desktop feature composition', process.execPath, [join(root, 'apps/desktop', 'scripts', 'pack-workdsh-profile.mjs'), webRoot, releaseDirectory])
+  run('Pack this commit\'s Desktop feature composition', process.execPath, [join(root, 'apps/desktop', 'scripts', 'pack-easywork-profile.mjs'), webRoot, releaseDirectory])
   const desktopManifestPath = join(releaseDirectory, 'release-manifest.json')
   const desktopManifest = JSON.parse(readFileSync(desktopManifestPath, 'utf8'))
   if (desktopManifest.sourceCommit !== commit || desktopManifest.sourceDirty) {
@@ -73,7 +73,7 @@ if (source === 'local') {
   await download('desktop-release-manifest.json', manifestPath)
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
   verifyProfileRelease(manifest, DSH_VERSION, RELEASE_PACKAGES)
-  if (manifest.kind !== 'workdsh-desktop-source-candidate' || manifest.version !== version || manifest.sourceDirty || !/^[a-f0-9]{40}$/u.test(manifest.sourceCommit ?? '')) {
+  if (manifest.kind !== 'easywork-desktop-source-candidate' || manifest.version !== version || manifest.sourceDirty || !/^[a-f0-9]{40}$/u.test(manifest.sourceCommit ?? '')) {
     throw new Error('Published Desktop Profile has invalid release provenance')
   }
   for (const item of manifest.packages) {
@@ -85,10 +85,10 @@ if (source === 'local') {
   verifyReleaseArchives(manifest, releaseDirectory)
 }
 
-const runtimeEnv = { ...process.env, WORKDSH_RELEASE_DIRECTORY: releaseDirectory }
-run('Prepare the single EasyWork DSH Profile', corepack, ['yarn', 'workspace', 'dsh-plugin-desktop', 'prepare:workdsh-runtime'], { env: runtimeEnv })
-run('Prepare bundled Python and Node.js', corepack, ['yarn', 'workspace', 'dsh-plugin-desktop', 'prepare:workdsh-primary-runtime'], { env: runtimeEnv })
-run('Prepare official command management adapters', corepack, ['yarn', 'workspace', 'dsh-plugin-desktop', 'prepare:workdsh-command'], { env: runtimeEnv })
+const runtimeEnv = { ...process.env, EASYWORK_RELEASE_DIRECTORY: releaseDirectory }
+run('Prepare the single EasyWork Profile', corepack, ['yarn', 'workspace', 'dsh-plugin-desktop', 'prepare:easywork-runtime'], { env: runtimeEnv })
+run('Prepare bundled Python and Node.js', corepack, ['yarn', 'workspace', 'dsh-plugin-desktop', 'prepare:easywork-primary-runtime'], { env: runtimeEnv })
+run('Prepare official command management adapters', corepack, ['yarn', 'workspace', 'dsh-plugin-desktop', 'prepare:easywork-command'], { env: runtimeEnv })
 run('Build the Desktop installer', process.execPath, [join(root, 'apps/desktop', 'scripts', platform === 'win32' ? 'package-win.ts' : 'package-mac.ts')], {
   env: { ...runtimeEnv, DSH_PACKAGE_CHECK_ALREADY_RAN: '1' },
 })

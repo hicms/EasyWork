@@ -11,14 +11,14 @@ import { ConnectorManager, type ConnectorManagerOptions } from './manager.js';
 export * from './shared.js';
 export * from './connection-api.js';
 export * from './manager.js';
-export const name = 'workdsh-plugin-connectors';
-export const inject = ['connection', 'tools', 'mcpResources', 'storageDomain', 'agents', 'credentials', 'workdshSessionAccess'];
+export const name = 'easywork-plugin-connectors';
+export const inject = ['connection', 'tools', 'mcpResources', 'storageDomain', 'agents', 'credentials', 'easyworkSessionAccess'];
 
 export async function apply(ctx: Context, options: ConnectorManagerOptions = {}): Promise<void> {
   await ctx.plugin(ConnectorManager, options);
   await ctx.plugin({
-    name: 'workdsh-connectors-integration',
-    inject: [...inject, 'workdshConnectors'],
+    name: 'easywork-connectors-integration',
+    inject: [...inject, 'easyworkConnectors'],
     apply: registerConnectorManagementConnection,
   });
 }

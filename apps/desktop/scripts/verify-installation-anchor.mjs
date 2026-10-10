@@ -7,11 +7,11 @@ import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { materializeRuntimeProfile, officialHostLauncher } from '../src/local-runtime.ts'
 import { DSH_VERSION } from './runtime-version.mjs'
-import { PRODUCT_PACKAGES } from './workdsh-package-boundary.mjs'
+import { PRODUCT_PACKAGES } from './easywork-package-boundary.mjs'
 import { verifyOfficialWebPackages } from './verify-profile-release.mjs'
 
-const runtime = resolve(process.argv[2] ?? fileURLToPath(new URL('../build/workdsh-runtime', import.meta.url)))
-const source = join(runtime, 'profiles/workdsh')
+const runtime = resolve(process.argv[2] ?? fileURLToPath(new URL('../build/easywork-runtime', import.meta.url)))
+const source = join(runtime, 'profiles/easywork')
 const primary = join(runtime, 'primary-runtime')
 const executable = join(primary, 'dependencies/node/bin', process.platform === 'win32' ? 'node.exe' : 'node')
 const pnpm = join(primary, 'dependencies/pnpm/bin/pnpm.cjs')
@@ -19,7 +19,7 @@ const release = JSON.parse(readFileSync(join(runtime, 'package-cache/release-man
 const actual = JSON.parse(readFileSync(join(source, 'node_modules/@deepseek-ai/dsh/package.json'), 'utf8')).version
 if (actual !== DSH_VERSION) throw new Error('Installation anchor uses another official DSH version')
 verifyOfficialWebPackages(release, source)
-const home = mkdtempSync(join(tmpdir(), 'workdsh-anchor-check-'))
+const home = mkdtempSync(join(tmpdir(), 'easywork-anchor-check-'))
 let child
 let finished
 let output = ''
@@ -32,7 +32,7 @@ try {
   const patch = join(home, '.headless-port.patch.yml')
   writeFileSync(patch, '- id: webserver\n  config:\n    host: 127.0.0.1\n    port: 0\n', { mode: 0o600 })
   const launcher = officialHostLauncher(source, home, executable, pnpm, [join(source, 'cordis.patch.yml'), patch])
-  const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/(?:KEY|SECRET|TOKEN|PASSWORD|DSH_|WORKDSH_)/iu.test(key)))
+  const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/(?:KEY|SECRET|TOKEN|PASSWORD|DSH_|EASYWORK_)/iu.test(key)))
   Object.assign(env, { HOME: home, USERPROFILE: home, DSH_HOME: home, DSH_AGENTS_HOME: join(home, 'agents'), DSH_BUNDLED_PRIMARY_RUNTIME: primary, DSH_TELEMETRY_DISABLED: '1' })
   const ready = new Promise((resolveReady, reject) => {
     child = spawn(executable, [launcher, '--no-open'], { env, cwd: home, stdio: ['ignore', 'pipe', 'pipe'] })
@@ -64,9 +64,9 @@ try {
   for (const client of release.officialWeb.clients.filter(row => !row.conditional)) {
     if (!ids.has(client.package)) throw new Error('Unconditional official Web client missing at runtime: ' + client.package)
   }
-  for (const name of [...PRODUCT_PACKAGES, 'workdsh-bundle']) if (!ids.has(name)) throw new Error('Owned client missing at runtime: ' + name + '; owned graph=' + [...ids].filter(row => row.startsWith('workdsh-')).join(',') + '; ' + scrub(output).slice(-6000))
-  const owned = [...ids].filter(name => name.startsWith('workdsh-')).sort()
-  if (JSON.stringify(owned) !== JSON.stringify([...PRODUCT_PACKAGES, 'workdsh-bundle'].sort())) throw new Error('Unexpected default owned client inventory')
+  for (const name of [...PRODUCT_PACKAGES, 'easywork-bundle']) if (!ids.has(name)) throw new Error('Owned client missing at runtime: ' + name + '; owned graph=' + [...ids].filter(row => row.startsWith('easywork-')).join(',') + '; ' + scrub(output).slice(-6000))
+  const owned = [...ids].filter(name => name.startsWith('easywork-')).sort()
+  if (JSON.stringify(owned) !== JSON.stringify([...PRODUCT_PACKAGES, 'easywork-bundle'].sort())) throw new Error('Unexpected default owned client inventory')
   for (const batch of graph.batches) {
     const artifact = await fetch(new URL(batch.url, url), { signal: AbortSignal.timeout(20_000) })
     if (!artifact.ok || !(await artifact.text()).includes('__ModuleLoader__')) throw new Error('Advertised client batch is unavailable')

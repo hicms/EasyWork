@@ -1,7 +1,7 @@
 /**
  * Cross-domain Skill revision capability (D04 dependency adaptation).
  *
- * The Skill owner (`workdsh-plugin-skills`) implements this public surface so an
+ * The Skill owner (`easywork-plugin-skills`) implements this public surface so an
  * expert can freeze an explicit Skill dependency into an immutable snapshot and
  * mount it through the official Skill provider/tool. The expert plugin never
  * walks another plugin's private directories to fabricate a revision, and never
@@ -40,7 +40,7 @@ export interface RetainedSkillRevision {
 }
 
 /**
- * The Skill owner's public revision contract. Implemented by `workdsh-plugin-skills`;
+ * The Skill owner's public revision contract. Implemented by `easywork-plugin-skills`;
  * consumed by the expert publish/compiler/runtime-guard path.
  */
 export interface SkillRevisionProvider {

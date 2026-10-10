@@ -1,7 +1,7 @@
 import { Context, Service } from '@deepseek-ai/cordis';
 import { defineDomain, domainTable, type KvTable } from '@deepseek-ai/dsh-storage-domain';
 import { z } from 'zod';
-import type { AuditEvent, AuditService } from 'workdsh-contracts';
+import type { AuditEvent, AuditService } from 'easywork-contracts';
 import { GovernanceContractError } from './governance.js';
 
 const bounded = z.string().min(1).max(256).refine((value) => !/[\u0000-\u001f]/.test(value));
@@ -22,7 +22,7 @@ const auditEventSchema: z.ZodType<AuditEvent> = z.object({
 });
 
 export const auditDomainSpec = defineDomain({
-  name: 'workdsh_audit',
+  name: 'easywork_audit',
   version: 1,
   layout: 'per-record',
   tables: { events: domainTable<string, AuditEvent>(auditEventSchema) },
@@ -30,7 +30,7 @@ export const auditDomainSpec = defineDomain({
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
-    workdshAudit: AuditService;
+    easyworkAudit: AuditService;
   }
 }
 
@@ -57,14 +57,14 @@ export class AuditJournal extends Service implements AuditService {
   private appendTail: Promise<void> = Promise.resolve();
 
   constructor(ctx: Context) {
-    super(ctx, 'workdshAudit');
+    super(ctx, 'easyworkAudit');
   }
 
   async [Service.init](): Promise<void> {
     const domain = await this.ctx.storageDomain.open(auditDomainSpec);
-    this.ctx.effect(() => () => domain.close(), 'workdshAudit.domainClose');
+    this.ctx.effect(() => () => domain.close(), 'easyworkAudit.domainClose');
     this.events = domain.table('events');
-    this.ctx.effect(() => async () => this.flush(), 'workdshAudit.flush');
+    this.ctx.effect(() => async () => this.flush(), 'easyworkAudit.flush');
   }
 
   append(event: AuditEvent, signal?: AbortSignal): Promise<void> {

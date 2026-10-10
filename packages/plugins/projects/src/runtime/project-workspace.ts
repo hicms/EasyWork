@@ -4,14 +4,14 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import type { Context } from '@deepseek-ai/cordis';
 import type {} from '@deepseek-ai/dsh-api-workspace-controller';
-import type { ActorContext } from 'workdsh-contracts';
+import type { ActorContext } from 'easywork-contracts';
 
 /** Official registry remains the only workspace identity and persistence owner. */
 export async function ensureProjectWorkspace(ctx: Context, actor: ActorContext, projectId: string, signal?: AbortSignal, workspaceRoot?: string) {
-  const { project } = await ctx.workdshProjects.get(actor, projectId, signal);
+  const { project } = await ctx.easyworkProjects.get(actor, projectId, signal);
   signal?.throwIfAborted();
   const key = createHash('sha256').update(JSON.stringify([actor.organizationId, actor.principalId, project.id])).digest('hex');
-  const path = workspaceRoot ? join(workspaceRoot, key) : join(process.env.DSH_HOME || join(homedir(), '.workdsh'), 'workdsh-projects', key);
+  const path = workspaceRoot ? join(workspaceRoot, key) : join(process.env.DSH_HOME || join(homedir(), '.easywork'), 'easywork-projects', key);
   await mkdir(path, { recursive: true });
   signal?.throwIfAborted();
   const { workspace } = await ctx.workspaceController.create({ path });

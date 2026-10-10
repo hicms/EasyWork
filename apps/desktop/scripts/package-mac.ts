@@ -62,7 +62,7 @@ function defaultOptions(): MacSmokePackageOptions {
   const desktopRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
   const workspaceRoot = resolve(desktopRoot, '..', '..')
   const require = createRequire(import.meta.url)
-  const outputDir = resolve(desktopRoot, 'dist', 'mac-smoke', process.env.WORKDSH_MAC_ARCH ?? process.arch)
+  const outputDir = resolve(desktopRoot, 'dist', 'mac-smoke', process.env.EASYWORK_MAC_ARCH ?? process.arch)
   const electronDist = resolve(dirname(require.resolve('electron/package.json')), 'dist')
   return {
     env: process.env,
@@ -74,7 +74,7 @@ function defaultOptions(): MacSmokePackageOptions {
     outputDir,
     resetOutput: () => rmSync(outputDir, { recursive: true, force: true }),
     builderCli: require.resolve('electron-builder/cli.js'),
-    ...((process.env.WORKDSH_MAC_ARCH ?? process.arch) === process.arch && existsSync(resolve(electronDist, 'Electron.app')) ? { electronDist } : {}),
+    ...((process.env.EASYWORK_MAC_ARCH ?? process.arch) === process.arch && existsSync(resolve(electronDist, 'Electron.app')) ? { electronDist } : {}),
     verifier: fileURLToPath(new URL('./verify-mac-smoke.ts', import.meta.url)),
     nodeExecutable: process.execPath,
     run,
@@ -106,7 +106,7 @@ export function packageMacSmoke(options: MacSmokePackageOptions = defaultOptions
     )
   }
 
-  const targetArch = options.env.WORKDSH_MAC_ARCH ?? options.arch
+  const targetArch = options.env.EASYWORK_MAC_ARCH ?? options.arch
   if (targetArch !== 'x64' && targetArch !== 'arm64') {
     throw new Error(`unsupported macOS target architecture: ${targetArch}`)
   }

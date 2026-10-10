@@ -3,9 +3,9 @@ import { useEffect } from 'react';
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots';
 
 export type SkillTaskKind = 'create' | 'edit' | 'open' | 'disable' | 'enable' | 'uninstall';
-export const pendingDraftKey = 'workdsh.pending-skill-task-draft';
+export const pendingDraftKey = 'easywork.pending-skill-task-draft';
 export const skillTaskDrafts = {
-  create: '/workdsh-skill-creator 请帮我创建一个可以实现「……」的 skill',
+  create: '/easywork-skill-creator 请帮我创建一个可以实现「……」的 skill',
 } as const;
 
 export function skillManagementDraft(kind: Exclude<SkillTaskKind, 'create'>, name: string): string {
@@ -16,7 +16,7 @@ export function skillManagementDraft(kind: Exclude<SkillTaskKind, 'create'>, nam
     enable: `请重新启用共享技能「${name}」，不要修改它的 SKILL.md，并验证 Harness 官方技能目录能重新发现它。`,
     uninstall: `请卸载共享技能「${name}」。先读取资源和依赖影响并让我确认；使用可恢复移除，不要直接永久删除，然后验证 Harness 官方目录不再加载它。`,
   } as const;
-  return `/workdsh-skill-creator ${actions[kind]}`;
+  return `/easywork-skill-creator ${actions[kind]}`;
 }
 
 export function PendingSkillDraft({ inputActions }: PropsRuntime<'conversation.input.overlay'>) {

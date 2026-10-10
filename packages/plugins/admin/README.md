@@ -2,7 +2,7 @@
 
 状态：**规划中，尚未实现**。目录已建立，不代表功能完成。
 
-2026-09-27 的企业管理后台实施改为独立 `workdsh-admin` 仓库（Spring Boot + Vue/Arco）；本目录仍是历史规划骨架，不拥有当前企业成员数据库或管理 Web，不得声明已加载入口。DSH 端企业身份由 `packages/providers/identity-enterprise` 提供。
+2026-09-27 的企业管理后台实施改为独立 `easywork-admin` 仓库（Spring Boot + Vue/Arco）；本目录仍是历史规划骨架，不拥有当前企业成员数据库或管理 Web，不得声明已加载入口。DSH 端企业身份由 `packages/providers/identity-enterprise` 提供。
 
 - 实现阶段：P1/P3
 - 主任务：P1-10，详见 [需求与范围](../../../apps/web/docs/REQUIREMENTS.md)

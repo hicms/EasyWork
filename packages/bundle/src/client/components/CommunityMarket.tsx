@@ -1,15 +1,15 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 
-const discoverySeenKey = 'workdsh.community-market.discovery-seen';
+const discoverySeenKey = 'easywork.community-market.discovery-seen';
 const discoveryCardStyle = `
-[data-plugin-item="workdsh-community-market"] {
+[data-plugin-item="easywork-community-market"] {
   background: linear-gradient(90deg,
     color-mix(in srgb, var(--dsw-alias-state-business-primary) 17%, transparent),
     color-mix(in srgb, var(--dsw-alias-state-business-primary) 6%, transparent));
   box-shadow: inset 3px 0 0 var(--dsw-alias-state-business-primary);
   outline: 1px solid color-mix(in srgb, var(--dsw-alias-state-business-primary) 28%, transparent);
 }
-[data-plugin-item="workdsh-community-market"]:hover {
+[data-plugin-item="easywork-community-market"]:hover {
   background: color-mix(in srgb, var(--dsw-alias-state-business-primary) 21%, transparent);
 }
 `;

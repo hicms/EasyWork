@@ -9,4 +9,4 @@ export const tokens = {
   secondary: '#a5a5a5',
 } as const;
 
-export type WorkdshTokens = typeof tokens;
+export type EasyWorkTokens = typeof tokens;

@@ -4,7 +4,7 @@
 
 ## 0.1.0-alpha.3 — Unreleased（2026-09-22）
 
-- 统一管理操作与表单：复用 Harness 原生 Button/Input，Select/Textarea 共用 workdsh-ui；声明原生 UI 依赖，保持主题与交互语义。
+- 统一管理操作与表单：复用 Harness 原生 Button/Input，Select/Textarea 共用 easywork-ui；声明原生 UI 依赖，保持主题与交互语义。
 
 - 页面和配置弹窗跟随原生主题明暗变化，移除固定深色。
 - 适配 DeepSeek Harness 0.1.7-alpha.1、Cordis 4.0.3，更新精确依赖。

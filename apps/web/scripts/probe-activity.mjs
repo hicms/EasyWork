@@ -11,7 +11,7 @@ await mkdir(cwd,{recursive:true});await mkdir(join(home,'storages'),{recursive:t
 await writeFile(join(home,'storages/workspace.json'),JSON.stringify({unit:{name:'workspace',version:2},global:{initialized:true,workspaceIds:[workspaceId],archivedSessionIds:[]},tables:{workspaces:{[workspaceId]:{path:cwd,title:'Activity fixture',sessionIds:[id],createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()}}}}));
 const dir=join(home,'sessions','--'+cwd.replaceAll('/','-').replace(/^-+/, '')+'--',id);await mkdir(dir,{recursive:true});
 const disabled=process.argv.includes('--disabled');
-await writeFile(join(home,'../../profiles/preview/cordis.patch.yml'),disabled ? '- id: workdsh-activity\n  disabled: true\n' : '[]\n');
+await writeFile(join(home,'../../profiles/preview/cordis.patch.yml'),disabled ? '- id: easywork-activity\n  disabled: true\n' : '[]\n');
 const now=Date.now();const rows=[{type:'session',version:3,id,createdAt:now,cwd,isSeeded:false,delegationDepth:0,agentPreset:'dsh-base'},
 {type:'turn/start',seq:0,time:now,data:{turn:1}},
 {type:'user/message',seq:1,time:now,data:{role:'user',id:'fixture-user',source:{kind:'user'},content:[{type:'text',text:'Activity plugin verification'}]},surfaceOp:'append'},
@@ -19,7 +19,7 @@ const now=Date.now();const rows=[{type:'session',version:3,id,createdAt:now,cwd,
 {type:'turn/end',seq:3,time:now+2,data:{turn:1,reason:{kind:'completed'}}}];
 await rm(join(home,'sessions'),{recursive:true,force:true});await mkdir(dir,{recursive:true});
 await writeFile(join(dir,'session.v3.jsonl.zstd'),Buffer.concat(rows.map(row=>zstdCompressSync(Buffer.from(JSON.stringify(row)+'\n')))));
-let log='';const server=spawn(process.execPath,[join(root,'node_modules/@deepseek-ai/dsh/lib/bin.js'),'--profile','preview','--host','127.0.0.1','--port','18990','--no-open'],{cwd:root,env:{...process.env,DSH_HOME:home,DSH_AGENTS_HOME:join(home,'agents')},stdio:['ignore','pipe','pipe']});server.stdout.on('data',v=>{log+=v;void writeFile('/tmp/workdsh-activity-probe-host.log',log);});server.stderr.on('data',v=>{log+=v;void writeFile('/tmp/workdsh-activity-probe-host.log',log);});
+let log='';const server=spawn(process.execPath,[join(root,'node_modules/@deepseek-ai/dsh/lib/bin.js'),'--profile','preview','--host','127.0.0.1','--port','18990','--no-open'],{cwd:root,env:{...process.env,DSH_HOME:home,DSH_AGENTS_HOME:join(home,'agents')},stdio:['ignore','pipe','pipe']});server.stdout.on('data',v=>{log+=v;void writeFile('/tmp/easywork-activity-probe-host.log',log);});server.stderr.on('data',v=>{log+=v;void writeFile('/tmp/easywork-activity-probe-host.log',log);});
 let browser;try {
 const deadline=Date.now()+60000;while(!/http:\/\/127\.0\.0\.1:\d+\/\?token=[\w-]+/.test(log)){if(server.exitCode!==null||Date.now()>deadline)throw Error('Host failed '+log.replace(/token=\S+/g,'token=[redacted]'));await new Promise(r=>setTimeout(r,100));}
 const url=log.match(/http:\/\/127\.0\.0\.1:\d+\/\?token=[\w-]+/)[0];
@@ -29,8 +29,8 @@ await page.getByRole('button',{name:'Continue',exact:true}).click({timeout:15000
 await page.getByRole('button',{name:'Configure later',exact:true}).click({timeout:5000}).catch(()=>{});
 
 console.log('Selecting native fixture');await page.getByText('workspace',{exact:true}).first().click();await page.waitForTimeout(1000);
-await writeFile('/tmp/workdsh-activity-dom.txt',await page.locator('body').innerText());
-if(disabled){await page.getByText('Native conversation body is retained.',{exact:true}).waitFor();assert.equal(await page.locator('.wd-activity').count(),0);assert.equal(await page.locator('style[data-workdsh-activity]').count(),0);assert.deepEqual(errors,[]);console.log('PASS: disabled standard Profile restores native conversation/header without plugin styles.');}else{
+await writeFile('/tmp/easywork-activity-dom.txt',await page.locator('body').innerText());
+if(disabled){await page.getByText('Native conversation body is retained.',{exact:true}).waitFor();assert.equal(await page.locator('.wd-activity').count(),0);assert.equal(await page.locator('style[data-easywork-activity]').count(),0);assert.deepEqual(errors,[]);console.log('PASS: disabled standard Profile restores native conversation/header without plugin styles.');}else{
 await page.getByRole('button',{name:'展开协作详情'}).waitFor({timeout:15000});
 assert.equal(await page.locator('.wd-activity').count(),1);
 assert.equal(await page.locator('.wd-activity-bar').evaluate(e=>e.getBoundingClientRect().height),46);const geometry=await page.locator('.wd-activity').evaluate(e=>{const b=e.getBoundingClientRect(),h=e.closest('header').getBoundingClientRect();return {width:b.width,expected:Math.min(560,(h.width-40)/2),center:b.x+b.width/2,parentCenter:h.x+h.width/2};});assert.ok(Math.abs(geometry.width-geometry.expected)<1);assert.ok(Math.abs(geometry.center-geometry.parentCenter)<1);assert.equal(await page.locator('.wd-activity-face').first().evaluate(e=>getComputedStyle(e).cornerShape),'round');

@@ -36,7 +36,7 @@ export async function prepareOfficialRelease(desktopRoot, target) {
   const receipt = join(destination, 'receipt.json')
   const identity = JSON.stringify({ version: lock.version, target, artifact })
   if (existsSync(receipt) && readFileSync(receipt, 'utf8') === identity && existsSync(join(destination, 'runtime/primary-runtime/runtime.json'))) return destination
-  const archive = process.env.WORKDSH_OFFICIAL_DESKTOP_ARCHIVE ? resolve(process.env.WORKDSH_OFFICIAL_DESKTOP_ARCHIVE) : join(cache, new URL(artifact.url).pathname.split('/').at(-1))
+  const archive = process.env.EASYWORK_OFFICIAL_DESKTOP_ARCHIVE ? resolve(process.env.EASYWORK_OFFICIAL_DESKTOP_ARCHIVE) : join(cache, new URL(artifact.url).pathname.split('/').at(-1))
   if (!existsSync(archive)) {
     const partial = archive + '.partial'
     const response = await fetch(artifact.url, { signal: AbortSignal.timeout(600_000) })
@@ -49,7 +49,7 @@ export async function prepareOfficialRelease(desktopRoot, target) {
   try {
     if (target.startsWith('mac-')) execFileSync('/usr/bin/ditto', ['-x', '-k', archive, temporary], { stdio: 'inherit' })
     else {
-      const sevenZip = process.env.WORKDSH_7ZIP ?? join(process.env.ProgramFiles ?? 'C:\\Program Files', '7-Zip/7z.exe')
+      const sevenZip = process.env.EASYWORK_7ZIP ?? join(process.env.ProgramFiles ?? 'C:\\Program Files', '7-Zip/7z.exe')
       execFileSync(sevenZip, ['x', '-y', archive, '-o' + temporary], { stdio: 'inherit' })
       const inner = nestedArchive(temporary)
       if (inner) execFileSync(sevenZip, ['x', '-y', inner, '-o' + join(temporary, 'application')], { stdio: 'inherit' })

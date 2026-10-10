@@ -6,7 +6,7 @@ import { spawnSync } from 'node:child_process';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const dsh = resolve(root, 'node_modules/@deepseek-ai/dsh/lib/bin.js');
-const home = await mkdtemp(join(tmpdir(), 'workdsh-headless-probe-'));
+const home = await mkdtemp(join(tmpdir(), 'easywork-headless-probe-'));
 
 function run(args, input) {
   return spawnSync(process.execPath, [dsh, '--profile', 'headless', ...args], {

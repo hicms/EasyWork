@@ -23,9 +23,9 @@ import type {
   PublishReceipt,
 } from '../shared.js';
 
-const path = '/api/workdsh-experts';
-const importPath = '/api/workdsh-experts/import';
-const exportPath = '/api/workdsh-experts/export';
+const path = '/api/easywork-experts';
+const importPath = '/api/easywork-experts/import';
+const exportPath = '/api/easywork-experts/export';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -155,7 +155,7 @@ export function createExpertManagementClient(ctx: Context, lifetime?: AbortSigna
     stageImport: (file: File, signal?: AbortSignal) =>
       request<{ uploadedArtifactRef: string }>(importPath, {
         method: 'POST', credentials: 'same-origin',
-        headers: { 'content-type': file.type || 'application/octet-stream', 'x-workdsh-file-name': encodeURIComponent(file.name) },
+        headers: { 'content-type': file.type || 'application/octet-stream', 'x-easywork-file-name': encodeURIComponent(file.name) },
         body: file,
       }, 120_000, scoped(signal)),
     /** Binary download of the byte-identical export archive; triggers a browser save. */
@@ -181,7 +181,7 @@ export function createExpertManagementClient(ctx: Context, lifetime?: AbortSigna
       if (!response.ok) throw transportFailure(new Error('导出失败，请重试。'));
       const blob = await response.blob();
       const fileName = fileNameOf(response.headers.get('content-disposition'), `${expertId}.expert.zip`);
-      const digest = response.headers.get('x-workdsh-digest') ?? '';
+      const digest = response.headers.get('x-easywork-digest') ?? '';
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement('a');
       anchor.href = url;

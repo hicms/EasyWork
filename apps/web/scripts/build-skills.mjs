@@ -10,7 +10,7 @@ const result = await build({
 });
 // Use the official registration facade; React remains the renderer's shared instance.
 await writeFile(new URL('dist/client.browser.js', entry),
-  `window.__ModuleLoader__.load({id: "workdsh-plugin-skills", factory: function(require) {
+  `window.__ModuleLoader__.load({id: "easywork-plugin-skills", factory: function(require) {
 const module = { exports: {} };
 ${result.outputFiles[0].text}
 return module.exports;

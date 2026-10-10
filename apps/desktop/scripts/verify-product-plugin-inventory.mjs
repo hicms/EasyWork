@@ -3,13 +3,13 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { CATALOG_PACKAGES, UNSUPPORTED_ENTERPRISE_PACKAGES, PRODUCT_PACKAGES } from './workdsh-package-boundary.mjs'
+import { CATALOG_PACKAGES, UNSUPPORTED_ENTERPRISE_PACKAGES, PRODUCT_PACKAGES } from './easywork-package-boundary.mjs'
 
-const runtime = resolve(process.argv[2] ?? fileURLToPath(new URL('../build/workdsh-runtime', import.meta.url)))
-const source = join(runtime, 'profiles', 'workdsh')
+const runtime = resolve(process.argv[2] ?? fileURLToPath(new URL('../build/easywork-runtime', import.meta.url)))
+const source = join(runtime, 'profiles', 'easywork')
 const profile = resolve(process.argv[3] ?? source)
 const installedInProfile = profile === source
-const config = join(profile, '.workdsh-plugin-inventory-probe.yml')
+const config = join(profile, '.easywork-plugin-inventory-probe.yml')
 const expected = PRODUCT_PACKAGES
 const anchor = join(source, 'profile-installation.json')
 if (!existsSync(anchor)) throw new Error(`Missing bundled DSH installation: ${anchor}`)
@@ -28,14 +28,14 @@ try {
   writeFileSync(config, JSON.stringify([{ id: 'manager', name: 'cordis:manager' }]))
   ctx = await boot('dsh', config, [], root => {
     root.provide('profileContext', {
-      name: 'workdsh', dir: profile, home: runtime, cwd: runtime,
+      name: 'easywork', dir: profile, home: runtime, cwd: runtime,
       patchPath: join(profile, 'cordis.patch.yml'), installAnchor: anchor,
       startedBundles: [], overlays: [], telemetryDisabledEnv: undefined,
     })
     root.loader.builtins.manager = PluginManager
   })
   const allBundles = await ctx.pluginManager.listBundles()
-  const bundles = allBundles.filter(row => row.name.startsWith('workdsh-'))
+  const bundles = allBundles.filter(row => row.name.startsWith('easywork-'))
   const names = bundles.map(row => row.name).sort()
   if (JSON.stringify(names) !== JSON.stringify(expected)) {
     throw new Error(`Plugin manager exposes ${names.join(', ') || '(none)'}; expected ${expected.join(', ')}`)

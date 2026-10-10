@@ -1,6 +1,6 @@
 import { validateResources, packageAvatar, type PackageAssets } from './package-resources.js';
 import { parse, stringify } from 'yaml';
-import type { ExpertDefinition } from 'workdsh-contracts';
+import type { ExpertDefinition } from 'easywork-contracts';
 import { expertDefinitionSchema, normalizeDefinition, validateDefinition } from '../domain/definition.js';
 import { ExpertsError } from '../domain/values.js';
 
@@ -13,8 +13,8 @@ function fail(message: string): never { throw new ExpertsError('experts/invalid-
 export function expertDocument(definition: ExpertDefinition): string {
   if (definition.agentDocument) return definition.agentDocument;
   const { role, methodology, boundaries, deliverables, team, ...metadata } = definition;
-  return `---\n${stringify({ format: 'workdsh-expert-document', version: 1, ...metadata })}---\n\n`
-    + Object.entries(sections).map(([key, title]) => `<!-- workdsh:${key} -->\n## ${title}\n\n${definition[key as keyof typeof sections]}\n`).join('\n');
+  return `---\n${stringify({ format: 'easywork-expert-document', version: 1, ...metadata })}---\n\n`
+    + Object.entries(sections).map(([key, title]) => `<!-- easywork:${key} -->\n## ${title}\n\n${definition[key as keyof typeof sections]}\n`).join('\n');
 }
 
 function parseHeader(text: string): { metadata: Record<string, unknown>; body: string } {
@@ -36,8 +36,8 @@ export function parseExpertDocument(text: string): ExpertDefinition {
     return { name: display?.zh ?? display?.en ?? metadata.name, description: metadata.description, role: profession?.zh ?? profession?.en ?? metadata.name, methodology: body.trim(), boundaries: '遵循完整 Agent MD 与系统授权。', deliverables: '按完整 Agent MD 的输出规范交付。', tags: [], examples: [], skillRequirements: Array.isArray(metadata.skills) ? metadata.skills.map(name => { if (typeof name !== 'string') fail('skills 必须是名称数组。'); return { name }; }) : [], futureRequirements: [], agentDocument: text };
   }
   const { format, version, ...fields } = metadata;
-  if (format !== 'workdsh-expert-document' || version !== 1 || 'team' in fields) fail('不支持的专家文档格式。团队信息请写在 team.md。');
-  const markers = [...body.matchAll(/<!-- workdsh:(role|methodology|boundaries|deliverables) -->/g)];
+  if (format !== 'easywork-expert-document' || version !== 1 || 'team' in fields) fail('不支持的专家文档格式。团队信息请写在 team.md。');
+  const markers = [...body.matchAll(/<!-- easywork:(role|methodology|boundaries|deliverables) -->/g)];
   if (markers.length !== 4 || new Set(markers.map(m => m[1])).size !== 4) fail('四个专业内容区段必须各出现一次。');
   for (let i = 0; i < markers.length; i++) {
     const start = markers[i].index! + markers[i][0].length;
@@ -55,16 +55,16 @@ export function authoringDocuments(definition: ExpertDefinition): Record<string,
   documents[root] = expertDocument(definition);
   if (definition.team) {
     for (const member of definition.team.members) documents[`agents/${member.key}.md`] = expertDocument(member.definition);
-    documents['team.md'] = `---\n${stringify({ format: 'workdsh-team-document', version: 1, lead: root, members: definition.team.members.map(member => ({ key: member.key, file: `agents/${member.key}.md` })), workflows: definition.team.workflows })}---\n\n# ${definition.name}\n\n${definition.description}\n\n成员方法保存在 agents/；场景触发、执行依赖和成果要求保存在本文件头部。\n`;
+    documents['team.md'] = `---\n${stringify({ format: 'easywork-team-document', version: 1, lead: root, members: definition.team.members.map(member => ({ key: member.key, file: `agents/${member.key}.md` })), workflows: definition.team.workflows })}---\n\n# ${definition.name}\n\n${definition.description}\n\n成员方法保存在 agents/；场景触发、执行依赖和成果要求保存在本文件头部。\n`;
   }
-  documents['README.md'] = `# ${definition.name}\n\n${definition.description}\n\n## 使用\n\n在 EasyWork「我的专家」导入此专家包，预览整套内容并确认发布。选择示例开始新任务。导入不授予权限，不运行脚本，不安装依赖；缺少技能会在发布校验中指出。\n\n## 修改\n\n编辑 agents/ 中的 Markdown 专业内容${definition.team ? '及 team.md 的场景' : ''}，保留文档头部和区段标记。在制作对话中让 AI 读取修改后的文件，通过 workdsh_expert_save_documents 保存整套文档为草稿，再统一预览发布。原 ZIP 的 manifest 校验不可手工绕过；保存后从界面重新导出。\n\n## 版本\n\nexpert.json 是此交付包的结构化快照；Markdown 是同一份内容的可编辑制作稿。已有任务保持原修订。团队成员来自内容快照，不随来源专家自动更新。\n`;
+  documents['README.md'] = `# ${definition.name}\n\n${definition.description}\n\n## 使用\n\n在 EasyWork「我的专家」导入此专家包，预览整套内容并确认发布。选择示例开始新任务。导入不授予权限，不运行脚本，不安装依赖；缺少技能会在发布校验中指出。\n\n## 修改\n\n编辑 agents/ 中的 Markdown 专业内容${definition.team ? '及 team.md 的场景' : ''}，保留文档头部和区段标记。在制作对话中让 AI 读取修改后的文件，通过 easywork_expert_save_documents 保存整套文档为草稿，再统一预览发布。原 ZIP 的 manifest 校验不可手工绕过；保存后从界面重新导出。\n\n## 版本\n\nexpert.json 是此交付包的结构化快照；Markdown 是同一份内容的可编辑制作稿。已有任务保持原修订。团队成员来自内容快照，不随来源专家自动更新。\n`;
   return documents;
 }
 
 export function definitionFromDocuments(documents: AuthoringDocuments, assets: PackageAssets = {}): ExpertDefinition {
   validateResources(documents, assets);
   const paths = Object.keys(documents);
-  const packageMeta = documents['.workdsh-expert/plugin.json'] ?? documents['.codebuddy-plugin/plugin.json'];
+  const packageMeta = documents['.easywork-expert/plugin.json'] ?? documents['.codebuddy-plugin/plugin.json'];
   if (packageMeta) {
     if (paths.length > 64 || paths.some(path => path.startsWith('/') || path.includes('\\') || path.split('/').some(part => !part || part === '.' || part === '..')) || Object.values(documents).some(content => typeof content !== 'string') || Object.values(documents).reduce((sum, text) => sum + text.length, 0) > 1_000_000) fail('专家包路径或大小无效。');
     let meta: Record<string, any>;
@@ -86,7 +86,7 @@ export function definitionFromDocuments(documents: AuthoringDocuments, assets: P
       for (const member of meta.members) {
         const role = agents.get(member.id);
         if (!role || (member.role === 'lead') !== (member.id === meta.agentName)) fail('成员展示与角色文件或主理人身份不一致。');
-        const avatar = member.avatar ? packageAvatar({ '.workdsh-expert/plugin.json': JSON.stringify({ avatar: member.avatar }) }, assets) : undefined;
+        const avatar = member.avatar ? packageAvatar({ '.easywork-expert/plugin.json': JSON.stringify({ avatar: member.avatar }) }, assets) : undefined;
         agents.set(member.id, { ...role, name: member.displayName?.zh ?? member.displayName?.en ?? member.name?.zh ?? member.name?.en ?? role.name, role: member.profession?.zh ?? member.profession?.en ?? role.role, ...(avatar ? { avatarRef: avatar } : {}) });
       }
       if (meta.members.length !== agents.size) fail('成员展示必须覆盖所有声明角色。');
@@ -117,7 +117,7 @@ export function definitionFromDocuments(documents: AuthoringDocuments, assets: P
   const expected = new Set(['README.md']);
   if (documents['team.md']) {
     const { metadata } = parseHeader(documents['team.md']);
-    if (metadata.format !== 'workdsh-team-document' || metadata.version !== 1 || metadata.lead !== 'agents/lead.md' || !Array.isArray(metadata.members)) fail('团队文档格式无效。');
+    if (metadata.format !== 'easywork-team-document' || metadata.version !== 1 || metadata.lead !== 'agents/lead.md' || !Array.isArray(metadata.members)) fail('团队文档格式无效。');
     expected.add('team.md'); expected.add('agents/lead.md');
     const members = metadata.members.map((member: { key?: unknown; file?: unknown }) => {
       if (typeof member?.key !== 'string' || member.key === 'lead' || member.file !== `agents/${member.key}.md` || typeof documents[String(member.file)] !== 'string') fail('团队成员文件缺失或引用不一致。');

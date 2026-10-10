@@ -8,7 +8,7 @@ const b=await chromium.launch();const evidence={};
 try{
  const p=await b.newPage({viewport:{width:1440,height:1000},colorScheme:'light'});await p.goto(login);
  for(const view of ['skills','experts','connectors','projects','library']) {
-  await p.goto('http://127.0.0.1:18989/?workdsh-view='+(view==='connectors'?'skills':view));
+  await p.goto('http://127.0.0.1:18989/?easywork-view='+(view==='connectors'?'skills':view));
   if(view==='connectors')await p.getByRole('button',{name:'连接器',exact:true}).click();
   await p.locator('.wd-'+view).waitFor({timeout:30000});
   if(view==='experts')await p.getByRole('button',{name:/^查看专家 /}).first().click();

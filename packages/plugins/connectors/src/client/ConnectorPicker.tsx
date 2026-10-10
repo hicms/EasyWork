@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots';
-import { Icon, Modal, modalCss } from 'workdsh-ui';
+import { Icon, Modal, modalCss } from 'easywork-ui';
 import type { ConnectorSummary } from '../shared.js';
 import type { ConnectorManagementClient } from './management.js';
 

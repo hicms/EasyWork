@@ -8,7 +8,7 @@
 - 创建任务保存独立能力快照，显式空选择不继承默认；输入区选择不修改项目配置。
 - 侧栏项目入口固定返回项目主页；项目卡片与会话归属进入独立详情路由，详情刷新保持当前项目。
 - 项目主页采用无边框标题区、统一线性图标和紧凑卡片；改善文字层级与容器响应布局，适配明暗主题。
-- 统一管理操作与表单：复用 Harness 原生 Button/Input，Select/Textarea 共用 workdsh-ui；声明原生 UI 依赖，保持主题与交互语义。
+- 统一管理操作与表单：复用 Harness 原生 Button/Input，Select/Textarea 共用 easywork-ui；声明原生 UI 依赖，保持主题与交互语义。
 
 - 页面和配置弹窗跟随原生主题明暗变化，移除固定深色。
 - 适配 DeepSeek Harness 0.1.7-alpha.1、Cordis 4.0.3，更新精确依赖。
@@ -18,7 +18,7 @@
 ## 0.1.0-alpha.2 — Unreleased（2026-09-18）
 
 - Align with DeepSeek Harness 0.1.6-alpha.2 Client Session generations: retain the target Session (`sessions.retain` → `ready` → send → `release`) before sending a project task message, and open/switch Sessions through the official `uiWorkspace.openSession` navigation.
-- Open project tasks through official Session navigation: the Session becomes current and the built-in conversation view owns messages, streaming, composer, model and permissions; remove the WorkDSH-side conversation feed, composer and run-state rendering.
+- Open project tasks through official Session navigation: the Session becomes current and the built-in conversation view owns messages, streaming, composer, model and permissions; remove the EasyWork-side conversation feed, composer and run-state rendering.
 - Add confirmed project archiving, archived-project filtering, and restoration while preserving project history.
 - Show a project lineage chip beside the Session title for project task Sessions through the official `conversation.session.header.actions` slot; clicking it opens the project panel focused on that project, non-project Sessions render nothing.
 - Cache the lineage verdict per Session in the client: header remounts reuse the first `task-context` answer instead of re-issuing the RPC on every render, misses included; lookup failures are not cached, so a transient error cannot hide the chip permanently.

@@ -37,7 +37,7 @@ export async function launchManagedChromium(executablePath: string, signal?: Abo
   signal?.throwIfAborted();
   const { chromium } = await import('playwright-core');
   signal?.throwIfAborted();
-  const profileDir = await mkdtemp(join(tmpdir(), 'workdsh-browser-'));
+  const profileDir = await mkdtemp(join(tmpdir(), 'easywork-browser-'));
   let context: BrowserContext | undefined;
   try {
     context = await chromium.launchPersistentContext(profileDir, {

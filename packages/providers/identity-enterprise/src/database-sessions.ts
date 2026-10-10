@@ -46,7 +46,7 @@ export class EnterpriseDatabaseSessions extends SessionPersistence {
   const authorization = await this.options.authorization();
   if (!/^Bearer [A-Za-z0-9_-]{16,512}$/.test(authorization)) throw new Error('Invalid member authentication');
   const response = await fetch(this.endpoint, { method: 'POST', redirect: 'error', signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(10_000)]) : AbortSignal.timeout(10_000),
-   headers: { 'content-type': 'application/json', Authorization: authorization, 'X-WorkDSH-Service-Key': this.options.serviceKey }, body: JSON.stringify({ operation, id, ...extra }) });
+   headers: { 'content-type': 'application/json', Authorization: authorization, 'X-EasyWork-Service-Key': this.options.serviceKey }, body: JSON.stringify({ operation, id, ...extra }) });
   await this.options.verify();
   if (response.status === 404 && id) throw new SessionPersistenceNotFoundError(id);
   if (response.status === 409 && id) {

@@ -1,5 +1,5 @@
 import {z} from "zod";
-import type {OfficeSpreadsheetState} from "workdsh-contracts/office";
+import type {OfficeSpreadsheetState} from "easywork-contracts/office";
 import {id,ensure,parse} from "../content/model.js";
 export const address=z.string().regex(/^[A-Z]{1,2}[1-9][0-9]{0,3}$/).refine(a=>coordinates(a).row<1000 && coordinates(a).column<100,"Cell range is A1:CV1000");
 export function coordinates(a:string){const m=/^([A-Z]+)([0-9]+)$/.exec(a)!;let column=0;for(const c of m[1]!)column=column*26+c.charCodeAt(0)-64;return {row:Number(m[2])-1,column:column-1};}

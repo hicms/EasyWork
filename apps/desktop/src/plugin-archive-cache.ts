@@ -3,7 +3,7 @@ import { writeFileSync } from 'node:fs'
 
 /** Delegate to the bundled pnpm after retaining local archives in this account's Home. */
 export function cachedPackageManager(home: string, pnpm: string): string {
-  const runner = join(home, '.workdsh-package-manager.mjs')
+  const runner = join(home, '.easywork-package-manager.mjs')
   writeFileSync(runner, String.raw`import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';

@@ -12,14 +12,14 @@
     "directory": "apps/desktop"
   },
   "type": "module",
-  "main": "lib/workdsh-main.js",
+  "main": "lib/easywork-main.js",
   "files": [
     "build/app-icon.ico",
     "build/app-icon.png",
     "build/app-icon-mac.png",
     "build/tray-icon.svg",
     "build/tray-icon*.png",
-    "lib/workdsh-main.js",
+    "lib/easywork-main.js",
     "lib/startup-preload.cjs",
     "README.md",
     "README.zh.md",
@@ -34,16 +34,16 @@
     "check": "yarn run build && yarn run typecheck",
     "check:win-package": "yarn run check",
     "check:mac-package": "yarn run check",
-    "start": "node scripts/start-workdsh.mjs",
-    "dev": "yarn run build && yarn run prepare:workdsh-runtime && yarn run prepare:workdsh-primary-runtime && yarn run prepare:workdsh-command && yarn run start",
-    "package:dir": "yarn run build && yarn run prepare:workdsh-runtime && yarn run prepare:workdsh-primary-runtime && yarn run prepare:workdsh-command && node scripts/package-dir.mjs",
-    "dist:mac": "yarn run prepare:workdsh-runtime && yarn run prepare:workdsh-primary-runtime && yarn run prepare:workdsh-command && node scripts/release-mac.ts",
-    "dist:mac-smoke": "yarn run prepare:workdsh-runtime && yarn run prepare:workdsh-primary-runtime && yarn run prepare:workdsh-command && node scripts/package-mac.ts",
-    "dist:win": "yarn run prepare:workdsh-runtime && yarn run prepare:workdsh-primary-runtime && yarn run prepare:workdsh-command && node scripts/package-win.ts",
-    "dist:win-portable": "yarn run prepare:workdsh-runtime && yarn run prepare:workdsh-primary-runtime && yarn run prepare:workdsh-command && node scripts/package-win-portable.ts",
-    "prepare:workdsh-runtime": "node scripts/prepare-workdsh-runtime.mjs",
-    "prepare:workdsh-primary-runtime": "node scripts/prepare-workdsh-primary-runtime.mjs",
-    "prepare:workdsh-command": "node scripts/prepare-workdsh-command.mjs"
+    "start": "node scripts/start-easywork.mjs",
+    "dev": "yarn run build && yarn run prepare:easywork-runtime && yarn run prepare:easywork-primary-runtime && yarn run prepare:easywork-command && yarn run start",
+    "package:dir": "yarn run build && yarn run prepare:easywork-runtime && yarn run prepare:easywork-primary-runtime && yarn run prepare:easywork-command && node scripts/package-dir.mjs",
+    "dist:mac": "yarn run prepare:easywork-runtime && yarn run prepare:easywork-primary-runtime && yarn run prepare:easywork-command && node scripts/release-mac.ts",
+    "dist:mac-smoke": "yarn run prepare:easywork-runtime && yarn run prepare:easywork-primary-runtime && yarn run prepare:easywork-command && node scripts/package-mac.ts",
+    "dist:win": "yarn run prepare:easywork-runtime && yarn run prepare:easywork-primary-runtime && yarn run prepare:easywork-command && node scripts/package-win.ts",
+    "dist:win-portable": "yarn run prepare:easywork-runtime && yarn run prepare:easywork-primary-runtime && yarn run prepare:easywork-command && node scripts/package-win-portable.ts",
+    "prepare:easywork-runtime": "node scripts/prepare-easywork-runtime.mjs",
+    "prepare:easywork-primary-runtime": "node scripts/prepare-easywork-primary-runtime.mjs",
+    "prepare:easywork-command": "node scripts/prepare-easywork-command.mjs"
   },
   "peerDependencies": {
     "electron": "43.3.0"
@@ -68,7 +68,7 @@
       "smartUnpack": true
     },
     "npmRebuild": false,
-    "afterPack": "./scripts/verify-workdsh-carrier.ts",
+    "afterPack": "./scripts/verify-easywork-carrier.ts",
     "extraMetadata": {
       "dependencies": null
     },
@@ -92,7 +92,7 @@
       "build/app-icon-mac.png",
       "build/tray-icon.svg",
       "build/tray-icon*.png",
-      "lib/workdsh-main.js",
+      "lib/easywork-main.js",
       "lib/startup-preload.cjs",
       "package.json",
       "!node_modules/**"
@@ -147,7 +147,6 @@
       "icon": "build/app-icon.ico"
     },
     "nsis": {
-      "include": "installer.nsh",
       "installerIcon": "build/app-icon.ico",
       "license": "THIRD_PARTY_NOTICES.md",
       "oneClick": false,
@@ -177,19 +176,20 @@
     },
     "extraResources": [
       {
-        "from": "build/workdsh-runtime",
-        "to": "workdsh-runtime",
+        "from": "build/easywork-runtime",
+        "to": "easywork-runtime",
         "filter": [
           "runtime/cli/**",
-          "profiles/workdsh/**",
+          "profiles/easywork/**",
           "package-cache/**",
           "node/**",
           "primary-runtime/**",
           "office-skills/**",
-          "!profiles/workdsh/node_modules/**/*.d.ts",
-          "!profiles/workdsh/node_modules/**/*.d.mts",
-          "!profiles/workdsh/node_modules/**/*.d.cts",
-          "!profiles/workdsh/node_modules/**/*.pdb"
+          "!profiles/easywork/node_modules/**/*.d.ts",
+          "!profiles/easywork/node_modules/**/*.d.mts",
+          "!profiles/easywork/node_modules/**/*.d.cts",
+          "!profiles/easywork/node_modules/**/*.pdb",
+          "!profiles/easywork/node_modules/**/*.map"
         ]
       }
     ]

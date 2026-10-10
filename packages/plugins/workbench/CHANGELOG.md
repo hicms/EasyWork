@@ -23,11 +23,11 @@
 
 # 0.1.0-alpha.6
 
-撤销整块 sidebar 替换，恢复 Harness 官方工作区和会话导航，因此保留工作区创建/重命名/删除、会话重命名/分叉/归档、时间、折叠和原生新会话行为。WorkDSH 后续只通过增量公开 Slot 添加业务入口。
+撤销整块 sidebar 替换，恢复 Harness 官方工作区和会话导航，因此保留工作区创建/重命名/删除、会话重命名/分叉/归档、时间、折叠和原生新会话行为。EasyWork 后续只通过增量公开 Slot 添加业务入口。
 
 # 0.1.0-alpha.5
 
-“新建任务”直接进入 Harness 原生空会话，不再渲染 WorkDSH 自建输入器。`/` 指令、`@` 引用、附件、权限、模型及 preset 全部沿用官方 Conversation；左侧工作区行改为展开/收起分组，不再误触发任务创建。
+“新建任务”直接进入 Harness 原生空会话，不再渲染 EasyWork 自建输入器。`/` 指令、`@` 引用、附件、权限、模型及 preset 全部沿用官方 Conversation；左侧工作区行改为展开/收起分组，不再误触发任务创建。
 
 # 0.1.0-alpha.4
 
@@ -35,12 +35,12 @@
 
 # 0.1.0-alpha.3
 
-新增正式 WorkDSH 新任务首页：读取 Harness 官方工作区列表，通过官方 Session Controller 创建任务，并将描述写入原生 Conversation 草稿。首页只负责任务入口，执行、模型、权限和附件继续由 Harness 管理。
+新增正式 EasyWork 新任务首页：读取 Harness 官方工作区列表，通过官方 Session Controller 创建任务，并将描述写入原生 Conversation 草稿。首页只负责任务入口，执行、模型、权限和附件继续由 Harness 管理。
 
 # 0.1.0-alpha.2
 
-修复“运行设置”直接替换侧栏却未打开设置的错误交互。入口改为“设置”，先显示 WorkDSH/Harness 设置职责及明确的跳转动作；支持遮罩、取消和 Escape 关闭。
+修复“运行设置”直接替换侧栏却未打开设置的错误交互。入口改为“设置”，先显示 EasyWork/Harness 设置职责及明确的跳转动作；支持遮罩、取消和 Escape 关闭。
 
 # 0.1.0-alpha.1
 
-通过官方 sidebar slot 提供 WorkDSH 导航；useSessions 读取真实任务，clear/open 返回原生 Conversation。更多/运行设置恢复官方侧栏，footer 可返回。
+通过官方 sidebar slot 提供 EasyWork 导航；useSessions 读取真实任务，clear/open 返回原生 Conversation。更多/运行设置恢复官方侧栏，footer 可返回。

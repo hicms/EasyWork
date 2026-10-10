@@ -1,4 +1,4 @@
-import { controlsCss, modalCss } from 'workdsh-ui';
+import { controlsCss, modalCss } from 'easywork-ui';
 
 export const libraryCss = `${modalCss}
 ${controlsCss}

@@ -1,4 +1,4 @@
-import type { ProjectCapabilityKind, ProjectCapabilityRef } from 'workdsh-contracts/projects';
+import type { ProjectCapabilityKind, ProjectCapabilityRef } from 'easywork-contracts/projects';
 
 export interface CapabilityChoice {
   readonly id: string;

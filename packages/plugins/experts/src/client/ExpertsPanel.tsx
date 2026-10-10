@@ -1,11 +1,11 @@
-import { Button, Input } from 'workdsh-ui';
+import { Button, Input } from 'easywork-ui';
 import * as React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 // The `main` slot PropsRuntime is augmented by the official layout client module;
 // without this side-effect type import the slot name resolves to `never`.
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client';
 import type { InjectFace, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots';
-import { Icon, Modal, type IconName } from 'workdsh-ui';
+import { Icon, Modal, type IconName } from 'easywork-ui';
 import type { ExpertAvailability, ExpertSummary } from '../shared.js';
 import type { ExpertManagementClient } from './management.js';
 import { ExpertDetailModal } from './ExpertDetailModal.js';
@@ -22,7 +22,7 @@ type ExpertsPanelInjected = {
   hasCapability: (key: string) => boolean;
   /** Summon a published expert into a fresh bound native Session; never auto-sends. */
   summon: (expertId: string, revisionId: string | undefined, draftText: string | undefined) => Promise<void>;
-  /** Open a new native task seeded with the `/workdsh-expert-manager` guide draft. */
+  /** Open a new native task seeded with the `/easywork-expert-manager` guide draft. */
   createExpertTask: (kind?: 'agent' | 'team') => Promise<void>;
   editExpertTask: (expertId: string) => Promise<void>;
 };
@@ -182,7 +182,7 @@ export function ExpertsPanel({ toggleNavigation, management, openCapability, has
   };
 
   const capabilityTabs = [['experts', '专家'], ['skills', '技能'], ['connectors', '连接器']] as const;
-  const capabilityKey: Record<string, string> = { experts: 'workdsh-experts', skills: 'workdsh-skills', connectors: 'workdsh-connectors' };
+  const capabilityKey: Record<string, string> = { experts: 'easywork-experts', skills: 'easywork-skills', connectors: 'easywork-connectors' };
   const isDraft = (summary: ExpertSummary) => summary.publishedRevisionRef === undefined;
   const stateLabel = (summary: ExpertSummary) => isDraft(summary) ? '草稿' : AVAILABILITY_LABEL[summary.availability];
 
@@ -193,7 +193,7 @@ export function ExpertsPanel({ toggleNavigation, management, openCapability, has
     finally { setActing(false); }
   };
 
-  return <section className="wd-experts" data-testid="workdsh-experts">
+  return <section className="wd-experts" data-testid="easywork-experts">
     <style>{expertsCss}</style>
     <header className="cap-header">
       <button className="nav-toggle" onClick={toggleNavigation} aria-label="切换导航">导航</button>

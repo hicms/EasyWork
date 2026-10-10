@@ -114,8 +114,8 @@ const rows = await discoverPresets(presetRoots, import.meta.url);
 const cordis = rows.find(row => row.id === 'cordis');
 const minimal = rows.find(row => row.id === 'minimal');
 assert.ok(cordis && minimal, 'published package supplies cordis and minimal presets');
-await copyComposition(presetRoots, cordis, 'workdsh-skills', 'EasyWork Skills');
-await copyComposition(presetRoots, minimal, 'workdsh-minimal', 'EasyWork Minimal');
+await copyComposition(presetRoots, cordis, 'easywork-skills', 'EasyWork Skills');
+await copyComposition(presetRoots, minimal, 'easywork-minimal', 'EasyWork Minimal');
 
 try {
   const { address, cookie } = await startHost(true);
@@ -214,7 +214,7 @@ try {
           type: 'client-request',
           rpcId: crypto.randomUUID(),
           method: 'agentPresets/select',
-          payload: { args: { agentId, agentPreset: 'workdsh-minimal' } },
+          payload: { args: { agentId, agentPreset: 'easywork-minimal' } },
         }),
       });
       return response.json();
@@ -286,8 +286,8 @@ try {
   await stopServer();
   server = undefined;
   copyFileSync(
-    resolve(userRoot, 'workdsh-minimal/agent.cordis.yml'),
-    resolve(userRoot, 'workdsh-skills/agent.cordis.yml'),
+    resolve(userRoot, 'easywork-minimal/agent.cordis.yml'),
+    resolve(userRoot, 'easywork-skills/agent.cordis.yml'),
   );
   const { address: mutatedAddress, cookie: mutatedCookie } = await startHost();
   const mutatedBody = await listSkills(mutatedAddress, mutatedCookie, activeAgentId);
@@ -299,7 +299,7 @@ try {
   server = undefined;
   copyFileSync(
     resolve(SHIPPED_PRESET_ROOT, 'cordis/agent.cordis.yml'),
-    resolve(userRoot, 'workdsh-skills/agent.cordis.yml'),
+    resolve(userRoot, 'easywork-skills/agent.cordis.yml'),
   );
   const { address: restoredAddress, cookie: restoredCookie } = await startHost();
   const restoredBody = await listSkills(restoredAddress, restoredCookie, activeAgentId);
@@ -309,7 +309,7 @@ try {
 
   await stopServer();
   server = undefined;
-  rmSync(resolve(userRoot, 'workdsh-skills'), { recursive: true, force: true });
+  rmSync(resolve(userRoot, 'easywork-skills'), { recursive: true, force: true });
   const { address: deletedAddress, cookie: deletedCookie } = await startHost();
   const deletedBody = await listSkills(deletedAddress, deletedCookie, activeAgentId);
   assert.equal(deletedBody?.result?.ok, true);

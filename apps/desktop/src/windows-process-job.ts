@@ -12,7 +12,7 @@ export function windowsJobArguments(source: string, home: string): string[] {
   const base = createRequire(cli.resolve('@deepseek-ai/dsh-base'))
   const subprocess = createRequire(base.resolve('@deepseek-ai/dsh-subprocess-local'))
   const bindings = pathToFileURL(subprocess.resolve('@deepseek-ai/dsh-win32-process')).href
-  const bootstrap = join(home, '.workdsh-windows-job.mjs')
+  const bootstrap = join(home, '.easywork-windows-job.mjs')
   writeFileSync(bootstrap, `import { extendWin32ProcessBindings, isNullPtr, throwLastError } from ${JSON.stringify(bindings)};
 const api = extendWin32ProcessBindings(({ kernel32, bind }) => ({ current: bind(kernel32, 'GetCurrentProcess', 'void *', []) }));
 const job = api.createJobObjectW(null, null);

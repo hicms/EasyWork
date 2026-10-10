@@ -9,7 +9,7 @@
 ## 0.1.0-alpha.4 — 2026-09-15
 
 - 将审计存储依赖升级至 DeepSeek Harness 0.1.6-alpha.1。
-- 记录官方 Team 专家执行链路，不再依赖 WorkDSH 自建团队运行表。
+- 记录官方 Team 专家执行链路，不再依赖 EasyWork 自建团队运行表。
 
 # 0.1.0-alpha.2
 

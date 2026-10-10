@@ -51,8 +51,8 @@ import type {
   PublishReceipt,
   ResourceOwner,
   SkillRevisionRef,
-} from 'workdsh-contracts';
-import type { SkillManagementService } from 'workdsh-contracts/skills';
+} from 'easywork-contracts';
+import type { SkillManagementService } from 'easywork-contracts/skills';
 import { expertsDomainSpec, keys } from '../storage/domain.js';
 import { COMPILER_VERSION, compileExpertPreset, presetIdFor, verifyPackageFiles } from '../runtime/preset-compiler.js';
 import { ConfirmationStore } from '../runtime/confirmation.js';
@@ -69,8 +69,8 @@ import { assertUploadWithinLimit, buildExport, preflightPackage } from './portab
  * resolves the actor first, so no method takes an actor/owner/confirmation
  * boolean from the client or model. Every write is serialized on one mutation
  * tail, guarded by optimistic concurrency (`expectedRevision`), made idempotent
- * through the durable `operations` table, authorized through `workdshAccess` and
- * audited through `workdshAudit`. Publishing freezes an immutable revision and
+ * through the durable `operations` table, authorized through `easyworkAccess` and
+ * audited through `easyworkAudit`. Publishing freezes an immutable revision and
  * compiles a read-only preset; execution reserves a native Session bound to that
  * exact revision and never re-binds it.
  */
@@ -86,16 +86,16 @@ interface SessionAccess {
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
-    workdshIdentity: IdentityService;
-    workdshAccess: AccessService;
-    workdshAudit: AuditService;
-    workdshSessionAccess: SessionAccess;
-    workdshSkills: SkillManagementService;
-    workdshExperts: ExpertsManager;
+    easyworkIdentity: IdentityService;
+    easyworkAccess: AccessService;
+    easyworkAudit: AuditService;
+    easyworkSessionAccess: SessionAccess;
+    easyworkSkills: SkillManagementService;
+    easyworkExperts: ExpertsManager;
   }
 }
 
-const EXPERT_DOMAIN = 'workdsh-experts';
+const EXPERT_DOMAIN = 'easywork-experts';
 const PLAN_TTL_MS = 10 * 60 * 1000;
 const HANDOFF_TTL_MS = 10 * 60 * 1000;
 const STAGED_IMPORT_PATTERN = /^[a-z0-9-]{1,64}$/;
@@ -202,7 +202,7 @@ export interface ExpertsManagerOptions { agentsHome?: string; includeDefaultSkil
 export class ExpertsManager extends Service implements ExpertsService {
   static inject = [
     'loader', 'storageDomain', 'agentPresets', 'sessionController',
-    'workdshIdentity', 'workdshAccess', 'workdshAudit', 'workdshSessionAccess', 'workdshSkills',
+    'easyworkIdentity', 'easyworkAccess', 'easyworkAudit', 'easyworkSessionAccess', 'easyworkSkills',
   ];
 
   private experts?: KvTable<string, Expert>;
@@ -225,11 +225,11 @@ export class ExpertsManager extends Service implements ExpertsService {
   private readonly includeDefaultSkillRoots?: boolean;
 
   constructor(ctx: Context, options: ExpertsManagerOptions = {}) {
-    super(ctx, 'workdshExperts');
+    super(ctx, 'easyworkExperts');
     const agentsHome = resolve(options.agentsHome ?? process.env.DSH_AGENTS_HOME ?? join(homedir(), '.agents'));
     this.agentsHome = agentsHome;
     this.includeDefaultSkillRoots = options.includeDefaultSkillRoots;
-    this.stagingRoot = join(agentsHome, '.workdsh-state', 'experts', 'staging');
+    this.stagingRoot = join(agentsHome, '.easywork-state', 'experts', 'staging');
   }
 
   private compilePreset(input: Parameters<typeof compileExpertPreset>[1]) {
@@ -238,7 +238,7 @@ export class ExpertsManager extends Service implements ExpertsService {
 
   async [Service.init](): Promise<void> {
     const domain = await this.ctx.storageDomain.open(expertsDomainSpec);
-    this.ctx.effect(() => () => domain.close(), 'workdshExperts.domainClose');
+    this.ctx.effect(() => () => domain.close(), 'easyworkExperts.domainClose');
     this.experts = domain.table('experts');
     this.drafts = domain.table('drafts');
     this.revisions = domain.table('revisions');
@@ -249,7 +249,7 @@ export class ExpertsManager extends Service implements ExpertsService {
       if (revision.compilerVersion === COMPILER_VERSION) await registerExpertPreset(this.ctx, revision.presetRevisionRef, revision.compositionDigest, this.agentsHome);
     }
     // Staged uploads are transient; best-effort cleanup when the plugin unloads.
-    this.ctx.effect(() => () => { void rm(this.stagingRoot, { recursive: true, force: true }); }, 'workdshExperts.stagingCleanup');
+    this.ctx.effect(() => () => { void rm(this.stagingRoot, { recursive: true, force: true }); }, 'easyworkExperts.stagingCleanup');
   }
 
   // ── table access ──────────────────────────────────────────────────────────
@@ -307,7 +307,7 @@ export class ExpertsManager extends Service implements ExpertsService {
   }
 
   private async authorize(actor: ActorContext, action: ExpertAction, expert: Expert, signal?: AbortSignal): Promise<void> {
-    const decision = await this.ctx.workdshAccess.authorize({
+    const decision = await this.ctx.easyworkAccess.authorize({
       actor,
       action: actionAccess(action),
       resource: { domain: EXPERT_DOMAIN, id: expert.id, revision: expert.revision },
@@ -333,7 +333,7 @@ export class ExpertsManager extends Service implements ExpertsService {
     code: string,
     references?: Readonly<Record<string, string>>,
   ): Promise<void> {
-    await this.ctx.workdshAudit.append({
+    await this.ctx.easyworkAudit.append({
       id: randomUUID(),
       occurredAt: new Date().toISOString(),
       requestId: actor.requestId,
@@ -455,7 +455,7 @@ export class ExpertsManager extends Service implements ExpertsService {
         const source = this.loadRevision(ref.expertId, ref.revisionId);
         const snapshotDirs: string[] = [];
         for (const skill of source.dependencyLock) {
-          snapshotDirs.push((await this.ctx.workdshSkills.retainRevision(skill, { domain: EXPERT_DOMAIN, id: source.expertId }, signal)).snapshotDir);
+          snapshotDirs.push((await this.ctx.easyworkSkills.retainRevision(skill, { domain: EXPERT_DOMAIN, id: source.expertId }, signal)).snapshotDir);
         }
         const compiled = await this.compilePreset({
           expertId: source.expertId,
@@ -488,7 +488,7 @@ export class ExpertsManager extends Service implements ExpertsService {
 
       const snapshotDirs: string[] = [];
       for (const skill of revision.dependencyLock) {
-        snapshotDirs.push((await this.ctx.workdshSkills.retainRevision(skill, { domain: EXPERT_DOMAIN, id: revision.expertId }, signal)).snapshotDir);
+        snapshotDirs.push((await this.ctx.easyworkSkills.retainRevision(skill, { domain: EXPERT_DOMAIN, id: revision.expertId }, signal)).snapshotDir);
       }
       const compiled = await this.compilePreset({
         expertId: revision.expertId,
@@ -595,7 +595,7 @@ export class ExpertsManager extends Service implements ExpertsService {
     }
     for (const ref of revision.dependencyLock) {
       signal?.throwIfAborted();
-      const check = await this.ctx.workdshSkills.checkRevision(ref, actor, signal);
+      const check = await this.ctx.easyworkSkills.checkRevision(ref, actor, signal);
       if (check.status !== 'intact') return 'missing-dependency';
     }
     return 'ready';
@@ -673,7 +673,7 @@ export class ExpertsManager extends Service implements ExpertsService {
   async listSkills(actor: ActorContext, expertId: string, scope: 'available' | 'equipped', signal?: AbortSignal): Promise<readonly import('../shared.js').ExpertSkillOption[]> {
     const detail = await this.get(actor, expertId, undefined, signal);
     if (scope === 'available' && !detail.canEdit) throw new ExpertsError('experts/forbidden', '没有权限为该专家选择技能。');
-    const catalog = (await this.ctx.workdshSkills.list(signal)).map(skill => ({
+    const catalog = (await this.ctx.easyworkSkills.list(signal)).map(skill => ({
       skillId: skill.name, name: skill.name, description: skill.description, state: skill.state,
       selectable: skill.modelInvocable && (skill.state === 'enabled' || skill.state === 'readonly'),
     }));
@@ -865,7 +865,7 @@ export class ExpertsManager extends Service implements ExpertsService {
       seen.add(requirement.skillId ?? name);
       signal?.throwIfAborted();
       try {
-        dependencyLock.push(await this.ctx.workdshSkills.resolveRevision(requirement.skillId ?? name, undefined, signal));
+        dependencyLock.push(await this.ctx.easyworkSkills.resolveRevision(requirement.skillId ?? name, undefined, signal));
       } catch (error) {
         issues.push({ code: mapSkillDependencyError(error), path, message: `无法冻结 Skill 依赖「${name}」：${describeError(error)}`, dependencyRef: name });
       }
@@ -945,7 +945,7 @@ export class ExpertsManager extends Service implements ExpertsService {
               ? (() => { throw new ExpertsError('experts/invalid-definition', '请修改完整制作文件，不能仅修改摘要字段。'); })()
               : normalizeDefinition(mergeDefinition(base.definition, patch));
           if (base.definition.packageDocuments && candidate.packageDocuments) {
-            const identity = (files: Record<string, string>) => JSON.parse(files['.workdsh-expert/plugin.json'] ?? files['.codebuddy-plugin/plugin.json']);
+            const identity = (files: Record<string, string>) => JSON.parse(files['.easywork-expert/plugin.json'] ?? files['.codebuddy-plugin/plugin.json']);
             const before = identity(base.definition.packageDocuments), after = identity(candidate.packageDocuments);
             if (before.name !== after.name || before.agentName !== after.agentName) throw new ExpertsError('experts/invalid-definition', '修改必须保留包 name 与默认 agentName；更换身份请创建新作品。');
           }
@@ -1123,7 +1123,7 @@ export class ExpertsManager extends Service implements ExpertsService {
               return ref;
             });
             const dirs: string[] = [];
-            for (const ref of lock) dirs.push((await this.ctx.workdshSkills.retainRevision(ref, { domain: EXPERT_DOMAIN, id: memberId }, signal)).snapshotDir);
+            for (const ref of lock) dirs.push((await this.ctx.easyworkSkills.retainRevision(ref, { domain: EXPERT_DOMAIN, id: memberId }, signal)).snapshotDir);
             const compiledMember = await this.compilePreset({ expertId: memberId, definition: memberDefinition, snapshotDirs: dirs, basePresetId: await this.resolveBasePreset(signal) });
             const memberDigest = definitionDigest(memberDefinition);
             const lockDigest = digestOf(lock);
@@ -1144,7 +1144,7 @@ export class ExpertsManager extends Service implements ExpertsService {
           const snapshotDirs: string[] = [];
           for (const ref of validation.dependencyLock) {
             signal?.throwIfAborted();
-            const retained = await this.ctx.workdshSkills.retainRevision(ref, consumer, signal);
+            const retained = await this.ctx.easyworkSkills.retainRevision(ref, consumer, signal);
             snapshotDirs.push(retained.snapshotDir);
           }
           const basePresetId = await this.resolveBasePreset(signal);
@@ -1364,7 +1364,7 @@ export class ExpertsManager extends Service implements ExpertsService {
             record({ resultRef: sessionId, resultDetail: JSON.stringify({ sessionId, handoffId }) });
             return { binding: prior, sessionId, handoffId };
           }
-          const created = await this.ctx.workdshSessionAccess.create({
+          const created = await this.ctx.easyworkSessionAccess.create({
             sessionId: sessionId as SessionId,
             agentPreset: plan.presetRevisionRef,
             ...(plan.workspaceId !== undefined || plan.workspaceRef === undefined ? {} : { cwd: plan.workspaceRef }),
@@ -1522,7 +1522,7 @@ export class ExpertsManager extends Service implements ExpertsService {
             record({ resultRef: sessionId, resultDetail: JSON.stringify({ sessionId, handoffId }) });
             return { binding: prior, sessionId, handoffId };
           }
-          const created = await this.ctx.workdshSessionAccess.create({ sessionId: sessionId as SessionId, agentPreset: targetRevision.presetRevisionRef }, signal);
+          const created = await this.ctx.easyworkSessionAccess.create({ sessionId: sessionId as SessionId, agentPreset: targetRevision.presetRevisionRef }, signal);
           const boundSessionId = String(created.sessionId);
           const now = new Date().toISOString();
           const binding: ExecutionBinding = {
@@ -1603,7 +1603,7 @@ export class ExpertsManager extends Service implements ExpertsService {
     }
     for (const ref of revision.dependencyLock) {
       signal?.throwIfAborted();
-      const check = await this.ctx.workdshSkills.checkRevision(ref, actor, signal);
+      const check = await this.ctx.easyworkSkills.checkRevision(ref, actor, signal);
       if (check.status === 'drifted') throw new ExpertsError('experts/dependency-drift', '绑定任务的 Skill 快照已漂移，拒绝执行。', { skillId: ref.skillId });
       if (check.status === 'missing' || check.status === 'source-uninstalled') throw new ExpertsError('experts/dependency-missing', '绑定任务的 Skill 快照缺失，拒绝执行。', { skillId: ref.skillId });
       if (check.status === 'source-disabled') throw new ExpertsError('experts/dependency-disabled', '绑定任务依赖的 Skill 来源已停用，拒绝执行。', { skillId: ref.skillId });
@@ -1683,7 +1683,7 @@ export class ExpertsManager extends Service implements ExpertsService {
       seen.add(name);
       signal?.throwIfAborted();
       try {
-        await this.ctx.workdshSkills.resolveRevision(requirement.skillId ?? name, undefined, signal);
+        await this.ctx.easyworkSkills.resolveRevision(requirement.skillId ?? name, undefined, signal);
       } catch (error) {
         missingDependencies.push({ code: mapSkillDependencyError(error), message: `导入的专家依赖 Skill「${name}」在本机不可用。`, dependencyRef: name });
       }

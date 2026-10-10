@@ -2,8 +2,8 @@ import * as React from 'react';
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots';
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client';
 import type {} from '@deepseek-ai/dsh-client-ui-session/client';
-import { Icon } from 'workdsh-ui';
-import type { ProjectTaskContext } from 'workdsh-contracts/projects';
+import { Icon } from 'easywork-ui';
+import type { ProjectTaskContext } from 'easywork-contracts/projects';
 import type { ProjectClient } from '../../management.js';
 
 /** Visually matches the official title-adjacent chip (22px, 6px radius, 12px text). */

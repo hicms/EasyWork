@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Input } from 'workdsh-ui';
+import { Input } from 'easywork-ui';
 
 export type ProjectMenuKind = 'file' | 'mode' | 'expert' | 'skill' | 'connector';
 export type ProjectMenuItem = { id: string; label: string; description?: string; selected?: boolean; disabled?: boolean };

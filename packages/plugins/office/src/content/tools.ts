@@ -1,18 +1,18 @@
 import type {} from "@deepseek-ai/dsh-fs";
 import { renderStylePreview } from "../presentation/style-preview.js";
-import type { OfficeContentSnapshot } from "workdsh-contracts/office";
+import type { OfficeContentSnapshot } from "easywork-contracts/office";
 import type { Context } from "@deepseek-ai/cordis";
 import { defineTool, type ToolRunContext } from "@deepseek-ai/dsh-tools";
 import { capabilities, openInput, contentOpenInput, parse, ensure } from "./model.js";
 import { exportAndPresent } from "./export.js";
 import { registerAuthoringGuide } from "./authoring.js";
-export const name = "workdsh-office-tools";
+export const name = "easywork-office-tools";
 export const inject = [
   "fs",
   "tools",
   "systemPrompt",
-  "workdshOfficeContent",
-  "workdshIdentity",
+  "easyworkOfficeContent",
+  "easyworkIdentity",
 ];
 const pdfGeometry={id:{type:"string",required:true},x:{type:"number",required:true},y:{type:"number",required:true},width:{type:"number",required:true},height:{type:"number",required:true}} as const;
 const pdfPageSchema={type:"object",additionalProperties:false,properties:{id:{type:"string",required:true},width:{type:"number",required:true},height:{type:"number",required:true},background:{type:"string",required:true},elements:{type:"array",required:true,items:{oneOf:[{type:"object",additionalProperties:false,properties:{...pdfGeometry,type:{type:"string",const:"text",required:true},text:{type:"string",required:true},fontSize:{type:"number",required:true},lineHeight:{type:"number",required:true},color:{type:"string",required:true}}},{type:"object",additionalProperties:false,properties:{...pdfGeometry,type:{type:"string",const:"rectangle",required:true},fill:{type:"string",required:true}}}]}}}} as const;
@@ -173,7 +173,7 @@ const render = (_args: unknown, value: unknown) => [
 ];
 async function actor(ctx: Context, exec: ToolRunContext) {
   exec.signal.throwIfAborted();
-  return ctx.workdshIdentity.resolve(
+  return ctx.easyworkIdentity.resolve(
     exec.agent ? { sessionId: String(exec.agent.id) } : undefined,
     exec.signal,
   );
@@ -224,7 +224,7 @@ export function apply(ctx: Context) {
       ensure(ctx.fs,"UNAVAILABLE","此会话没有 Harness 文件服务，不能导入模板。");
       const target=await ctx.fs.resolve(args.path,{cwd:exec.agent?.session.header.cwd,signal:exec.signal});
       const bytes=await ctx.fs.readBytes(target,exec.signal,8*1024*1024);
-      return wire(ctx.workdshOfficeContent.projectForAgent(await ctx.workdshOfficeContent.open(identity,{source:"pptx",kind:"presentation",title:args.title,operationId:args.operationId,bytes:Buffer.from(bytes).toString("base64")},exec.signal)));
+      return wire(ctx.easyworkOfficeContent.projectForAgent(await ctx.easyworkOfficeContent.open(identity,{source:"pptx",kind:"presentation",title:args.title,operationId:args.operationId,bytes:Buffer.from(bytes).toString("base64")},exec.signal)));
     },
   })));
 
@@ -251,7 +251,7 @@ export function apply(ctx: Context) {
         exportAndPresent(
           ctx,
           exec,
-          await ctx.workdshOfficeContent.read(
+          await ctx.easyworkOfficeContent.read(
             await actor(ctx, exec),
             args.documentId,
             exec.signal,
@@ -287,8 +287,8 @@ export function apply(ctx: Context) {
             },
             {type:"object",additionalProperties:false,properties:{source:{type:"string",const:"new",required:true},kind:{type:"string",const:"html",required:true},title:string,operationId:string}},
             {type:"object",additionalProperties:false,properties:{source:{type:"string",const:"new",required:true},kind:{type:"string",const:"pdf",required:true},title:string,operationId:string}},
-            ...(ctx.workdshOfficeContent.spreadsheetEnabled?[{type:"object",additionalProperties:false,properties:{source:{type:"string",const:"new",required:true},kind:{type:"string",const:"spreadsheet",required:true},title:string,operationId:string}} as const]:[]),
-            ...(ctx.workdshOfficeContent.presentationEnabled?[{type:"object",additionalProperties:false,properties:{source:{type:"string",const:"new",required:true},kind:{type:"string",const:"presentation",required:true},title:string,operationId:string,brief:{type:"string",description:"Optional planning context; opening initializes only one title page. Add/update each slide in a separate content_edit."}}} as const]:[]),
+            ...(ctx.easyworkOfficeContent.spreadsheetEnabled?[{type:"object",additionalProperties:false,properties:{source:{type:"string",const:"new",required:true},kind:{type:"string",const:"spreadsheet",required:true},title:string,operationId:string}} as const]:[]),
+            ...(ctx.easyworkOfficeContent.presentationEnabled?[{type:"object",additionalProperties:false,properties:{source:{type:"string",const:"new",required:true},kind:{type:"string",const:"presentation",required:true},title:string,operationId:string,brief:{type:"string",description:"Optional planning context; opening initializes only one title page. Add/update each slide in a separate content_edit."}}} as const]:[]),
           ],
           required: true,
         },
@@ -296,7 +296,7 @@ export function apply(ctx: Context) {
       output: { schema: snapshot, render },
       execute: async (args, exec) =>
         wire(
-          ctx.workdshOfficeContent.projectForAgent(await ctx.workdshOfficeContent.open(
+          ctx.easyworkOfficeContent.projectForAgent(await ctx.easyworkOfficeContent.open(
             await actor(ctx, exec),
             parse(contentOpenInput, args.input),
             exec.signal,
@@ -312,12 +312,12 @@ export function apply(ctx: Context) {
     execute: async(args,exec) => {
       const {html,styles}=renderStylePreview(args);
       const owner=await actor(ctx,exec);
-      const opened=await ctx.workdshOfficeContent.open(owner,{source:"new",kind:"html",title:"PPT 风格预览",operationId:args.operationId},exec.signal);
-      const current=await ctx.workdshOfficeContent.read(owner,opened.documentId,exec.signal);
+      const opened=await ctx.easyworkOfficeContent.open(owner,{source:"new",kind:"html",title:"PPT 风格预览",operationId:args.operationId},exec.signal);
+      const current=await ctx.easyworkOfficeContent.read(owner,opened.documentId,exec.signal);
       if (current.kind!=="html") throw new Error("Style preview operationId belongs to another document kind");
       // A lost receipt can be retried without advancing a persisted identical preview.
-      if (current.state.html!==html) await ctx.workdshOfficeContent.editForAgent(owner,{documentId:current.documentId,baseRevision:current.revision,operationId:args.operationId+"-preview",operations:[{op:"html.replaceDocument",html}]},exec.signal);
-      const presented=await ctx.workdshOfficeContent.present(owner,current.documentId,exec.signal);
+      if (current.state.html!==html) await ctx.easyworkOfficeContent.editForAgent(owner,{documentId:current.documentId,baseRevision:current.revision,operationId:args.operationId+"-preview",operations:[{op:"html.replaceDocument",html}]},exec.signal);
+      const presented=await ctx.easyworkOfficeContent.present(owner,current.documentId,exec.signal);
       return {documentId:current.documentId,status:presented.status,styles:styles.map(s=>({...s,label:s.id+" · "+s.name})),next:"Ask via ask_user_question, wait, then reopen the original native presentation. Preview cards do not submit answers."};
     },
   })));
@@ -330,7 +330,7 @@ export function apply(ctx: Context) {
       output: { schema: snapshot, render },
       execute: async (args, exec) =>
         wire(
-          ctx.workdshOfficeContent.projectForAgent(await ctx.workdshOfficeContent.read(
+          ctx.easyworkOfficeContent.projectForAgent(await ctx.easyworkOfficeContent.read(
             await actor(ctx, exec),
             args.documentId,
             exec.signal,
@@ -355,7 +355,7 @@ export function apply(ctx: Context) {
       },
       execute: async (_args, exec) => {
         await actor(ctx, exec);
-        return JSON.parse(JSON.stringify(ctx.workdshOfficeContent.capabilities()));
+        return JSON.parse(JSON.stringify(ctx.easyworkOfficeContent.capabilities()));
       },
     }),
   ));
@@ -373,7 +373,7 @@ export function apply(ctx: Context) {
               documentId: string,
               baseRevision: { type: "integer", required: true },
               operationId: string,
-              operations: { type: "array", required: true, description: "Keep streamed JSON bounded. For Word, insert no more than 8 top-level blocks per call and put a table or chart in its own call.", items: {oneOf:[...operation.oneOf,...pdfOperation,{type:"object",additionalProperties:false,properties:{op:{type:"string",const:"html.replaceDocument",required:true},html:string}},...(ctx.workdshOfficeContent.spreadsheetEnabled?sheetOperation.oneOf:[]),...(ctx.workdshOfficeContent.presentationEnabled?pptOperation.oneOf:[])]} },
+              operations: { type: "array", required: true, description: "Keep streamed JSON bounded. For Word, insert no more than 8 top-level blocks per call and put a table or chart in its own call.", items: {oneOf:[...operation.oneOf,...pdfOperation,{type:"object",additionalProperties:false,properties:{op:{type:"string",const:"html.replaceDocument",required:true},html:string}},...(ctx.easyworkOfficeContent.spreadsheetEnabled?sheetOperation.oneOf:[]),...(ctx.easyworkOfficeContent.presentationEnabled?pptOperation.oneOf:[])]} },
             },
           }, {
             type: "string",
@@ -401,7 +401,7 @@ export function apply(ctx: Context) {
         render,
       },
       execute: async (args, exec) =>
-        ctx.workdshOfficeContent.editForAgent(
+        ctx.easyworkOfficeContent.editForAgent(
           await actor(ctx, exec),
           objectInput(args.input),
           exec.signal,
@@ -428,7 +428,7 @@ export function apply(ctx: Context) {
         render,
       },
       execute: async (args, exec) =>
-        ctx.workdshOfficeContent.present(
+        ctx.easyworkOfficeContent.present(
           await actor(ctx, exec),
           args.documentId,
           exec.signal,

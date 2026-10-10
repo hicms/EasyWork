@@ -59,7 +59,7 @@ function run(command: string, args: readonly string[], cwd: string, env: NodeJS.
 
 function defaultReleaseOptions(): MacReleaseOptions {
   const desktopRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-  const outputDir = resolve(desktopRoot, 'dist', 'mac-release', process.env.WORKDSH_MAC_ARCH ?? process.arch)
+  const outputDir = resolve(desktopRoot, 'dist', 'mac-release', process.env.EASYWORK_MAC_ARCH ?? process.arch)
   return {
     env: process.env,
     platform: process.platform,
@@ -92,7 +92,7 @@ export function releaseMac(options: MacReleaseOptions = defaultReleaseOptions())
   // The workspace check includes the package build and repository-layout gate. Signing
   // material is withheld from every build, test, Loader smoke, and layout subprocess.
   options.run('yarn', ['run', 'check'], resolve(options.desktopRoot, '..', '..'), buildEnvironment)
-  const targetArch = options.env.WORKDSH_MAC_ARCH ?? options.arch
+  const targetArch = options.env.EASYWORK_MAC_ARCH ?? options.arch
   if (targetArch !== 'x64' && targetArch !== 'arm64') {
     throw new Error(`unsupported macOS target architecture: ${targetArch}`)
   }

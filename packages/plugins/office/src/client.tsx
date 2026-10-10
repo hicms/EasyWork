@@ -16,8 +16,8 @@ import type { ISessions } from "@deepseek-ai/dsh-api-session-controller/client";
 import type {} from "@deepseek-ai/dsh-client-ui-session/client";
 import { downloadSpreadsheet } from "./spreadsheet/xlsx.js";
 import { downloadDocument } from "./live/docx.js";
-import type { OfficeContentSnapshot } from "workdsh-contracts/office";
-import type { LibraryOriginalPreviewRegistry } from "workdsh-contracts/library";
+import type { OfficeContentSnapshot } from "easywork-contracts/office";
+import type { LibraryOriginalPreviewRegistry } from "easywork-contracts/library";
 import { renderAsync } from "docx-preview";
 import { mountPptx } from "./presentation/native-react/editor.js";
 import nativeCss from "./presentation/native-react/native.css";
@@ -30,15 +30,15 @@ import {
 } from "./live/model.js";
 declare module "@deepseek-ai/dsh-client-ui-sidebar-right/client" {
   interface SidebarRightTabParamsMap {
-    "workdsh-office-live": { documentId?: string; requestId?: string };
+    "easywork-office-live": { documentId?: string; requestId?: string };
   }
 }
-declare module "@deepseek-ai/cordis" { interface Context { workdshLibraryPreview: LibraryOriginalPreviewRegistry; } }
-export const name = "workdsh-office-client";
-declare const __WORKDSH_WORD_ONLY__: boolean;
+declare module "@deepseek-ai/cordis" { interface Context { easyworkLibraryPreview: LibraryOriginalPreviewRegistry; } }
+export const name = "easywork-office-client";
+declare const __EASYWORK_WORD_ONLY__: boolean;
 // Word-only releases claim DOCX only (dist/release-scope.json); every Client
 // registration below must stay inside that scope.
-const wordOnlyRelease = typeof __WORKDSH_WORD_ONLY__ !== "undefined" && __WORKDSH_WORD_ONLY__;
+const wordOnlyRelease = typeof __EASYWORK_WORD_ONLY__ !== "undefined" && __EASYWORK_WORD_ONLY__;
 export const inject = [
   "slots",
   "documentPreviews",
@@ -49,7 +49,7 @@ export const inject = [
   "inputTriggers",
 ];
 export function apply(ctx: Context): void {
-  ctx.inject(["workdshLibraryPreview"], scope => scope.effect(() => scope.workdshLibraryPreview.register(wordOnlyRelease ? ["docx"] : ["docx", "pptx", "csv", "xlsx"], async (target, input) => {
+  ctx.inject(["easyworkLibraryPreview"], scope => scope.effect(() => scope.easyworkLibraryPreview.register(wordOnlyRelease ? ["docx"] : ["docx", "pptx", "csv", "xlsx"], async (target, input) => {
     target.replaceChildren();
     if (input.kind === "csv") {
       const root = createRoot(target);
@@ -61,7 +61,7 @@ export function apply(ctx: Context): void {
       frame.title = input.name; frame.setAttribute("sandbox", "allow-scripts allow-downloads");
       frame.style.cssText = "width:100%;height:100%;border:0";
       const ready = (event: MessageEvent) => {
-        if (event.source === frame.contentWindow && event.data?.type === "workdsh-office-ready") frame.contentWindow?.postMessage({ type: "workdsh-office-open", extension: "xlsx", bytes: input.bytes.slice() }, "*");
+        if (event.source === frame.contentWindow && event.data?.type === "easywork-office-ready") frame.contentWindow?.postMessage({ type: "easywork-office-open", extension: "xlsx", bytes: input.bytes.slice() }, "*");
       };
       window.addEventListener("message", ready); frame.srcdoc = editorHtml; target.append(frame);
       return () => { window.removeEventListener("message", ready); frame.remove(); };
@@ -74,13 +74,13 @@ export function apply(ctx: Context): void {
       return () => target.replaceChildren();
     }
     const style = document.createElement("style"); style.textContent = nativeCss + ribbonCss; target.append(style);
-    const host = document.createElement("div"); host.className = "workdsh-ppt-editor"; host.style.cssText = "height:100%;overflow:hidden"; target.append(host);
+    const host = document.createElement("div"); host.className = "easywork-ppt-editor"; host.style.cssText = "height:100%;overflow:hidden"; target.append(host);
     const editor = await mountPptx(host, input.bytes, input.name, () => undefined, () => undefined);
     return () => { editor.dispose(); target.replaceChildren(); };
   })));
   ctx.effect(() =>
     ctx.documentPreviews.register({
-      id: "workdsh-office",
+      id: "easywork-office",
       extensions: wordOnlyRelease ? ["docx"] : ["xlsx", "docx", "pptx", "csv"],
       title: () => "Office 浏览器编辑",
       binaryExtensions: wordOnlyRelease ? ["docx"] : ["xlsx", "docx", "pptx", "csv"],
@@ -90,7 +90,7 @@ export function apply(ctx: Context): void {
   );
   ctx.slots.inject("sidebar.right.tab.document", () =>
     ctx.slots.register(
-      { name: "sidebar.right.tab.document", key: "workdsh-office", inject: () => ({office}) },
+      { name: "sidebar.right.tab.document", key: "easywork-office", inject: () => ({office}) },
       OfficeDocument,
     ),
   );
@@ -100,7 +100,7 @@ export function apply(ctx: Context): void {
     request: unknown,
     signal?: AbortSignal,
   ): Promise<T> => {
-    const response = await fetch("/api/workdsh-office", {
+    const response = await fetch("/api/easywork-office", {
       method: "POST",
       credentials: "same-origin",
       headers: { "content-type": "application/json" },
@@ -138,7 +138,7 @@ export function apply(ctx: Context): void {
         else throw new Error("请在 PPT 编辑器中下载此演示文稿。");
       }
     },
-    open: (sessionId, documentId) => ctx.sidebarRight.openTabIn(sessionId as never, "workdsh-office-live", {params: {documentId}}),
+    open: (sessionId, documentId) => ctx.sidebarRight.openTabIn(sessionId as never, "easywork-office-live", {params: {documentId}}),
     createDocument: (options) => {
       const model = createDocumentModel(options, rpc), key = options.sessionId + ":" + options.documentId;
       return {...model, attach: element => {
@@ -154,12 +154,12 @@ export function apply(ctx: Context): void {
   },!wordOnlyRelease,!wordOnlyRelease)) ctx.effect(() => ctx.inputTriggers.registerSource(source));
   ctx.effect(() =>
     ctx.sidebarRightTabs.register({
-      id: "workdsh-office-live",
-      kind: "workdsh-office-live",
+      id: "easywork-office-live",
+      kind: "easywork-office-live",
       title: () => "文档 · 实时编辑",
       guide: [
         {
-          id: "workdsh-office-live",
+          id: "easywork-office-live",
           order: 45,
           title: () => "文档",
           description: () => "查看并编辑 AI 正在编写的工作副本",
@@ -171,7 +171,7 @@ export function apply(ctx: Context): void {
     ctx.slots.register(
       {
         name: "sidebar.right.pane.tab",
-        key: "workdsh-office-live",
+        key: "easywork-office-live",
         inject: () => ({ office }),
       },
       DocumentPage,
@@ -194,7 +194,7 @@ export function apply(ctx: Context): void {
             return;
           for (const request of requests)
             if (!seen.has(request.requestId)) {
-              await ctx.sidebarRight.openTabIn(sessionId, "workdsh-office-live", {
+              await ctx.sidebarRight.openTabIn(sessionId, "easywork-office-live", {
                 params: {
                   documentId: request.documentId,
                   requestId: request.requestId,

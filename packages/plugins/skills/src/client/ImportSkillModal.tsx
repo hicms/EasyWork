@@ -1,5 +1,5 @@
-import { Button, Select } from 'workdsh-ui';
-import { Modal } from 'workdsh-ui';
+import { Button, Select } from 'easywork-ui';
+import { Modal } from 'easywork-ui';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { zipSync } from 'fflate';

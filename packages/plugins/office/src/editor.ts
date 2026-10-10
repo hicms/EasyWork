@@ -95,7 +95,7 @@ save.onclick = async () => {
   } catch (error) { status.textContent = String(error); }
 };
 window.addEventListener('message', event => {
-  if (event.source !== parent || event.data?.type !== 'workdsh-office-open') return;
+  if (event.source !== parent || event.data?.type !== 'easywork-office-open') return;
   open(event.data.bytes, event.data.extension).catch(error => { status.textContent = String(error); save.disabled = true; });
 });
-parent.postMessage({ type: 'workdsh-office-ready' }, '*');
+parent.postMessage({ type: 'easywork-office-ready' }, '*');

@@ -1,4 +1,4 @@
-import { Textarea } from 'workdsh-ui';
+import { Textarea } from 'easywork-ui';
 import * as React from 'react';
 import type { ExpertTeamDefinition } from '../shared.js';
 

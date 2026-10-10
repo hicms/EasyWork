@@ -51,8 +51,8 @@ export function LogoMark({ size = 24, title }: LogoMarkProps) {
   const outputs = new Map([
     ['packages/ui/src/components/LogoMark.tsx', component],
     ['apps/desktop/build/tray-icon.svg', symbol],
-    ['apps/web/assets/brand/workdsh-mark.svg', symbol],
-    ['apps/web/assets/brand/workdsh-logo.svg', logo],
+    ['apps/web/assets/brand/easywork-mark.svg', symbol],
+    ['apps/web/assets/brand/easywork-logo.svg', logo],
   ])
   for (const [path, content] of outputs) {
     const output = resolve(root, path)

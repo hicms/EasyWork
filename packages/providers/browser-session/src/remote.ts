@@ -3,15 +3,15 @@
 import type { Context } from '@deepseek-ai/cordis';
 import type { Agent } from '@deepseek-ai/dsh-agent';
 import type { HostConnectionHandle } from '@deepseek-ai/dsh-client-connection';
-import type { IdentityService } from 'workdsh-contracts';
+import type { IdentityService } from 'easywork-contracts';
 import type { BrowserSessionView } from './index.js';
 
-export const browserSessionPath = '/api/workdsh-browser-session';
+export const browserSessionPath = '/api/easywork-browser-session';
 
 type BrowserHost = Context & {
   connection: HostConnectionHandle;
-  workdshIdentity: IdentityService;
-  workdshBrowserSession: BrowserSessionView;
+  easyworkIdentity: IdentityService;
+  easyworkBrowserSession: BrowserSessionView;
 };
 
 function record(value: unknown): Record<string, unknown> | undefined {
@@ -31,7 +31,7 @@ export function registerBrowserSessionConnection(ctx: Context): void {
     methods: ['POST'],
     requestBody: 'buffered',
     fetch: async request => {
-      const profile = host.workdshIdentity.profile();
+      const profile = host.easyworkIdentity.profile();
       if (profile.organization.kind !== 'personal'
         || profile.membership.principalId !== profile.principalId
         || profile.membership.organizationId !== profile.organization.id
@@ -47,12 +47,12 @@ export function registerBrowserSessionConnection(ctx: Context): void {
         return response({ error: 'invalid browser request' }, 400);
       }
       const agent = ctx.agents.get(sessionId as Agent['id']);
-      if (!agent || agent.id !== sessionId || !host.workdshBrowserSession.available(agent)) {
+      if (!agent || agent.id !== sessionId || !host.easyworkBrowserSession.available(agent)) {
         return response({ error: 'browser Session is unavailable' }, 404);
       }
-      if (operation === 'status') return response({ active: host.workdshBrowserSession.active(agent) });
+      if (operation === 'status') return response({ active: host.easyworkBrowserSession.active(agent) });
       try {
-        const view = host.workdshBrowserSession;
+        const view = host.easyworkBrowserSession;
         const frame = operation === 'capture'
           ? await view.capture(agent, request.signal)
           : operation === 'click' && typeof payload.x === 'number' && typeof payload.y === 'number'
@@ -77,5 +77,5 @@ export function registerBrowserSessionConnection(ctx: Context): void {
       }
     },
   });
-  ctx.effect(() => unregister, 'workdsh.browserSession.fetch');
+  ctx.effect(() => unregister, 'easywork.browserSession.fetch');
 }

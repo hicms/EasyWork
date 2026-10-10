@@ -2,7 +2,7 @@ import {pdfBytes} from "../pdf/encode.js";
 import {spreadsheetXlsx} from "../spreadsheet/xlsx.js";
 import type { Context } from "@deepseek-ai/cordis";
 import type { ToolRunContext } from "@deepseek-ai/dsh-tools";
-import type { OfficeContentSnapshot } from "workdsh-contracts/office";
+import type { OfficeContentSnapshot } from "easywork-contracts/office";
 import { documentDocx } from "../live/docx.js";
 import { parsePresentation } from "../presentation/native-deck.js";
 import { createHash } from "node:crypto";

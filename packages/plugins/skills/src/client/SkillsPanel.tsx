@@ -1,5 +1,5 @@
-import { Button, Input, Textarea } from 'workdsh-ui';
-import { Icon, Modal, type IconName } from 'workdsh-ui';
+import { Button, Input, Textarea } from 'easywork-ui';
+import { Icon, Modal, type IconName } from 'easywork-ui';
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { InjectFace, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots';
@@ -80,12 +80,12 @@ export function SkillsPanel({ toggleNavigation, management, startSkillTask, star
     try {
       const [rows, summary] = await Promise.all([
         management.list(),
-        management.catalog().catch(cause => { console.error('[workdsh:skills:catalog]', cause); return undefined; }),
+        management.catalog().catch(cause => { console.error('[easywork:skills:catalog]', cause); return undefined; }),
       ]);
       setSkills(rows);
       if (summary) setCatalog(summary);
     }
-    catch (cause) { console.error('[workdsh:skills:list]', cause); setError(messageOf(cause)); }
+    catch (cause) { console.error('[easywork:skills:list]', cause); setError(messageOf(cause)); }
     finally { setBusy(false); }
   }, [management]);
   useEffect(() => { void refresh(); }, [refresh]);
@@ -218,7 +218,7 @@ export function SkillsPanel({ toggleNavigation, management, startSkillTask, star
   const filtered = matchingSkills.filter(skill => inCategory(skill.categories));
   const installedFiltered = skills.filter(skill => `${skill.name} ${skill.title ?? ''} ${skill.localizedDescription ?? skill.description} ${skill.whenToUse ?? ''}`.toLowerCase().includes(installedQuery.trim().toLowerCase()));
   const capabilityTabs = [['experts', '专家'], ['skills', '技能'], ['connectors', '连接器']] as const;
-  const capabilityKey: Record<string, string> = { experts: 'workdsh-experts', skills: 'workdsh-skills', connectors: 'workdsh-connectors' };
+  const capabilityKey: Record<string, string> = { experts: 'easywork-experts', skills: 'easywork-skills', connectors: 'easywork-connectors' };
   const countsLine = <div role="status" aria-live="polite" className={error ? 'error counts' : notice ? 'notice counts' : 'muted counts'}>{busy ? '正在读取…' : error || notice || `共 ${skills.length} 个已安装技能 · 当前显示 ${view === 'installed' ? installedFiltered.length : filtered.length} 个`}</div>;
   const batchBar = <div className="batch-bar" role="toolbar" aria-label="批量管理技能"><span>已选择 {selectedNames.length} 项</span><Button disabled={!selectedNames.length || busy} onClick={() => void runBatch('enable')}>启用</Button><Button disabled={!selectedNames.length || busy} onClick={() => void runBatch('disable')}>停用</Button><Button tone="danger" className="danger" disabled={!selectedNames.length || busy} onClick={() => setConfirmBatchUninstall(true)}>卸载</Button></div>;
   const renderSkillCard = (skill: ManagedSkillSummary) => <article className={`card ${skill.state === 'disabled' ? 'disabled' : skill.state === 'invalid' ? 'invalid' : ''} ${actionMenu === skill.name ? 'menu-open' : ''}`} key={skill.name}>
@@ -227,7 +227,7 @@ export function SkillsPanel({ toggleNavigation, management, startSkillTask, star
       {!batchMode && <button className="switch" role="switch" disabled={!skill.manageable || skill.state === 'invalid'} aria-checked={skill.state === 'enabled'} aria-label={`${skill.state === 'enabled' ? '停用' : '启用'}技能 ${skill.name}`} onClick={() => void setEnabled(skill, skill.state !== 'enabled')} />}
     </div><p className="muted">{skill.localizedDescription ?? skill.description}</p>{skill.state === 'invalid' && <small className="diagnostic">需要修复 · {skill.diagnostics?.[0]?.message}</small>}
   </article>;
-  return <section ref={panel} className="wd-skills" data-testid="workdsh-skills">
+  return <section ref={panel} className="wd-skills" data-testid="easywork-skills">
     <style>{skillsCss + skillsActionsCss + skillsMarketCss}</style>
     {view === 'installed' ? <>
       <div className="installed-back-row">

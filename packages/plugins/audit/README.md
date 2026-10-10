@@ -15,6 +15,6 @@
 
 ## 验收与下一步
 
-`AuditJournal` 注入官方 `storageDomain`，使用 `workdsh_audit` per-record 领域保存不可变事件。追加操作在插件内串行，持久成功后才完成；事件保存组织、主体、requestId、动作、目标、结果与非敏感引用。`flush()` 供 Session durability checkpoint 和插件卸载等待此前追加结算。
+`AuditJournal` 注入官方 `storageDomain`，使用 `easywork_audit` per-record 领域保存不可变事件。追加操作在插件内串行，持久成功后才完成；事件保存组织、主体、requestId、动作、目标、结果与非敏感引用。`flush()` 供 Session durability checkpoint 和插件卸载等待此前追加结算。
 
 下一步补受 Access 保护的组织审计查询、分页和导出。完成对应 PLAN 任务及 [验收矩阵](../../../apps/web/docs/ACCEPTANCE.md) 场景后才结束 P1-09。
