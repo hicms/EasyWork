@@ -1,8 +1,9 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { copyFile, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
-import { join, relative, resolve } from 'node:path';
+import { isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { verifyProductArtifacts } from '../../../scripts/verify-product-artifacts.mjs';
 
 const root = resolve(fileURLToPath(new URL('../', import.meta.url)));
 const project = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
@@ -24,6 +25,9 @@ const packageDirectories = [
   '../../packages/bundle',
 ];
 
+const artifactRoot = join(root, '.artifacts');
+const targetWithinArtifacts = relative(artifactRoot, destination);
+if (isAbsolute(targetWithinArtifacts) || targetWithinArtifacts.startsWith('..') || !targetWithinArtifacts.startsWith('project-v')) throw new Error('Invalid release output path');
 await rm(destination, { recursive: true, force: true });
 await mkdir(destination, { recursive: true });
 
@@ -75,8 +79,8 @@ await writeFile(join(destination, 'release-manifest.json'), JSON.stringify({
   runtimeOverrides: Object.fromEntries(Object.entries(project.pnpm.overrides).filter(([name]) => name.startsWith('@deepseek-ai/'))),
   packages,
   installation: {
-    defaultPackages: ['workdsh-provider-identity-local','workdsh-provider-browser-session','workdsh-plugin-audit','workdsh-plugin-access','workdsh-plugin-skills','workdsh-plugin-experts','workdsh-plugin-connectors','workdsh-plugin-library','workdsh-bundle'],
-    optionalPackages: ['workdsh-plugin-office','workdsh-plugin-projects','workdsh-plugin-activity'],
+    defaultPackages: ['easywork-provider-identity-local','easywork-provider-browser-session','easywork-plugin-audit','easywork-plugin-access','easywork-plugin-skills','easywork-plugin-experts','easywork-plugin-connectors','easywork-plugin-library','easywork-bundle'],
+    optionalPackages: ['easywork-plugin-office','easywork-plugin-projects','easywork-plugin-activity'],
     enterprisePackages: 'Separate artifacts; not included in this personal collection',
     preservesPreviouslyInstalledOptionalPackages: true,
   },
@@ -89,8 +93,9 @@ await writeFile(join(destination, 'release-manifest.json'), JSON.stringify({
     'packages are GitHub assets and are not published to the npm registry',
   ],
 }, null, 2) + '\n');
-await copyFile(join(root, 'scripts/install-project-release.mjs'), join(destination, 'install-workdsh.mjs'));
+await copyFile(join(root, 'scripts/install-project-release.mjs'), join(destination, 'install-easywork.mjs'));
 await copyFile(releaseNotes, join(destination, 'RELEASE-NOTES.md'));
+verifyProductArtifacts(destination);
 
 const files = (await readdir(destination)).sort();
 console.log(`Project release candidate ${tag}: ${packages.length} packages; files: ${files.join(', ')}`);

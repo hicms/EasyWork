@@ -15,7 +15,7 @@
 # 0.1.0-alpha.4
 
 - 将公开入口改为纯 TypeScript barrel，拆分 Icon、导航组件、主题令牌、导航样式和 Modal 样式。
-- 新增跨平台 WorkDSH LogoMark，供 Harness 品牌 Slot 和其他插件复用。
+- 新增跨平台 EasyWork LogoMark，供 Harness 品牌 Slot 和其他插件复用。
 - 保持既有导出和 CSS class 兼容，继续由 Harness 官方 renderer 渲染。
 
 # 0.1.0-alpha.3

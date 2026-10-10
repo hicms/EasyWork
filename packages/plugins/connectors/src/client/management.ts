@@ -3,7 +3,7 @@ import type {} from '@deepseek-ai/dsh-client-connection/client';
 import type {} from '@deepseek-ai/dsh-api-remotes/client';
 import type { ConnectorConfigView, ConnectorInput, ConnectorSummary } from '../shared.js';
 
-const path = '/api/workdsh-connectors';
+const path = '/api/easywork-connectors';
 const isRecord = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value);
 
 async function invoke<T>(ctx: Context, endpoint: string, payload: unknown, signal?: AbortSignal): Promise<T> {

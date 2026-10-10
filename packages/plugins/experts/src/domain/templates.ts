@@ -1,4 +1,4 @@
-import type { ExpertDefinition } from 'workdsh-contracts';
+import type { ExpertDefinition } from 'easywork-contracts';
 
 /**
  * The three shipped default experts (IMPLEMENTATION-AND-ACCEPTANCE: 3 own

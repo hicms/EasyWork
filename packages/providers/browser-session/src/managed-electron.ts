@@ -59,7 +59,7 @@ export async function launchManagedElectron(executable: string, signal?: AbortSi
   signal?.throwIfAborted();
   const { chromium } = await import('playwright-core');
   signal?.throwIfAborted();
-  const profileDir = await mkdtemp(join(tmpdir(), 'workdsh-electron-browser-'));
+  const profileDir = await mkdtemp(join(tmpdir(), 'easywork-electron-browser-'));
   let child: ChildProcess | undefined;
   let browser: Browser | undefined;
   try {
@@ -68,8 +68,8 @@ export async function launchManagedElectron(executable: string, signal?: AbortSi
     delete env.ELECTRON_RUN_AS_NODE;
     child = spawn(executable, [
       ...(appPath ? [appPath] : []),
-      `--workdsh-browser-worker-port=${port}`,
-      `--workdsh-browser-worker-profile=${profileDir}`,
+      `--easywork-browser-worker-port=${port}`,
+      `--easywork-browser-worker-profile=${profileDir}`,
     ], { env, stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true });
     child.stderr?.resume();
     const endpoint = await readyEndpoint(port, child, signal);

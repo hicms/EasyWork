@@ -1,5 +1,5 @@
 {
-  "name": "workdsh-provider-identity-enterprise",
+  "name": "easywork-provider-identity-enterprise",
   "version": "0.1.0-alpha.3",
   "private": true,
   "type": "module",
@@ -62,7 +62,7 @@
   "devDependencies": {
     "@deepseek-ai/cordis": "4.0.4",
     "@types/node": "22.19.0",
-    "workdsh-contracts": "workspace:*",
+    "easywork-contracts": "workspace:*",
     "@deepseek-ai/dsh-client-connection": "0.2.0-rc.2",
     "@deepseek-ai/dsh-client-ui-layout": "0.2.0-rc.2",
     "@deepseek-ai/dsh-client-ui-renderer": "0.2.0-rc.2",

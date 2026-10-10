@@ -6,7 +6,7 @@ import type {
   ExpertExample,
   FutureRequirement,
   SkillRequirement,
-} from 'workdsh-contracts';
+} from 'easywork-contracts';
 import { EXPERT_LIMITS } from './values.js';
 import { byteLength, codePointLength, digestOf } from './digest.js';
 import { validateTeamWorkflow } from './team-workflow.js';

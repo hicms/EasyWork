@@ -216,7 +216,7 @@ try {
     const defaults = await Promise.all(['writer', 'reviewer'].map(name => ctx.agentTeams.spawnTeammate(plain, { name, description: name, prompt: blocks(`Act as ${name}. Finish this fixture.`), context: 'fresh', provider: 'spawn', signal })));
     for (const result of defaults) await settled(result.member.id);
     assert.equal(new Set(defaults.map(result => result.member.id)).size, 2);
-    pass('default-official-team-runs-without-workdsh-binding', { children: defaults.map(result => result.member.id) });
+    pass('default-official-team-runs-without-easywork-binding', { children: defaults.map(result => result.member.id) });
     await plain.whenIdle();
     const plainFork = await ctx.agentTeams.spawnTeammate(plain, { name: 'plain-fork', description: 'No custom role composition', prompt: blocks('Finish this fixture.'), context: 'fork', provider: 'fork', signal });
     await settled(plainFork.member.id);

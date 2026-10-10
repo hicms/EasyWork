@@ -2,14 +2,14 @@
  * Governance runtime primitives, owned locally by the local identity provider (D01).
  *
  * ADR-0019 (installable Host self-containment): an installed Host `dist/*.js` may not
- * carry a runtime import of the private `workdsh-contracts` package, which is never
- * packed or installed. `workdsh-contracts/governance` stays the single source of truth
+ * carry a runtime import of the private `easywork-contracts` package, which is never
+ * packed or installed. `easywork-contracts/governance` stays the single source of truth
  * for these primitives and for the shared TYPES (imported `type`-only below and erased
  * at build); this local copy lets the identity Host resolve them without the workspace
  * at runtime. The logic is replicated verbatim so the stable `governance/*` and
  * `identity-local/*` codes are unchanged.
  */
-import type { ActorContext } from 'workdsh-contracts';
+import type { ActorContext } from 'easywork-contracts';
 
 export class GovernanceContractError extends Error {
   constructor(readonly code: string, message: string) {

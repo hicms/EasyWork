@@ -13,8 +13,8 @@ const output = resolve(outputPath)
 const resources = existsSync(join(application, 'Contents', 'Resources'))
   ? join(application, 'Contents', 'Resources')
   : join(application, 'resources')
-const runtime = join(resources, 'workdsh-runtime')
-const profileModules = join(runtime, 'profiles', 'workdsh', 'node_modules')
+const runtime = join(resources, 'easywork-runtime')
+const profileModules = join(runtime, 'profiles', 'easywork', 'node_modules')
 const groups = new Map()
 const packages = new Map()
 const extensions = new Map()
@@ -31,7 +31,7 @@ function groupFor(path) {
   const within = relative(runtime, path)
   if (within.startsWith('..' + sep) || within === '..') return 'electron-and-carrier'
   const parts = within.split(sep)
-  if (parts[0] === 'profiles' && parts[1] === 'workdsh' && parts[2] === 'node_modules') return 'profile-node-modules'
+  if (parts[0] === 'profiles' && parts[1] === 'easywork' && parts[2] === 'node_modules') return 'profile-node-modules'
   if (parts[0] === 'primary-runtime') return 'primary-runtime'
   if (parts[0] === 'package-cache') return 'package-cache'
   return 'other-runtime'

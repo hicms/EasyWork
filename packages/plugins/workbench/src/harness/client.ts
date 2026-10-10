@@ -11,11 +11,11 @@ import { BusinessPanelIcon, businessPanels } from '../client/components/Business
  * pending (助理、定时任务、更多) have no domain implementation yet: they register
  * neither a sidebar entry nor a placeholder page until they actually ship.
  */
-export const name = 'workdsh-workbench-client';
+export const name = 'easywork-workbench-client';
 export const inject = ['slots'];
 
 export function apply(ctx: Context): void {
-  ctx.slots.inject('conversation.input.dock', () => ctx.slots.register({ name: 'conversation.input.dock', id: 'workdsh-task-execution-notice' }, TaskExecutionNotice));
+  ctx.slots.inject('conversation.input.dock', () => ctx.slots.register({ name: 'conversation.input.dock', id: 'easywork-task-execution-notice' }, TaskExecutionNotice));
   for (const panel of businessPanels) {
     if (panel.pending) continue;
     ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({

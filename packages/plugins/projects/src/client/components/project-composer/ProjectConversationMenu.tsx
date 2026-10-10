@@ -2,7 +2,7 @@ import * as React from 'react';
 import { createPortal } from 'react-dom';
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots';
 import type { InputTriggerController } from '@deepseek-ai/dsh-client-ui-input-trigger/client';
-import type { ProjectCapabilityRef, ProjectTaskContext, ProjectSnapshot } from 'workdsh-contracts/projects';
+import type { ProjectCapabilityRef, ProjectTaskContext, ProjectSnapshot } from 'easywork-contracts/projects';
 import type { ProjectClient } from '../../management.js';
 import { ProjectMenu, type ProjectMenuKind, type ProjectMenuItem } from './ProjectMenu.js';
 
@@ -28,8 +28,8 @@ export function ProjectConversationMenu({sessionId,management,controller,mountMe
   const [selectionReady,setSelectionReady]=React.useState(false),[removing,setRemoving]=React.useState(false),[connectorLabels,setConnectorLabels]=React.useState<Record<string,string>>({});
   const draft=useInput(s=>s.draft);
   React.useEffect(()=>{let live=true;management.taskContext(String(sessionId)).then(async c=>{if(!live)return;setContext(c);if(c){const p=await management.get(c.project.id);if(live)setSnapshot(p)}}).catch(()=>{});return()=>{live=false}},[sessionId,management]);
-  React.useEffect(()=>{if(!context)return;let live=true;setSelectionReady(false);projectApi<string[]>('/api/workdsh-connectors','selection',{sessionId:String(sessionId)}).then(ids=>{if(live){setConnectors(ids);setSelectionReady(true)}}).catch(e=>{if(live)setError(e.message)});return()=>{live=false}},[context,launched,sessionId]);
-  React.useEffect(()=>{if(!context)return;let live=true;projectApi<{id:string;title:string}[]>('/api/workdsh-connectors','list',{}).then(rows=>{if(live)setConnectorLabels(Object.fromEntries(rows.map(x=>[x.id,x.title])))}).catch(()=>{});return()=>{live=false}},[context]);
+  React.useEffect(()=>{if(!context)return;let live=true;setSelectionReady(false);projectApi<string[]>('/api/easywork-connectors','selection',{sessionId:String(sessionId)}).then(ids=>{if(live){setConnectors(ids);setSelectionReady(true)}}).catch(e=>{if(live)setError(e.message)});return()=>{live=false}},[context,launched,sessionId]);
+  React.useEffect(()=>{if(!context)return;let live=true;projectApi<{id:string;title:string}[]>('/api/easywork-connectors','list',{}).then(rows=>{if(live)setConnectorLabels(Object.fromEntries(rows.map(x=>[x.id,x.title])))}).catch(()=>{});return()=>{live=false}},[context]);
   const [chipAnchor,setChipAnchor]=React.useState<HTMLDivElement|null>(null);
   React.useLayoutEffect(()=>{if(!context)return;return mountChrome(setChipAnchor)},[context,mountChrome]);
   const [anchor,setAnchor]=React.useState<HTMLDivElement|null>(null);
@@ -38,13 +38,13 @@ export function ProjectConversationMenu({sessionId,management,controller,mountMe
   const live={menu,context,snapshot,connectors,draft},c=context;
   const selected=connectors.map(id=>({id,label:connectorLabels[id]??(c?.availableCapabilities??c?.config.capabilities??[]).find(x=>x.kind==='connector'&&x.id===id)?.label??'已选连接器'}));
   return <>
-    {chipAnchor&&(selected.length>0||error)&&createPortal(<div className="wd-project-selection-chips">{selected.map(x=><button type="button" key={x.id} disabled={!selectionReady||removing} aria-label={`移除连接器 ${x.label}`} onClick={()=>{setRemoving(true);setError('');projectApi<string[]>('/api/workdsh-connectors','set-selection',{sessionId:String(sessionId),connectorIds:connectors.filter(id=>id!==x.id)}).then(setConnectors).catch(e=>setError(e.message)).finally(()=>setRemoving(false))}}>{x.label}<span aria-hidden="true">×</span></button>)}{error&&<span role="alert">{error}</span>}<style>{`.wd-project-selection-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 6px 6px}.wd-project-selection-chips button{display:flex;gap:8px;align-items:center;border:.5px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);border-radius:8px;padding:5px 9px;font:12px/18px var(--dsw-font-family);cursor:pointer}.wd-project-selection-chips button:hover{background:var(--dsw-alias-interactive-bg-hover)}`}</style></div>,chipAnchor)}
+    {chipAnchor&&(selected.length>0||error)&&createPortal(<div className="wd-project-selection-chips">{selected.map(x=><button type="button" key={x.id} disabled={!selectionReady||removing} aria-label={`移除连接器 ${x.label}`} onClick={()=>{setRemoving(true);setError('');projectApi<string[]>('/api/easywork-connectors','set-selection',{sessionId:String(sessionId),connectorIds:connectors.filter(id=>id!==x.id)}).then(setConnectors).catch(e=>setError(e.message)).finally(()=>setRemoving(false))}}>{x.label}<span aria-hidden="true">×</span></button>)}{error&&<span role="alert">{error}</span>}<style>{`.wd-project-selection-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 6px 6px}.wd-project-selection-chips button{display:flex;gap:8px;align-items:center;border:.5px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);border-radius:8px;padding:5px 9px;font:12px/18px var(--dsw-font-family);cursor:pointer}.wd-project-selection-chips button:hover{background:var(--dsw-alias-interactive-bg-hover)}`}</style></div>,chipAnchor)}
     {anchor&&c&&launched&&menu.open&&createPortal(<>
     <ConversationChoices context={c} snapshot={live.snapshot} connectors={live.connectors} close={close} nativeItems={live.menu.groups.find(g=>g.source==='command')?.items??[]} pickNative={id=>{const index=controller.menu.getSnapshot().groups.find(g=>g.source==='command')?.items.findIndex(x=>x.name===id)??-1;if(index<0)throw new Error('此操作尚未就绪，请重新打开菜单');controller.pick('command',index)}} pick={async(kind,item)=>{
       if(kind==='connector'){
         if(!selectionReady)throw new Error('连接器状态正在加载，请稍后重试');
         const ids=live.connectors.includes(item.id)?live.connectors.filter(id=>id!==item.id):[...live.connectors,item.id];
-        const saved=await projectApi<string[]>('/api/workdsh-connectors','set-selection',{sessionId:String(sessionId),connectorIds:ids});setConnectors(saved);
+        const saved=await projectApi<string[]>('/api/easywork-connectors','set-selection',{sessionId:String(sessionId),connectorIds:ids});setConnectors(saved);
       } else if(kind==='skill'){
         const span=inputActions.captureInsertion();if(!inputActions.insertText(`/${item.id} `,span))throw new Error('输入内容已变化，请重新选择');close();
       } else if(kind==='expert'){

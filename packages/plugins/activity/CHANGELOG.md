@@ -8,7 +8,7 @@
 
 ## 0.1.0-alpha.4 — 2026-09-18
 
-- 适配 DeepSeek Harness 0.1.6-alpha.2：成员会话观测改用官方 `retain`/`ready`/`release` 世代语义（`workdshActivityMember` source），未 retain 的成员会话不强行绑定；运行期卸载可完整撤销。
+- 适配 DeepSeek Harness 0.1.6-alpha.2：成员会话观测改用官方 `retain`/`ready`/`release` 世代语义（`easyworkActivityMember` source），未 retain 的成员会话不强行绑定；运行期卸载可完整撤销。
 
 ## 0.1.0-alpha.3 — 2026-09-16
 
@@ -19,4 +19,4 @@
 ## 0.1.0-alpha.2 — 2026-09-15
 
 - 适配 DeepSeek Harness 0.1.6-alpha.1 官方 Team 事件与 Web Client。
-- 团队协作栏仅展示官方 Team 的成员和活动，不再依赖 WorkDSH 自建团队执行状态。
+- 团队协作栏仅展示官方 Team 的成员和活动，不再依赖 EasyWork 自建团队执行状态。

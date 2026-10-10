@@ -132,7 +132,7 @@ export function verifyMacSmoke(
       throw new Error(`packaged application archive is empty: ${appAsarPath}`)
     }
 
-    const runtimeRoot = join(appPath, 'Contents', 'Resources', 'workdsh-runtime', 'primary-runtime')
+    const runtimeRoot = join(appPath, 'Contents', 'Resources', 'easywork-runtime', 'primary-runtime')
     const runtime = JSON.parse(readFileSync(join(runtimeRoot, 'runtime.json'), 'utf8')) as {
       desktopVersion?: unknown
       platform?: unknown

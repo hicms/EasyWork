@@ -12,7 +12,7 @@ try {
  const entries=await ctx.skills.list({cwd:root});
  const rows=[];
  for(const entry of entries){const s=await ctx.skills.get(entry.name,{cwd:root});if(!s?.content.trim())throw Error(`Missing builtin ${entry.name}`);rows.push({name:s.name,description:s.description,...(s.whenToUse?{whenToUse:s.whenToUse}:{}),content:s.content});}
- const creator=rows.find(s=>s.name==='workdsh-skill-creator');if(!creator)throw Error('Missing skill creator');
+ const creator=rows.find(s=>s.name==='easywork-skill-creator');if(!creator)throw Error('Missing skill creator');
  const {content,...meta}=creator;
  const output='// GENERATED from resources/skills/*/SKILL.md by the official Harness provider. Edit Markdown, then run build.\n'+
  `export const professionalAuthoringSkills = ${JSON.stringify(rows.filter(s=>s!==creator),null,2)} as const;\n`+

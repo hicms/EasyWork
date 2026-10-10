@@ -11,7 +11,7 @@ try{
  await page.getByRole('button',{name:'System',exact:true}).click();
  await page.getByRole('button',{name:'Close',exact:true}).click();
  for(const view of ['skills','experts','connectors','projects','library']){
-  await page.goto('http://127.0.0.1:18989/?workdsh-view='+(view==='connectors'?'skills':view));
+  await page.goto('http://127.0.0.1:18989/?easywork-view='+(view==='connectors'?'skills':view));
   if(view==='connectors')await page.getByRole('button',{name:'连接器',exact:true}).click();
   await page.locator('.wd-'+view).waitFor();
   if(view==='library')await page.locator('.wd-library-sidebar').getByRole('button',{name:/搜索/}).click();
@@ -46,7 +46,7 @@ try{
  await page.getByText('Settings',{exact:true}).click();
  await page.getByRole('button',{name:'Dark',exact:true}).click();
  await page.getByRole('button',{name:'Close',exact:true}).click();
- await page.goto('http://127.0.0.1:18989/?workdsh-view=projects');
+ await page.goto('http://127.0.0.1:18989/?easywork-view=projects');
  await page.getByRole('button',{name:/新建项目/}).first().click();
  for(const width of [1920,390]){
   await page.setViewportSize({width,height:1000});await page.waitForTimeout(200);

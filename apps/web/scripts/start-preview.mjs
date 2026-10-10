@@ -6,12 +6,12 @@ import { fileURLToPath } from 'node:url';
 import { withoutRedundantAgentTeamProfile } from './preview-agent-team.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const previewHome = process.env.WORKDSH_PREVIEW_HOME ?? resolve(root, '.test-runtime/preview');
+const previewHome = process.env.EASYWORK_PREVIEW_HOME ?? resolve(root, '.test-runtime/preview');
 const agentsHome = process.env.DSH_AGENTS_HOME ?? join(previewHome, 'agents');
-const port = process.env.WORKDSH_PREVIEW_PORT ?? '18989';
+const port = process.env.EASYWORK_PREVIEW_PORT ?? '18989';
 // Preview currently needs a larger startup heap; this does not fix the underlying growth.
-const heapMb = process.env.WORKDSH_PREVIEW_HEAP_MB ?? '8192';
-if (!/^\d+$/.test(heapMb) || Number(heapMb) < 512) throw new Error('WORKDSH_PREVIEW_HEAP_MB must be an integer >= 512');
+const heapMb = process.env.EASYWORK_PREVIEW_HEAP_MB ?? '8192';
+if (!/^\d+$/.test(heapMb) || Number(heapMb) < 512) throw new Error('EASYWORK_PREVIEW_HEAP_MB must be an integer >= 512');
 const profile = resolve(previewHome, '../../profiles/preview');
 const profileManifestPath = resolve(profile, 'package.json');
 if (existsSync(profileManifestPath)) {

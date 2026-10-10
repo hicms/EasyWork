@@ -8,7 +8,7 @@ import { promisify } from 'node:util';
 import { chromium, expect } from '@playwright/test';
 
 const root=new URL('../',import.meta.url).pathname;
-const home=await realpath(await mkdtemp(join(tmpdir(),'workdsh-personal-default-')));
+const home=await realpath(await mkdtemp(join(tmpdir(),'easywork-personal-default-')));
 const assets=join(home,'artifacts');await mkdir(assets);
 const evidence=join(root,'.artifacts/plugin-delivery');await mkdir(evidence,{recursive:true});
 const directories=['providers/identity-local','providers/browser-session','plugins/audit','plugins/access','plugins/skills','plugins/experts','plugins/connectors','plugins/library','bundle'];
@@ -33,7 +33,7 @@ try{
  await run(process.execPath,[join(root,'scripts/install-project-release.mjs'),'--directory',assets,'--profile','personal','--dsh',wrapper]);
  const profile=JSON.parse(await readFile(join(home,'../../profiles/personal/package.json'),'utf8'));
  for(const name of packages.map(p=>p.name))assert.ok(profile.dependencies[name],name);
- for(const name of ['workdsh-plugin-office','workdsh-plugin-projects','workdsh-plugin-activity','workdsh-provider-identity-enterprise','workdsh-plugin-enterprise-collaboration'])assert.ok(!profile.dependencies[name],name);
+ for(const name of ['easywork-plugin-office','easywork-plugin-projects','easywork-plugin-activity','easywork-provider-identity-enterprise','easywork-plugin-enterprise-collaboration'])assert.ok(!profile.dependencies[name],name);
  pass('Actual source installer creates a fresh personal Profile with only the default owned package set');
  server=spawn(process.execPath,[join(home,'../../profiles/personal/node_modules/@deepseek-ai/dsh/lib/bin.js'),'--profile','personal','--host','127.0.0.1','--port','0','--no-open'],{cwd:home,env,stdio:['ignore','pipe','pipe']});
  server.stdout.on('data',b=>{log+=b;});server.stderr.on('data',b=>{log+=b;});
@@ -49,8 +49,8 @@ try{
  const page=await context.newPage();await page.goto(host.address);
  for(const name of ['Continue','Configure later','Keep current display','Not now','Got it','继续','稍后配置','保留当前显示','暂不开启','知道了'])await page.getByRole('button',{name,exact:true}).last().click({timeout:700}).catch(()=>{});
  const entries=await page.evaluate(()=>window.__DSH_BOOT__.entries.map(r=>r.id));
- for(const name of ['skills','experts','connectors','library'])assert.ok(entries.includes('workdsh-plugin-'+name),name);
- assert.ok(!entries.some(name=>/enterprise|workdsh-plugin-(office|projects|activity)$/.test(name)));
+ for(const name of ['skills','experts','connectors','library'])assert.ok(entries.includes('easywork-plugin-'+name),name);
+ assert.ok(!entries.some(name=>/enterprise|easywork-plugin-(office|projects|activity)$/.test(name)));
  await expect(page.getByRole('button',{name:'专家 · 技能 · 连接器',exact:true})).toBeVisible();
  await expect(page.getByRole('button',{name:'资料库',exact:true})).toBeVisible();
  await expect(page.getByRole('button',{name:'项目',exact:true})).toHaveCount(0);

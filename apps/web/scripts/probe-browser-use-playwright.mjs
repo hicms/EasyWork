@@ -73,7 +73,7 @@ try {
   const initialized = await request('initialize', {
     protocolVersion: '2025-06-18',
     capabilities: {},
-    clientInfo: { name: 'workdsh-browser-use-probe', version: '1.0.0' },
+    clientInfo: { name: 'easywork-browser-use-probe', version: '1.0.0' },
   });
   if (initialized.error) throw new Error(JSON.stringify(initialized.error));
   child.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' })}\n`);

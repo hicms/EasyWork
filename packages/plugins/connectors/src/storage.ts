@@ -27,14 +27,14 @@ export const connectorSelectionSchema = z.object({
 export type ConnectorSelection = z.infer<typeof connectorSelectionSchema>;
 
 export const connectorsDomainSpec = defineDomain({
-  name: 'workdsh_connectors', version: 1, layout: 'per-record',
+  name: 'easywork_connectors', version: 1, layout: 'per-record',
   global: { schema: z.object({ seededExample: z.boolean() }), initial: { seededExample: false } },
   tables: { definitions: domainTable<string, ConnectorDefinition>(connectorDefinitionSchema) },
 });
 
 /** Session choices have an independent lifecycle from installed MCP definitions. */
 export const connectorSelectionsDomainSpec = defineDomain({
-  name: 'workdsh_connector_selections', version: 1, layout: 'per-record',
+  name: 'easywork_connector_selections', version: 1, layout: 'per-record',
   global: { schema: z.object({}), initial: {} },
   tables: { selections: domainTable<string, ConnectorSelection>(connectorSelectionSchema) },
 });

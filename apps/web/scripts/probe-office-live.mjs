@@ -35,7 +35,7 @@ const artifacts = join(
 );
 let credential;
 const home = await realpath(
-  await mkdtemp(join(tmpdir(), "workdsh-office-live-")),
+  await mkdtemp(join(tmpdir(), "easywork-office-live-")),
 );
 await mkdir(artifacts, { recursive: true });
 const workspace = join(home, "workspace");
@@ -234,7 +234,7 @@ try {
   await writeFile(
     join(fixture, "package.json"),
     JSON.stringify({
-      name: "workdsh-office-live-probe",
+      name: "easywork-office-live-probe",
       version: "0.0.0",
       type: "module",
       exports: { ".": "./index.js", "./client": "./client.js" },
@@ -253,46 +253,46 @@ try {
   );
   await writeFile(
     join(fixture, "patch.yml"),
-    "- insert:\n    - id: office-live-probe\n      name: workdsh-office-live-probe\n",
+    "- insert:\n    - id: office-live-probe\n      name: easywork-office-live-probe\n",
   );
   await writeFile(
     join(fixture, "index.js"),
     `
 import {assembleContextFor} from '@deepseek-ai/dsh-agent';
-export const inject=['connection','workdshSessionAccess','tools','systemPrompt','workdshIdentity','sessionController'${realModel ? ", 'workdshOfficeContent'" : ""}];
+export const inject=['connection','easyworkSessionAccess','tools','systemPrompt','easyworkIdentity','sessionController'${realModel ? ", 'easyworkOfficeContent'" : ""}];
 export function apply(ctx){ctx.effect(()=>ctx.connection.fetch.register({path:'/api/office-live-probe',methods:['POST'],requestBody:'buffered',async fetch(request){try{
  const r=await request.json();let value;
- if(r.action==='create'){value=await ctx.workdshSessionAccess.create({workspaceId:${JSON.stringify(workspaceId)}});}
+ if(r.action==='create'){value=await ctx.easyworkSessionAccess.create({workspaceId:${JSON.stringify(workspaceId)}});}
  else if(r.action==='fixture-turn'){
-  const resolved=await ctx.workdshSessionAccess.resolveAgent(r.sessionId,request.signal);if(!resolved.agent)throw Error('agent unavailable');
+  const resolved=await ctx.easyworkSessionAccess.resolveAgent(r.sessionId,request.signal);if(!resolved.agent)throw Error('agent unavailable');
   // Test-only public Session fixture: native present requires an open turn. No synthetic event path is installed in the product.
   if(r.open)resolved.agent.session.append('turn/start',{turn:1});else resolved.agent.session.append('turn/end',{turn:1,reason:{kind:'completed'}});value={fixture:true};
  }else if(r.action==='real-write'){
-  const resolved=await ctx.workdshSessionAccess.resolveAgent(r.sessionId,request.signal);
+  const resolved=await ctx.easyworkSessionAccess.resolveAgent(r.sessionId,request.signal);
   if(!resolved.agent)throw Error('agent unavailable');
   resolved.agent.send({role:'user',id:r.messageId,content:[{type:'text',text:r.prompt}],source:{kind:'user'}},'next-turn',true);
   value={sent:true};
  }else if(r.action==='real-state'){
-  const resolved=await ctx.workdshSessionAccess.resolveAgent(r.sessionId,request.signal);
+  const resolved=await ctx.easyworkSessionAccess.resolveAgent(r.sessionId,request.signal);
   if(!resolved.agent)throw Error('agent unavailable');
-  const actor=await ctx.workdshIdentity.resolve({sessionId:r.sessionId},request.signal);
-  const docs=await ctx.workdshOfficeContent.list(actor,request.signal);
+  const actor=await ctx.easyworkIdentity.resolve({sessionId:r.sessionId},request.signal);
+  const docs=await ctx.easyworkOfficeContent.list(actor,request.signal);
   const inspected=await ctx.sessionController.inspect(r.sessionId,request.signal);
-  value={events:inspected.events.filter(e=>['user/message','assistant/message','deliverables/presented'].includes(e.type)),status:resolved.agent.status,deliveries:inspected.events.filter(e=>e.type==='deliverables/presented'),trace:inspected.events.filter(e=>['tool/call','step/start','turn/end'].includes(e.type)).map(e=>({type:e.type,time:e.time,name:e.type==='tool/call'?e.data.name:undefined})),documents:await Promise.all(docs.map(d=>ctx.workdshOfficeContent.read(actor,d.documentId,request.signal)))};
+  value={events:inspected.events.filter(e=>['user/message','assistant/message','deliverables/presented'].includes(e.type)),status:resolved.agent.status,deliveries:inspected.events.filter(e=>e.type==='deliverables/presented'),trace:inspected.events.filter(e=>['tool/call','step/start','turn/end'].includes(e.type)).map(e=>({type:e.type,time:e.time,name:e.type==='tool/call'?e.data.name:undefined})),documents:await Promise.all(docs.map(d=>ctx.easyworkOfficeContent.read(actor,d.documentId,request.signal)))};
  }else if(r.action==='guide'){
-  const resolved=await ctx.workdshSessionAccess.resolveAgent(r.sessionId,request.signal);
+  const resolved=await ctx.easyworkSessionAccess.resolveAgent(r.sessionId,request.signal);
   const assembly=await ctx.systemPrompt.assemble(assembleContextFor(resolved.agent,request.signal));
-  value={present:assembly.sections.some(s=>s.name==='workdsh:office-authoring'&&s.text.includes('First call content_open'))};
+  value={present:assembly.sections.some(s=>s.name==='easywork:office-authoring'&&s.text.includes('First call content_open'))};
  }
  else if(r.action==='visible-tools'){
-  const resolved=await ctx.workdshSessionAccess.resolveAgent(r.sessionId,request.signal);
+  const resolved=await ctx.easyworkSessionAccess.resolveAgent(r.sessionId,request.signal);
   if(!resolved.agent)throw Error('agent unavailable');
   const assembly=await ctx.systemPrompt.assemble(assembleContextFor(resolved.agent,request.signal));
   value=assembly.tools.map(t=>t.name);
  }
  else if(r.action==='tool'){
   if(!['content_open','content_read','content_capabilities','content_edit','content_present','content_export'].includes(r.name))throw Error('tool not allowed');
-  const resolved=await ctx.workdshSessionAccess.resolveAgent(r.sessionId,request.signal);
+  const resolved=await ctx.easyworkSessionAccess.resolveAgent(r.sessionId,request.signal);
   if(!resolved.agent)throw Error(JSON.stringify(resolved));
   const result=await ctx.tools.execute({name:r.name,arguments:r.args,callId:r.callId,agent:resolved.agent,signal:request.signal});
   if(result.isError)throw Error(JSON.stringify(result));value=result.value;
@@ -302,10 +302,10 @@ export function apply(ctx){ctx.effect(()=>ctx.connection.fetch.register({path:'/
   );
   await writeFile(
     join(fixture, "client.js"),
-    `window.__ModuleLoader__.load({id:'workdsh-office-live-probe',factory:function(){return {inject:['sidebarRight','sessions','uiWorkspace','documentPreviews','sidebarRightTabs'],apply:function(ctx){ctx.effect(function(){window.officeLiveProbe={uninstallOffice:async function(){let found=false;for(const [plugin,runtime] of ctx.registry.entries()){if(runtime.name==='workdsh-office-client'){await Promise.all([...runtime.fibers].map(f=>f.dispose()));found=true;break}}if(!found)throw Error('Office Client not found');return {preview:ctx.documentPreviews.getSnapshot().some(d=>d.id==='workdsh-office'),tab:!!ctx.sidebarRightTabs.get('workdsh-office-live')}},open:async function(sid){await ctx.sessions.refresh();ctx.uiWorkspace.openSession(sid)},file:function(sid,address){ctx.sidebarRight.openResourceIn(sid,address)},collapse:function(){if(ctx.sidebarRight.isExpanded())ctx.sidebarRight.toggleExpanded()},tab:function(sid,id){ctx.sidebarRight.openTabIn(sid,'workdsh-office-live',{params:{documentId:id}})}};return function(){delete window.officeLiveProbe}})}}}});`,
+    `window.__ModuleLoader__.load({id:'easywork-office-live-probe',factory:function(){return {inject:['sidebarRight','sessions','uiWorkspace','documentPreviews','sidebarRightTabs'],apply:function(ctx){ctx.effect(function(){window.officeLiveProbe={uninstallOffice:async function(){let found=false;for(const [plugin,runtime] of ctx.registry.entries()){if(runtime.name==='easywork-office-client'){await Promise.all([...runtime.fibers].map(f=>f.dispose()));found=true;break}}if(!found)throw Error('Office Client not found');return {preview:ctx.documentPreviews.getSnapshot().some(d=>d.id==='easywork-office'),tab:!!ctx.sidebarRightTabs.get('easywork-office-live')}},open:async function(sid){await ctx.sessions.refresh();ctx.uiWorkspace.openSession(sid)},file:function(sid,address){ctx.sidebarRight.openResourceIn(sid,address)},collapse:function(){if(ctx.sidebarRight.isExpanded())ctx.sidebarRight.toggleExpanded()},tab:function(sid,id){ctx.sidebarRight.openTabIn(sid,'easywork-office-live',{params:{documentId:id}})}};return function(){delete window.officeLiveProbe}})}}}});`,
   );
   await command(pnpm, ["pack", "--pack-destination", artifacts], fixture);
-  tarballs.push(join(artifacts, "workdsh-office-live-probe-0.0.0.tgz"));
+  tarballs.push(join(artifacts, "easywork-office-live-probe-0.0.0.tgz"));
   await cli(
     "--profile",
     "office",
@@ -317,7 +317,7 @@ export function apply(ctx){ctx.effect(()=>ctx.connection.fetch.register({path:'/
   const profileJson=JSON.parse(await readFile(profileManifest,'utf8'));profileJson.packageManager='pnpm@10.34.5';await writeFile(profileManifest,JSON.stringify(profileJson,null,2)+'\n');
   for(let i=0;i<tarballs.length;i++){
     const digest=createHash('sha256').update(await readFile(tarballs[i])).digest('hex');
-    const target='/tmp/workdsh-packs';await mkdir(target,{recursive:true});
+    const target='/tmp/easywork-packs';await mkdir(target,{recursive:true});
     const archive=join(target,digest+'.tgz');await copyFile(tarballs[i],archive);tarballs[i]=archive;
   }
   await cli("plugin", "--profile", "office", "add", ...tarballs, ...installFlags);
@@ -452,7 +452,7 @@ export function apply(ctx){ctx.effect(()=>ctx.connection.fetch.register({path:'/
   }else{
   if (inputOnly) {
     await expect.poll(() => page.evaluate(async sid => {
-      const response = await fetch('/api/workdsh-office', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sessionId:sid,request:{endpoint:'pending'}})});
+      const response = await fetch('/api/easywork-office', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sessionId:sid,request:{endpoint:'pending'}})});
       return (await response.json()).value?.length;
     },sid)).toBe(0);
 
@@ -507,15 +507,15 @@ export function apply(ctx){ctx.effect(()=>ctx.connection.fetch.register({path:'/
       await api(host,{action:"tool",sessionId:sid,name:"content_edit",args:{input:{documentId:doc.documentId,baseRevision:doc.revision,operationId:randomUUID(),operations:[{op:"document.replaceBlock",blockId:doc.state.blockIds[0],expectedText:"",block:{type:"paragraph",runs:[{text:savedText,marks:[]}]}}]}},callId:randomUUID()});
       await browser.close(); browser = undefined;
       await stop();
-      await cli("plugin", "--profile", "office", "remove", "workdsh-plugin-office");
+      await cli("plugin", "--profile", "office", "remove", "easywork-plugin-office");
       host = await start();
       const without = await api(host,{action:"visible-tools",sessionId:sid});
       assert.ok(!without.some(name=>name.startsWith("content_")));
       assert.equal((await api(host,{action:"guide",sessionId:sid})).present,false);
-      const response = await fetch(host.address + "/api/workdsh-office", {method:"POST",headers:{cookie:host.cookie,"content-type":"application/json"},body:JSON.stringify({sessionId:sid,request:{endpoint:"list"}})});
+      const response = await fetch(host.address + "/api/easywork-office", {method:"POST",headers:{cookie:host.cookie,"content-type":"application/json"},body:JSON.stringify({sessionId:sid,request:{endpoint:"list"}})});
       assert.equal(response.status,404);
       await stop();
-      const officeTarball = tarballs.find(path=>path.includes("workdsh-plugin-office-"));
+      const officeTarball = tarballs.find(path=>path.includes("easywork-plugin-office-"));
       await cli("plugin", "--profile", "office", "add", officeTarball, ...installFlags);
       host = await start();
       const tools = await api(host,{action:"visible-tools",sessionId:sid});
@@ -547,7 +547,7 @@ export function apply(ctx){ctx.effect(()=>ctx.connection.fetch.register({path:'/
   await expect(body).toBeVisible({ timeout: 20000 });
   await expect(body).toHaveText("");
   await expect.poll(() => page.evaluate(async sid => {
-    const res = await fetch('/api/workdsh-office', {method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({sessionId: sid, request: {endpoint:'pending'}})});
+    const res = await fetch('/api/easywork-office', {method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({sessionId: sid, request: {endpoint:'pending'}})});
     const data = await res.json();
     return data.value?.length;
   }, sid)).toBe(0);
@@ -936,7 +936,7 @@ export function apply(ctx){ctx.effect(()=>ctx.connection.fetch.register({path:'/
   );
   await page.getByRole("button", {name:"Configure later", exact:true}).click({timeout:4000}).catch(() => {});
   await expect.poll(() => page.evaluate(async sid => {
-    const response = await fetch('/api/workdsh-office', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sessionId:sid,request:{endpoint:'pending'}})});
+    const response = await fetch('/api/easywork-office', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sessionId:sid,request:{endpoint:'pending'}})});
     return (await response.json()).value?.length;
   },sid)).toBe(0);
   const fileDelivery = {path:"import-fixture.docx"};

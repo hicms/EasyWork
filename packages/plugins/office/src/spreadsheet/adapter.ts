@@ -1,4 +1,4 @@
-import type {OfficeSpreadsheetState} from "workdsh-contracts/office";
+import type {OfficeSpreadsheetState} from "easywork-contracts/office";
 import {coordinates,cellAddress,spreadsheetStateSchema} from "./model.js";
 import {parse} from "../content/model.js";
 export function univerSnapshot(state:OfficeSpreadsheetState,id:string,title:string){return {id,name:title,appVersion:"0.25.1",locale:"zhCN",sheetOrder:state.sheetOrder,sheets:Object.fromEntries(state.sheetOrder.map(key=>{const sheet=state.sheets[key]!,cellData:Record<number,Record<number,{v?:string|number|boolean|null;f?:string;t?:1|2|3}>>={};for(const [address,cell] of Object.entries(sheet.cells)){const {row,column}=coordinates(address);(cellData[row]??={})[column]=cell.formula?{f:cell.formula}:{v:cell.value??null,t:typeof cell.value==="number"?2:typeof cell.value==="boolean"?3:1};}return [key,{id:key,name:sheet.name,rowCount:1000,columnCount:100,cellData}];}))};}

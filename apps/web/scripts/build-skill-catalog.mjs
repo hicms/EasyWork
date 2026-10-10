@@ -10,7 +10,7 @@
 //
 // Usage:
 //   node scripts/build-skill-catalog.mjs --source /path/to/skills-marketplace
-//   node scripts/build-skill-catalog.mjs --source ... --target ~/.dsh/agents/.workdsh-catalog --dry-run
+//   node scripts/build-skill-catalog.mjs --source ... --target ~/.dsh/agents/.easywork-catalog --dry-run
 import { createHash } from 'node:crypto';
 import { copyFile, lstat, mkdir, readdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
@@ -36,7 +36,7 @@ const ICON_ALIASES = { chuangye: 'the-entrepreneurship-handbook' };
 const ICON_PREFIXES = ['minimax'];
 
 function parseArguments(argv) {
-  const options = { source: '', target: process.env.WORKDSH_SKILL_CATALOG ?? '', dryRun: false };
+  const options = { source: '', target: process.env.EASYWORK_SKILL_CATALOG ?? '', dryRun: false };
   for (let index = 0; index < argv.length; index += 1) {
     const current = argv[index];
     if (current === '--source') options.source = argv[++index] ?? '';
@@ -48,7 +48,7 @@ function parseArguments(argv) {
   options.source = resolve(options.source.replace(/^~(?=\/|$)/, homedir()));
   if (!options.target) {
     const agentsHome = resolve(process.env.DSH_AGENTS_HOME ?? join(process.env.DSH_HOME ?? join(homedir(), '.dsh'), 'agents'));
-    options.target = join(agentsHome, '.workdsh-catalog');
+    options.target = join(agentsHome, '.easywork-catalog');
   }
   options.target = resolve(options.target.replace(/^~(?=\/|$)/, homedir()));
   return options;
@@ -173,7 +173,7 @@ entries.sort((a, b) => a.name.localeCompare(b.name));
 const categories = [...new Set(entries.flatMap(entry => entry.categories))];
 const catalog = {
   schema: SCHEMA,
-  kind: 'workdsh-skill-catalog',
+  kind: 'easywork-skill-catalog',
   generatedAt: new Date().toISOString(),
   generator: 'scripts/build-skill-catalog.mjs',
   source: { path: options.source, marketplace: basename(marketplaceFile), entries: marketplace.skills.length, icons: iconFiles.size },

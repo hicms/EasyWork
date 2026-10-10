@@ -1,8 +1,10 @@
 /** Read-only official Web assets and an authenticated transport owned by the Electron carrier. */
 import { readFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
 import { createRequire } from 'node:module'
 import { dirname, extname, join, resolve, sep } from 'node:path'
 import { APP_ORIGIN, APP_SCHEME, type DesktopBootInfo } from './startup-contract.ts'
+import { StartupLog, startupErrorFields } from './startup-log.ts'
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -24,7 +26,7 @@ export class CarrierWeb {
   #host: { origin: string, cookie: string } | undefined
   #failure: Error | undefined
 
-  constructor(readonly frontend: string) {
+  constructor(readonly frontend: string, readonly log?: StartupLog, readonly diagnosing: () => boolean = () => false) {
     // A failed child can exit before the renderer registers its boot request.
     void this.#boot.promise.catch(() => {})
   }
@@ -55,6 +57,43 @@ export class CarrierWeb {
   }
 
   async request(request: Request): Promise<Response> {
+    const url = new URL(request.url)
+    const resource = STATIC_PATH.test(url.pathname) || url.pathname.startsWith('/plugins/')
+    if (!resource || !this.log || !this.diagnosing()) return this.#request(request)
+    const started = performance.now()
+    // Queries contain combo module names and may carry arbitrary caller data. Keep only a correlation hash.
+    const fields = { kind: url.pathname.startsWith('/plugins/') ? 'plugin' : 'frontend',
+      resource: createHash('sha256').update(url.pathname + url.search).digest('hex').slice(0, 16), method: request.method }
+    this.log.write('resource.begin', fields)
+    try {
+      const response = await this.#request(request)
+      this.log.write('resource.headers', { ...fields, status: response.status, durationMs: Math.round(performance.now() - started) })
+      if (!response.body) return response
+      let bytes = 0
+      const log = this.log
+      const reader = response.body.getReader()
+      const counted = new ReadableStream<Uint8Array>({
+        async pull(controller) {
+          try {
+            const next = await reader.read()
+            if (next.done) { log.write('resource.complete', { ...fields, bytes, durationMs: Math.round(performance.now() - started) }); controller.close(); return }
+            bytes += next.value.byteLength
+            controller.enqueue(next.value)
+          } catch (error) {
+            log.write('resource.failed', { ...fields, bytes, ...startupErrorFields(error), durationMs: Math.round(performance.now() - started) })
+            controller.error(error)
+          }
+        },
+        async cancel() { log.write('resource.cancelled', { ...fields, bytes }); await reader.cancel() },
+      })
+      return new Response(counted, { status: response.status, statusText: response.statusText, headers: response.headers })
+    } catch (error) {
+      this.log.write('resource.failed', { ...fields, ...startupErrorFields(error), durationMs: Math.round(performance.now() - started) })
+      throw error
+    }
+  }
+
+  async #request(request: Request): Promise<Response> {
     const source = new URL(request.url)
     if (source.protocol !== `${APP_SCHEME}:` || source.hostname !== 'app' || source.port
       || source.username || source.password) return new Response(null, { status: 403 })

@@ -34,5 +34,5 @@ export function installSkillCommandMenu(ctx: Context, management: SkillManagemen
     }
     dispose = ctx.slots.register({ name: key, id: 'slash-menu', priority: -10, order: 0, locale: 'slash.menu', inject: original.inject } as any, NamedCommands);
   };
-  ctx.effect(() => { const stop = ctx.slots.subscribe(key, install); install(); return () => { stop(); dispose?.(); }; }, 'workdsh.skill-command-menu');
+  ctx.effect(() => { const stop = ctx.slots.subscribe(key, install); install(); return () => { stop(); dispose?.(); }; }, 'easywork.skill-command-menu');
 }

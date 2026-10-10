@@ -38,7 +38,7 @@ function Account(_props: PropsRuntime<'settings.section'>) {
     return () => { clearInterval(timer); lifetime.abort(); };
   }, []);
   const refreshSync = async (signal?: AbortSignal) => {
-    const response = await fetch('/api/workdsh-enterprise-sync', { credentials: 'same-origin', signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(10000)]) : AbortSignal.timeout(10000) });
+    const response = await fetch('/api/easywork-enterprise-sync', { credentials: 'same-origin', signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(10000)]) : AbortSignal.timeout(10000) });
     if (!response.ok) throw new Error('正文同步状态未确认。');
     const value = await response.json() as SyncStatus;
     if (value.desktop !== true || !Array.isArray(value.sessions)) throw new Error('正文同步状态无效。');
@@ -54,7 +54,7 @@ function Account(_props: PropsRuntime<'settings.section'>) {
   const syncAction = async (action: 'retry' | 'delete', sessionId?: string) => {
     setBusy(true); setSyncError('');
     try {
-      const response = await fetch('/api/workdsh-enterprise-sync', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action, ...(sessionId ? { sessionId } : {}) }), signal: AbortSignal.timeout(60000) });
+      const response = await fetch('/api/easywork-enterprise-sync', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action, ...(sessionId ? { sessionId } : {}) }), signal: AbortSignal.timeout(60000) });
       if (!response.ok) throw new Error('正文同步操作未确认。');
       await refreshSync();
     } catch { setSyncError('正文同步操作未确认，请检查登录和网络后重试。'); }
@@ -84,7 +84,7 @@ function Account(_props: PropsRuntime<'settings.section'>) {
         </dl>
       </div>
       <button style={{ ...button, marginTop: 16 }} disabled={busy} onClick={() => void logout()}>{busy ? '正在退出…' : '退出企业账号'}</button>
-    </> : <div><p>企业插件已安装。连接公司后台并登录后，才会启用企业账号和权限。个人数据不会自动复制到企业空间。</p><button style={button} onClick={() => window.location.assign('workdsh://entry')}>连接企业</button></div>}
+    </> : <div><p>企业插件已安装。连接公司后台并登录后，才会启用企业账号和权限。个人数据不会自动复制到企业空间。</p><button style={button} onClick={() => window.location.assign('easywork://entry')}>连接企业</button></div>}
     {desktop && account && <section aria-label="企业正文同步" style={{ marginTop: 24 }}>
       <h2 style={{ fontSize: 18 }}>企业正文同步</h2>
       <p style={{ lineHeight: 1.7, color: 'var(--dsw-alias-label-secondary)' }}>同步用户与助手已显示的文字；不上传思考、工具轨迹或附件。失败时本地记录保留，可重试。已同步正文由本组织有权限的管理员只读查看。</p>
@@ -101,8 +101,8 @@ function Account(_props: PropsRuntime<'settings.section'>) {
     {error && <p role="alert" style={{ color: 'var(--dsw-alias-state-error-primary)' }}>{error}</p>}
   </section>;
 }
-export const name = 'workdsh-enterprise-identity-client';
+export const name = 'easywork-enterprise-identity-client';
 export const inject = ['slots'];
 export function apply(ctx: Context): void {
-  ctx.slots.inject('settings.section', () => ctx.slots.register({ name: 'settings.section', id: 'workdsh-enterprise-account', label: '企业账号', order: 18 }, Account));
+  ctx.slots.inject('settings.section', () => ctx.slots.register({ name: 'settings.section', id: 'easywork-enterprise-account', label: '企业账号', order: 18 }, Account));
 }

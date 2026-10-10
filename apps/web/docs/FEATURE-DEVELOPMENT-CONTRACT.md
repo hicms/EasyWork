@@ -9,7 +9,7 @@
 | 身份、存储、运行与同步差异 | 有明确契约的 provider/adapter |
 | 跨插件领域契约 | packages/contracts |
 | 窗口、固定后台、设备凭据、本机进程与安装 | Desktop carrier |
-| 企业治理、成员授权、内部模型 API 与审计 | 独立 workdsh-admin |
+| 企业治理、成员授权、内部模型 API 与审计 | 独立 easywork-admin |
 | ECS 账号进程、路由和部署 | deploy/member-process |
 
 先扩展现有合适模块；只有独立领域或交付生命周期需要新包。新模块登记 [modules.json](modules.json)，与 workspace、包入口、依赖和对应要求同步。默认、可选、企业激活携带与外置安装沿用 [交付边界](EXTERNAL-PLUGINS.md)。共同功能清单不意味着所有功能默认安装。

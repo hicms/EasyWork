@@ -14,7 +14,7 @@ const draftOutput = {
   },
 };
 
-function draftProjection(draft: Awaited<ReturnType<Context['workdshSkills']['getDraft']>>) {
+function draftProjection(draft: Awaited<ReturnType<Context['easyworkSkills']['getDraft']>>) {
   return {
     draftId: draft.id,
     name: draft.name,
@@ -28,7 +28,7 @@ function draftProjection(draft: Awaited<ReturnType<Context['workdshSkills']['get
 /** Model-facing authoring tools backed by the same Host authority as the UI. */
 export function registerSkillLifecycleTools(ctx: Context): void {
   ctx.tools.register(defineTool({
-    name: 'workdsh_save_skill_draft',
+    name: 'easywork_save_skill_draft',
     description: 'Create or revise a private EasyWork skill draft. This never installs or overwrites a skill.',
     parameters: {
       name: { type: 'string', required: true, description: 'Exact kebab-case skill name.' },
@@ -44,7 +44,7 @@ export function registerSkillLifecycleTools(ctx: Context): void {
     async execute(args, exec) {
       exec.signal.throwIfAborted();
       if ((args.draft_id === undefined) !== (args.expected_revision === undefined)) throw new Error('skill/draft-revision-required');
-      const draft = await ctx.workdshSkills.saveDraft({
+      const draft = await ctx.easyworkSkills.saveDraft({
         name: args.name,
         document: args.document,
         ...(args.scope ? { scope: args.scope } : {}),
@@ -56,21 +56,21 @@ export function registerSkillLifecycleTools(ctx: Context): void {
   }));
 
   ctx.tools.register(defineTool({
-    name: 'workdsh_validate_skill_draft',
+    name: 'easywork_validate_skill_draft',
     description: 'Re-read and validate a persisted EasyWork skill draft before publication.',
-    parameters: { draft_id: { type: 'string', required: true, description: 'Draft id returned by workdsh_save_skill_draft.' } },
+    parameters: { draft_id: { type: 'string', required: true, description: 'Draft id returned by easywork_save_skill_draft.' } },
     output: {
       schema: draftOutput,
       render: (_args, value) => [{ type: 'text', text: value.valid ? `Skill draft ${value.draftId} is valid.` : `Skill draft ${value.draftId} is invalid: ${value.diagnostics.join('; ')}` }],
     },
     async execute(args, exec) {
       exec.signal.throwIfAborted();
-      return draftProjection(await ctx.workdshSkills.getDraft(args.draft_id));
+      return draftProjection(await ctx.easyworkSkills.getDraft(args.draft_id));
     },
   }));
 
   ctx.tools.register(defineTool({
-    name: 'workdsh_publish_skill_draft',
+    name: 'easywork_publish_skill_draft',
     description: 'Publish one valid, user-confirmed EasyWork skill draft into an official Harness skill root. Fails closed on a name collision or stale revision.',
     parameters: {
       draft_id: { type: 'string', required: true, description: 'Validated draft id.' },
@@ -92,7 +92,7 @@ export function registerSkillLifecycleTools(ctx: Context): void {
     async execute(args, exec) {
       exec.signal.throwIfAborted();
       if (!args.user_confirmed) throw new Error('skill/publish-confirmation-required');
-      const receipt = await ctx.workdshSkills.publishDraft(args.draft_id, args.expected_revision);
+      const receipt = await ctx.easyworkSkills.publishDraft(args.draft_id, args.expected_revision);
       exec.signal.throwIfAborted();
       return { ...receipt, state: 'enabled' as const, command: `/${receipt.name}` };
     },

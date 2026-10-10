@@ -8,39 +8,39 @@ import { createRequire } from 'node:module'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const runtime = resolve(process.argv[2]), built = resolve(process.argv[3]), output = resolve(process.argv[4])
-const profile = join(runtime, 'profiles/workdsh')
-const { _electron } = createRequire(import.meta.url)(resolve(process.env.WORKDSH_PLAYWRIGHT_ENTRY))
+const profile = join(runtime, 'profiles/easywork')
+const { _electron } = createRequire(import.meta.url)(resolve(process.env.EASYWORK_PLAYWRIGHT_ENTRY))
 const electron = createRequire(join(root, 'package.json'))('electron')
-const owned = await mkdtemp(join(tmpdir(), 'workdsh-personal-startup-'))
+const owned = await mkdtemp(join(tmpdir(), 'easywork-personal-startup-'))
 const home = join(owned, 'personal'), browser = join(owned, 'browser')
 await mkdir(browser, { mode: 0o700 })
 await mkdir(home, { mode: 0o700 })
 await writeFile(join(home, 'cordis.patch.yml'), '- id: webserver\n  config:\n    host: 127.0.0.1\n    port: 0\n')
-const packaged = Boolean(process.env.WORKDSH_PACKAGED_EXECUTABLE)
-const cleanEnvironment = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/KEY|TOKEN|PASSWORD|SECRET|^DSH_|^WORKDSH_|^NODE_OPTIONS$|^NODE_PATH$/iu.test(key)))
+const packaged = Boolean(process.env.EASYWORK_PACKAGED_EXECUTABLE)
+const cleanEnvironment = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/KEY|TOKEN|PASSWORD|SECRET|^DSH_|^EASYWORK_|^NODE_OPTIONS$|^NODE_PATH$/iu.test(key)))
 await access(built)
-const isolatedProfile = join(owned, 'bundle/profiles/workdsh')
+const isolatedProfile = join(owned, 'bundle/profiles/easywork')
 if (!packaged) {
   await mkdir(isolatedProfile, { recursive: true })
-  for (const name of ['package.json', 'profile-installation.json', 'pnpm-workspace.yaml', '.workdsh-desktop-release.json']) {
+  for (const name of ['package.json', 'profile-installation.json', 'pnpm-workspace.yaml', '.easywork-desktop-release.json']) {
     await copyFile(join(profile, name), join(isolatedProfile, name))
   }
   await symlink(join(profile, 'node_modules'), join(isolatedProfile, 'node_modules'), process.platform === 'win32' ? 'junction' : 'dir')
   await copyFile(join(profile, 'cordis.patch.yml'), join(isolatedProfile, 'cordis.patch.yml'))
 }
 const options = {
-  executablePath: process.env.WORKDSH_PACKAGED_EXECUTABLE ?? electron,
+  executablePath: process.env.EASYWORK_PACKAGED_EXECUTABLE ?? electron,
   args: packaged ? [] : [root],
-  env: { ...cleanEnvironment, HOME: owned, WORKDSH_DESKTOP_USER_DATA: browser, WORKDSH_DSH_HOME: home,
-    ...packaged ? {} : { WORKDSH_BUNDLED_PROFILE: isolatedProfile, WORKDSH_PRIMARY_RUNTIME: join(runtime, 'primary-runtime'),
-      WORKDSH_NODE_EXECUTABLE: join(runtime, 'primary-runtime/dependencies/node/bin', process.platform === 'win32' ? 'node.exe' : 'node') },
-    WORKDSH_ENTERPRISE_PORTAL: 'https://ignored.invalid' },
+  env: { ...cleanEnvironment, HOME: owned, EASYWORK_DESKTOP_USER_DATA: browser, EASYWORK_DSH_HOME: home,
+    ...packaged ? {} : { EASYWORK_BUNDLED_PROFILE: isolatedProfile, EASYWORK_PRIMARY_RUNTIME: join(runtime, 'primary-runtime'),
+      EASYWORK_NODE_EXECUTABLE: join(runtime, 'primary-runtime/dependencies/node/bin', process.platform === 'win32' ? 'node.exe' : 'node') },
+    EASYWORK_ENTERPRISE_PORTAL: 'https://ignored.invalid' },
   timeout: 30000,
 }
 async function personalPage(app) {
   const until = Date.now() + 90000
   while (Date.now() < until) {
-    const page = app.windows().find(page => page.url().startsWith('workdsh-app://app/'))
+    const page = app.windows().find(page => page.url().startsWith('easywork-app://app/'))
     if (page) { await page.waitForFunction(() => Boolean(window.__DSH_BOOT__), null, { timeout: Math.max(1, until - Date.now()) }); return page }
     await new Promise(resolve => setTimeout(resolve, 100))
   }
@@ -89,7 +89,7 @@ try {
   const pageErrors = []
   firstDocument.on('pageerror', error => { pageErrors.push(error.message) })
   const firstDocumentMs = Date.now() - started
-  await firstDocument.waitForURL(/^workdsh-app:\/\/app\/(?:\?.*)?$/u, { waitUntil: 'domcontentloaded' })
+  await firstDocument.waitForURL(/^easywork-app:\/\/app\/(?:\?.*)?$/u, { waitUntil: 'domcontentloaded' })
   const visibleUntil = Date.now() + 30_000
   while (!await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0]?.isVisible())) {
     if (Date.now() > visibleUntil) throw new Error('Official document did not become visible')
@@ -100,7 +100,7 @@ try {
   const bootReadyMs = Date.now() - started
   const entries = await personal.evaluate(() => window.__DSH_BOOT__.entries.map(entry => entry.id))
   assert.ok(!entries.some(name => /identity-enterprise|enterprise-collaboration/u.test(name)))
-  for (const name of ['experts', 'skills', 'library', 'connectors', 'projects']) assert.ok(entries.includes('workdsh-plugin-' + name))
+  for (const name of ['experts', 'skills', 'library', 'connectors', 'projects']) assert.ok(entries.includes('easywork-plugin-' + name))
   assert.equal(await personal.getByRole('heading', { name: '选择使用方式' }).count(), 0)
   assert.equal(await personal.getByRole('button', { name: '登录企业账号', exact: true }).count(), 0)
   const menu = await app.evaluate(({ Menu }) => Menu.getApplicationMenu().items.map(item => item.label))
@@ -120,10 +120,10 @@ try {
   await personal.getByText('资料库', { exact: true }).first().click()
   await personal.getByRole('heading', { name: '资料库', exact: true }).waitFor({ timeout: 10_000 })
   await personal.getByText('项目', { exact: true }).first().click()
-  await personal.waitForFunction(() => new URL(location.href).searchParams.get('workdsh-view') === 'projects')
+  await personal.waitForFunction(() => new URL(location.href).searchParams.get('easywork-view') === 'projects')
   const projectOperation = await personal.evaluate(async () => {
     const call = async (endpoint, payload) => {
-      const response = await fetch('/api/workdsh-projects', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ endpoint, payload }) })
+      const response = await fetch('/api/easywork-projects', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ endpoint, payload }) })
       const result = await response.json()
       if (!result.ok) throw new Error('Project operation failed: ' + endpoint)
       return result.value
@@ -136,16 +136,16 @@ try {
   })
   assert.equal(projectOperation, true)
   await personal.screenshot({ path: output.replace(/\.json$/u, '.png') })
-  const identity = await personal.evaluate(() => { window.__workdshReopenProbe = 'same-document'; return window.__DSH_BOOT__ })
+  const identity = await personal.evaluate(() => { window.__easyworkReopenProbe = 'same-document'; return window.__DSH_BOOT__ })
   const port = await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.getURL())
-  assert.match(port, /^workdsh-app:\/\/app\/(?:\?.*)?$/u)
+  assert.match(port, /^easywork-app:\/\/app\/(?:\?.*)?$/u)
   const closed = await app.evaluate(({ BrowserWindow }) => {
     const window = BrowserWindow.getAllWindows()[0]; window.close(); return { destroyed: window.isDestroyed(), visible: window.isVisible() }
   })
   assert.deepEqual(closed, { destroyed: false, visible: false })
   const reopenStarted = Date.now()
   await app.evaluate(({ app }) => { app.emit('second-instance') })
-  assert.equal(await personal.evaluate(() => window.__workdshReopenProbe), 'same-document')
+  assert.equal(await personal.evaluate(() => window.__easyworkReopenProbe), 'same-document')
   assert.deepEqual(await personal.evaluate(() => window.__DSH_BOOT__), identity)
   assert.equal(await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].isVisible()), true)
   assert.deepEqual(pageErrors, [])

@@ -11,16 +11,16 @@ import { browserSessionClient } from './client/api.js';
 import { BrowserSessionPane } from './client/BrowserSessionPane.js';
 import { browserSessionStyles } from './client/styles.js';
 
-// The Web bundle keeps its Playwright screenshot tab under workdsh-agent-browser.
+// The Web bundle keeps its Playwright screenshot tab under easywork-agent-browser.
 // Desktop's managed Electron page is a separate provider and must not register
 // a second renderer for that same tab kind.
-const TAB = 'workdsh-managed-browser';
+const TAB = 'easywork-managed-browser';
 
 declare module '@deepseek-ai/dsh-client-ui-sidebar-right/client' {
-  interface SidebarRightTabParamsMap { 'workdsh-managed-browser': Record<string, never>; }
+  interface SidebarRightTabParamsMap { 'easywork-managed-browser': Record<string, never>; }
 }
 
-export const name = 'workdsh-browser-session-client';
+export const name = 'easywork-browser-session-client';
 export const inject = ['slots', 'sidebarRight', 'sidebarRightTabs', 'sessions'];
 
 export function apply(ctx: Context): void {
@@ -29,7 +29,7 @@ export function apply(ctx: Context): void {
     style.textContent = browserSessionStyles;
     document.head.append(style);
     return () => style.remove();
-  }, 'workdsh.browserSession.styles');
+  }, 'easywork.browserSession.styles');
   ctx.effect(() => ctx.sidebarRightTabs.register({
     id: TAB, kind: TAB, title: () => '任务浏览器',
     guide: [{ id: 'managed-browser', order: 25, title: () => '任务浏览器', description: () => '查看并操作当前任务的网页' }],
@@ -61,5 +61,5 @@ export function apply(ctx: Context): void {
     const timer = window.setInterval(() => void tick(), 1_500);
     void tick();
     return () => { stopped = true; window.clearInterval(timer); };
-  }, 'workdsh.browserSession.autoOpen');
+  }, 'easywork.browserSession.autoOpen');
 }

@@ -1,7 +1,7 @@
-import { controlsCss, modalCss } from 'workdsh-ui';
+import { controlsCss, modalCss } from 'easywork-ui';
 
 export const expertsCss = `${modalCss}
-@layer workdsh-business {
+@layer easywork-business {
 
 .wd-experts{overflow:auto;box-sizing:border-box}
 .wd-experts{height:100%;background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);font:14px/22px "PingFang SC","Microsoft YaHei",sans-serif;padding:24px}

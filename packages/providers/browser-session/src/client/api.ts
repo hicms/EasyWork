@@ -2,7 +2,7 @@
 
 import type { BrowserFrame } from '../index.js';
 
-const PATH = '/api/workdsh-browser-session';
+const PATH = '/api/easywork-browser-session';
 
 async function request<T>(sessionId: string, operation: string, payload: object = {}, signal?: AbortSignal): Promise<T> {
   const timeout = AbortSignal.timeout(15_000);

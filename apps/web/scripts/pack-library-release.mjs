@@ -10,11 +10,11 @@ const plugin = join(root, '../../packages/plugins/library');
 const destination = join(root, '.artifacts/library-release');
 await rm(destination, { recursive: true, force: true });
 await mkdir(destination, { recursive: true });
-execFileSync('corepack', ['pnpm', '--filter', 'workdsh-plugin-library', 'build'], { cwd: root, stdio: 'inherit' });
+execFileSync('corepack', ['pnpm', '--filter', 'easywork-plugin-library', 'build'], { cwd: root, stdio: 'inherit' });
 const stage = await mkdtemp(join(destination, 'package-'));
 const manifest = JSON.parse(await readFile(join(plugin, 'package.json'), 'utf8'));
 delete manifest.devDependencies; delete manifest.scripts;
-manifest.workdshRelease = {
+manifest.easyworkRelease = {
   scope: 'local-library-alpha',
   storage: '$DSH_HOME/library',
   formats: ['md', 'markdown', 'txt', 'html', 'htm', 'pdf', 'docx', 'pptx', 'csv', 'xlsx'],
@@ -28,8 +28,8 @@ const bytes = await readFile(join(destination, filename)); const sha256 = create
 await writeFile(join(destination, 'SHA256SUMS.txt'), `${sha256}  ${filename}\n`);
 await writeFile(join(destination, 'release-manifest.json'), `${JSON.stringify({
   name: manifest.name, version: manifest.version, harness: project.devDependencies['@deepseek-ai/dsh'], filename, sha256, bytes: bytes.length,
-  storage: manifest.workdshRelease.storage, formats: manifest.workdshRelease.formats,
-  limitations: ['Local personal space only', 'Scanned PDF OCR is not included', 'DOCX/PPTX original preview requires the optional workdsh-plugin-office client'],
+  storage: manifest.easyworkRelease.storage, formats: manifest.easyworkRelease.formats,
+  limitations: ['Local personal space only', 'Scanned PDF OCR is not included', 'DOCX/PPTX original preview requires the optional easywork-plugin-office client'],
 }, null, 2)}\n`);
 await rm(stage, { recursive: true, force: true });
 console.log(`Library release candidate: ${filename}; files: ${(await readdir(destination)).sort().join(', ')}`);

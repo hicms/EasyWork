@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "officialBundles": ["@deepseek-ai/dsh-base", "@deepseek-ai/dsh-web-app"],
+  "features": [
+    {"name":"easywork-plugin-skills","directory":"packages/plugins/skills"},
+    {"name":"easywork-plugin-experts","directory":"packages/plugins/experts"},
+    {"name":"easywork-plugin-connectors","directory":"packages/plugins/connectors"},
+    {"name":"easywork-plugin-office","directory":"packages/plugins/office"},
+    {"name":"easywork-plugin-library","directory":"packages/plugins/library"},
+    {"name":"easywork-plugin-projects","directory":"packages/plugins/projects"}
+  ],
+  "note":"Shared EasyWork Web feature source packages. This is not Desktop default bundling and does not preinstall skill/expert/MCP definitions or marketplaces."
+}

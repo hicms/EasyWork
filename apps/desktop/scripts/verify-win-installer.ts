@@ -97,7 +97,7 @@ export function verifyWindowsInstaller(
 
   assertPortableExecutable(installerPath, 'Windows NSIS installer')
   assertPortableExecutable(applicationPath, 'unpacked Windows application')
-  const runtimeRoot = join(distDir, 'win-unpacked', 'resources', 'workdsh-runtime', 'primary-runtime')
+  const runtimeRoot = join(distDir, 'win-unpacked', 'resources', 'easywork-runtime', 'primary-runtime')
   const runtime = JSON.parse(readFileSync(join(runtimeRoot, 'runtime.json'), 'utf8')) as {
     desktopVersion?: unknown
     platform?: unknown

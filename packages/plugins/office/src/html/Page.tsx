@@ -1,5 +1,5 @@
 import React,{useEffect,useRef,useState} from "react";
-import type {OfficeHtmlSnapshot} from "workdsh-contracts/office";
+import type {OfficeHtmlSnapshot} from "easywork-contracts/office";
 import type {OfficeClient,DocumentOptions} from "../live/model.js";
 import {previewHtml,downloadHtml} from "./preview.js";
 export function LiveHtml({documentId,sessionId,office,visible,signal,requestId}:DocumentOptions&{office:OfficeClient}){

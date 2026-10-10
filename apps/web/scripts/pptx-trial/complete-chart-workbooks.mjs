@@ -25,7 +25,7 @@ export async function completeWorkbooks(input){
    ser['c:cat']={'c:strRef':{'c:f':`ChartData!$A$2:$A$${cats.length+1}`,'c:strCache':cat}};
    ser['c:val']={'c:numRef':{'c:f':`ChartData!$${col}$2:$${col}$${cats.length+1}`,'c:numCache':val}};
   }
-  let index=++added;let wbname=`WorkDSH_Chart${index}.xlsx`;while(z.file('ppt/embeddings/'+wbname))wbname=`WorkDSH_Chart${++index}.xlsx`;
+  let index=++added;let wbname=`EasyWork_Chart${index}.xlsx`;while(z.file('ppt/embeddings/'+wbname))wbname=`EasyWork_Chart${++index}.xlsx`;
   const relpath='ppt/charts/_rels/'+path.basename(name)+'.rels';const rel=z.file(relpath)?parser.parse(await z.file(relpath).async('string')):{Relationships:{'@_xmlns':'http://schemas.openxmlformats.org/package/2006/relationships'}};
   const relations=array(rel.Relationships.Relationship);let rid='rIdWorkbook';while(relations.some(r=>r['@_Id']===rid))rid+='X';
   relations.push({'@_Id':rid,'@_Type':'http://schemas.openxmlformats.org/officeDocument/2006/relationships/package','@_Target':'../embeddings'+wbname});rel.Relationships.Relationship=relations;

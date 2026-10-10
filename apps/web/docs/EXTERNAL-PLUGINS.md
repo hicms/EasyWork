@@ -11,7 +11,7 @@
 | 官方 DSH 基础与完整 Web | 同一锁定官方发布组合，独立于自有业务功能计数 |
 | 客户第三方插件与市场 | 保留来源、许可证、版本和兼容验证，不默认安装 |
 
-个人默认源包闭包由 `scripts/check-plugin-delivery.mjs` 验证。开发 preview 与测试 Profile 的完整组合不代表产品默认；`profiles/shared/workdsh-features.json` 是共同来源，不是 Desktop 发行清单。
+个人默认源包闭包由 `scripts/check-plugin-delivery.mjs` 验证。开发 preview 与测试 Profile 的完整组合不代表产品默认；`profiles/shared/easywork-features.json` 是共同来源，不是 Desktop 发行清单。
 
 企业账号安装副本由 Desktop 发行维护，成员 Profile 的同名包覆盖在启动前拒绝；个人激活清单不拼入企业 patch。账号本地数据、凭据与配置属于成员可写空间，不能通过共享 node_modules 链接写入安装包。
 

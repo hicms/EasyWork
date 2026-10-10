@@ -15,6 +15,6 @@
 
 ## 验收与下一步
 
-插件声明 `storageDomain` 为必需依赖，在 `Service.init` 打开 `workdsh_identity_local` 领域，并把三个相互关联的对象放入同一原子 global 记录。首次启动以 Host 配置建立记录；后续启动要求配置与持久记录一致，防止同一数据目录被静默切换为另一主体或组织。Harness 的匿名安装 ID 只用于遥测关联，官方明确不能作为用户身份，本包不会复用它充当 principalId。
+插件声明 `storageDomain` 为必需依赖，在 `Service.init` 打开 `easywork_identity_local` 领域，并把三个相互关联的对象放入同一原子 global 记录。首次启动以 Host 配置建立记录；后续启动要求配置与持久记录一致，防止同一数据目录被静默切换为另一主体或组织。Harness 的匿名安装 ID 只用于遥测关联，官方明确不能作为用户身份，本包不会复用它充当 principalId。
 
 下一步实现 access/audit 服务并完成双主体、双组织与撤权负例；团队远程入口在这些证据完成前保持关闭。

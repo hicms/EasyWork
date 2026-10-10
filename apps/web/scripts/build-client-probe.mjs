@@ -8,7 +8,7 @@ const clientResult = await build({
 // Product presentation and its explicitly registered Workbench child. Skill has
 // its own package, Host row and browser artifact; it is never bundled here.
 writeFileSync(new URL('../../../packages/bundle/dist/client.js', import.meta.url),
-  `window.__ModuleLoader__.load({id: "workdsh-bundle", factory: function(require) {
+  `window.__ModuleLoader__.load({id: "easywork-bundle", factory: function(require) {
 const module = { exports: {} };
 ${clientResult.outputFiles[0].text}
 return module.exports;
@@ -23,6 +23,6 @@ const hostResult = await build({
   format: 'esm',
   platform: 'node',
   target: 'node22',
-  external: ['@deepseek-ai/cordis', '@deepseek-ai/dsh-skill', 'yaml'],
+  external: ['@deepseek-ai/cordis', '@deepseek-ai/dsh-*', 'yaml', 'semver'],
 });
 writeFileSync(new URL('../../../packages/bundle/dist/probe.js', import.meta.url), hostResult.outputFiles[0].text);

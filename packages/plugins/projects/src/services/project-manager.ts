@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { Context, Service } from '@deepseek-ai/cordis';
 import type { KvTable } from '@deepseek-ai/dsh-storage-domain';
-import type { ActorContext } from 'workdsh-contracts';
-import type { CreateProjectInput, Project, ProjectActivity, ProjectAssetRef, ProjectCapabilityRef, ProjectConfig, ProjectConfigRevision, ProjectInputRef, ProjectService, ProjectSnapshot, ProjectTaskContext, ProjectTaskLink, ProjectTemplate, ProjectWorkItem } from 'workdsh-contracts/projects';
+import type { ActorContext } from 'easywork-contracts';
+import type { CreateProjectInput, Project, ProjectActivity, ProjectAssetRef, ProjectCapabilityRef, ProjectConfig, ProjectConfigRevision, ProjectInputRef, ProjectService, ProjectSnapshot, ProjectTaskContext, ProjectTaskLink, ProjectTemplate, ProjectWorkItem } from 'easywork-contracts/projects';
 import { PROJECT_INSTRUCTION_TOKEN_BUDGET, estimateProjectInstructionTokens } from '../instruction-budget.js';
 import { projectDomainSpec, projectStateKey, type ProjectState } from '../storage/domain.js';
-declare module '@deepseek-ai/cordis' { interface Context { workdshProjects: ProjectService; } }
+declare module '@deepseek-ai/cordis' { interface Context { easyworkProjects: ProjectService; } }
 const timestamp = () => new Date().toISOString();
 const clean = (value: string, code = 'projects/invalid-name', max = 10_000) => { const next = value.trim(); if (!next || next.length > max) throw new Error(code); return next; };
 const templates: readonly ProjectTemplate[] = [
@@ -18,8 +18,8 @@ const templates: readonly ProjectTemplate[] = [
 type Stored = ProjectState & { projects: Record<string, Project>; configs: Record<string, ProjectConfigRevision>; workItems: Record<string, ProjectWorkItem>; assets: Record<string, ProjectAssetRef>; tasks: Record<string, ProjectTaskLink>; activity: Record<string, ProjectActivity> };
 export class ProjectManager extends Service implements ProjectService {
   static inject = ['storageDomain']; private table?: KvTable<string, ProjectState>; private serial: Promise<unknown> = Promise.resolve();
-  constructor(ctx: Context) { super(ctx, 'workdshProjects'); }
-  async [Service.init]() { const domain = await this.ctx.storageDomain.open(projectDomainSpec); this.table = domain.table('states'); this.ctx.effect(() => () => domain.close(), 'workdshProjects.domainClose'); }
+  constructor(ctx: Context) { super(ctx, 'easyworkProjects'); }
+  async [Service.init]() { const domain = await this.ctx.storageDomain.open(projectDomainSpec); this.table = domain.table('states'); this.ctx.effect(() => () => domain.close(), 'easyworkProjects.domainClose'); }
   templates() { return Promise.resolve(templates); }
   list(actor: ActorContext, query = '') { return this.listForStatus(actor,query,'active'); }
   listArchived(actor: ActorContext, query = '') { return this.listForStatus(actor,query,'archived'); }

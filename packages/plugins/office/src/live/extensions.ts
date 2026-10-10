@@ -5,7 +5,7 @@ import { TableKit } from "@tiptap/extension-table";
 import Image from "@tiptap/extension-image";
 import StarterKit from "@tiptap/starter-kit";
 import { BlockIdentity } from "./adapter.js";
-import type { OfficeChart } from "workdsh-contracts/office";
+import type { OfficeChart } from "easywork-contracts/office";
 
 const NS="http://www.w3.org/2000/svg", palette=["#2563eb","#f97316","#16a34a","#9333ea","#dc2626","#0891b2"];
 const svg=(tag:string,attrs:Record<string,string|number>={})=>{const el=document.createElementNS(NS,tag);for(const [key,value] of Object.entries(attrs))el.setAttribute(key,String(value));return el;};

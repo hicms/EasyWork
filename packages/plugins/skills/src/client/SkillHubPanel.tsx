@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { Button } from 'workdsh-ui';
+import { Button } from 'easywork-ui';
 
 type SkillHubCard = {
   slug: string;

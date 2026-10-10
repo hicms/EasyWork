@@ -1,3 +1,3 @@
 - insert:
-    - id: workdsh-audit
-      name: workdsh-plugin-audit
+    - id: easywork-audit
+      name: easywork-plugin-audit

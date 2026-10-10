@@ -26,7 +26,7 @@ try {
   await ctx.plugin(Tools);
   await ctx.plugin(McpResources);
   await ctx.plugin(McpClient, {
-    serverName: 'workdsh-probe',
+    serverName: 'easywork-probe',
     transport: 'stdio',
     command: process.execPath,
     args: [server],
@@ -42,19 +42,19 @@ try {
     if (!availableTools.includes(name)) throw new Error(`Official MCP resource tool is missing: ${name}`);
   }
 
-  const listed = await execute('list_mcp_resources', { server: 'workdsh-probe' });
-  const templates = await execute('list_mcp_resource_templates', { server: 'workdsh-probe' });
-  const fixed = await execute('read_mcp_resource', { server: 'workdsh-probe', uri: 'workdsh://guide/start' });
-  const expanded = await execute('read_mcp_resource', { server: 'workdsh-probe', uri: 'workdsh://guide/presentation' });
+  const listed = await execute('list_mcp_resources', { server: 'easywork-probe' });
+  const templates = await execute('list_mcp_resource_templates', { server: 'easywork-probe' });
+  const fixed = await execute('read_mcp_resource', { server: 'easywork-probe', uri: 'easywork://guide/start' });
+  const expanded = await execute('read_mcp_resource', { server: 'easywork-probe', uri: 'easywork://guide/presentation' });
 
-  if (listed.resources?.[0]?.uri !== 'workdsh://guide/start') throw new Error('Static MCP resource was not discovered.');
-  if (listed.resources?.[1]?.uri !== 'workdsh://guide/second-page' || listed.nextCursor !== undefined) throw new Error('MCP SDK pagination aggregation failed.');
-  if (templates.resourceTemplates?.[0]?.uriTemplate !== 'workdsh://guide/{topic}') throw new Error('MCP URI template was not discovered.');
+  if (listed.resources?.[0]?.uri !== 'easywork://guide/start') throw new Error('Static MCP resource was not discovered.');
+  if (listed.resources?.[1]?.uri !== 'easywork://guide/second-page' || listed.nextCursor !== undefined) throw new Error('MCP SDK pagination aggregation failed.');
+  if (templates.resourceTemplates?.[0]?.uriTemplate !== 'easywork://guide/{topic}') throw new Error('MCP URI template was not discovered.');
   if (fixed.contents?.[0]?.text !== 'EasyWork MCP resources are ready.') throw new Error('Static MCP resource content mismatch.');
   if (expanded.contents?.[0]?.text !== 'EasyWork guide topic: presentation') throw new Error('Expanded MCP resource content mismatch.');
 
   console.log(JSON.stringify({
-    server: 'workdsh-probe',
+    server: 'easywork-probe',
     officialTools: availableTools.filter((name) => name.includes('mcp_resource')),
     resourceUri: listed.resources[0].uri,
     nextResourceUri: listed.resources[1].uri,

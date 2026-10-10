@@ -1,5 +1,5 @@
 import { Service, type Context } from '@deepseek-ai/cordis';
-import type { EnterpriseService, EnterpriseRequest, IdentityResolutionContext, IdentityService } from 'workdsh-contracts';
+import type { EnterpriseService, EnterpriseRequest, IdentityResolutionContext, IdentityService } from 'easywork-contracts';
 import type {} from '@deepseek-ai/dsh-client-connection';
 import type {} from '@deepseek-ai/dsh-api-session-controller';
 import { EnterpriseMemberIdentity } from './member-identity.js';
@@ -7,26 +7,26 @@ import { DesktopAuthority, type EnterpriseDesktopConfig } from './desktop-author
 import { DesktopBodySync, observeDesktopSessions } from './desktop-body-sync.js';
 export type { EnterpriseDesktopConfig } from './desktop-authority.js';
 
-declare module '@deepseek-ai/cordis' { interface Context { workdshIdentity: IdentityService; workdshEnterprise: EnterpriseService } }
+declare module '@deepseek-ai/cordis' { interface Context { easyworkIdentity: IdentityService; easyworkEnterprise: EnterpriseService } }
 type SessionAccess = { inspect: Context['sessionController']['inspect'] };
 
 /** Explicit enterprise Desktop composition. It cannot authenticate as a personal identity. */
 export default class EnterpriseDesktopIdentity extends Service implements IdentityService {
   static inject = ['connection'];
-  readonly id = 'workdsh-enterprise-desktop';
+  readonly id = 'easywork-enterprise-desktop';
   private identity?: EnterpriseMemberIdentity;
   private readonly authority: DesktopAuthority;
   private sync?: DesktopBodySync;
   private syncError = '正文同步组件尚未就绪。';
 
   constructor(ctx: Context, config: EnterpriseDesktopConfig) {
-    super(ctx, 'workdshIdentity');
+    super(ctx, 'easyworkIdentity');
     this.authority = new DesktopAuthority(Object.freeze({ ...config }));
     ctx.plugin(EnterpriseTransport, this);
 
-    ctx.effect(() => () => { this.identity?.revoke(); this.authority.close(); this.sync?.close(); }, 'workdsh.enterprise-desktop.authority');
+    ctx.effect(() => () => { this.identity?.revoke(); this.authority.close(); this.sync?.close(); }, 'easywork.enterprise-desktop.authority');
     const register = (path: string, methods: Array<'GET' | 'POST'>, fetch: (request: Request) => Promise<Response>) => {
-      ctx.effect(() => ctx.connection.fetch.register({ path, methods, requestBody: 'buffered', fetch }), `workdsh.enterprise-desktop.${path}`);
+      ctx.effect(() => ctx.connection.fetch.register({ path, methods, requestBody: 'buffered', fetch }), `easywork.enterprise-desktop.${path}`);
     };
     const denied = () => Response.json({ local: true, error: '企业认证未确认，请在 Desktop 重新登录。' }, { status: 401, headers: { 'cache-control': 'no-store' } });
     register('/api/auth/me', ['GET'], async request => {
@@ -42,7 +42,7 @@ export default class EnterpriseDesktopIdentity extends Service implements Identi
         return Response.json(value, { headers: { 'cache-control': 'no-store' } });
       } catch { this.identity?.revoke(); this.authority.close(); this.sync?.close(); return denied(); }
     });
-    register('/api/workdsh-enterprise-sync', ['GET', 'POST'], async request => {
+    register('/api/easywork-enterprise-sync', ['GET', 'POST'], async request => {
       try {
         await this.resolve(undefined, request.signal);
         if (!this.sync) return Response.json({ error: this.syncError }, { status: 503, headers: { 'cache-control': 'no-store' } });
@@ -59,12 +59,12 @@ export default class EnterpriseDesktopIdentity extends Service implements Identi
   }
   async [Service.init](): Promise<void> {
     this.identity = await EnterpriseMemberIdentity.admit(signal => this.authority.verify(signal));
-    this.ctx.inject(['sessionController', 'workdshSessionAccess'], async ready => {
+    this.ctx.inject(['sessionController', 'easyworkSessionAccess'], async ready => {
       try {
-        const access = (ready as Context & { workdshSessionAccess: SessionAccess }).workdshSessionAccess;
+        const access = (ready as Context & { easyworkSessionAccess: SessionAccess }).easyworkSessionAccess;
         const sync = await DesktopBodySync.create(this.authority, (id, signal) => access.inspect(id, signal));
         this.sync = sync; observeDesktopSessions(ready, sync);
-        ready.effect(() => () => { if (this.sync === sync) this.sync = undefined; }, 'workdsh.enterprise-desktop.sync-owner');
+        ready.effect(() => () => { if (this.sync === sync) this.sync = undefined; }, 'easywork.enterprise-desktop.sync-owner');
       } catch { this.syncError = '正文同步初始化失败；请检查企业认证及受保护的本机同步文件。'; }
     });
   }
@@ -87,7 +87,7 @@ export default class EnterpriseDesktopIdentity extends Service implements Identi
 
 /** Public plugin dependency. Lifecycle is scoped to the installed enterprise identity. */
 class EnterpriseTransport extends Service implements EnterpriseService {
-  constructor(ctx: Context, private readonly owner: EnterpriseDesktopIdentity) { super(ctx, 'workdshEnterprise'); }
+  constructor(ctx: Context, private readonly owner: EnterpriseDesktopIdentity) { super(ctx, 'easyworkEnterprise'); }
   identity(signal?: AbortSignal) { return this.owner.enterpriseIdentity(signal); }
   request<T = unknown>(input: EnterpriseRequest): Promise<T> { return this.owner.enterpriseRequest<T>(input); }
 }

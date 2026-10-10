@@ -26,7 +26,7 @@ export function TeamOverview({ definition }: { definition: ExpertDefinition }) {
   if (!team) return null;
   let leadMetadata: { displayName?: unknown; profession?: unknown; avatar?: string } | undefined;
   try {
-    const manifestText = definition.packageDocuments?.['.workdsh-expert/plugin.json'] ?? definition.packageDocuments?.['.codebuddy-plugin/plugin.json'];
+    const manifestText = definition.packageDocuments?.['.easywork-expert/plugin.json'] ?? definition.packageDocuments?.['.codebuddy-plugin/plugin.json'];
     const manifest = manifestText ? JSON.parse(manifestText) : undefined;
     leadMetadata = manifest?.members?.find((member: { role?: string }) => member.role === 'lead');
   } catch { /* Invalid authoring metadata is handled by Host validation. */ }

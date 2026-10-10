@@ -1,4 +1,4 @@
-import { Button } from 'workdsh-ui';
+import { Button } from 'easywork-ui';
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ExpertAvailability, ExpertDefinition, ExpertDetail, ExpertSkillOption } from '../shared.js';

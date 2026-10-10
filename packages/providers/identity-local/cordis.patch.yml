@@ -1,6 +1,6 @@
 - insert:
-    - id: workdsh-identity-local
-      name: workdsh-provider-identity-local
+    - id: easywork-identity-local
+      name: easywork-provider-identity-local
       config:
         principalId: local-user
         organizationId: local-personal

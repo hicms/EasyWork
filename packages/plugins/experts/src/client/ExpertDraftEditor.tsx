@@ -1,7 +1,7 @@
-import { Button, Select, Textarea, Input } from 'workdsh-ui';
+import { Button, Select, Textarea, Input } from 'easywork-ui';
 import * as React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Modal } from 'workdsh-ui';
+import { Modal } from 'easywork-ui';
 import { EXPERT_LIMITS, type DomainIssue, type ExpertDefinition, type ExpertValidation, type SkillRevisionRef } from '../shared.js';
 import type { ExpertManagementClient } from './management.js';
 import { SkillPicker } from './SkillPicker.js';

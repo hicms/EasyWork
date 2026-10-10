@@ -12,4 +12,4 @@ Modal 统一处理 `role=dialog`、遮罩与 Escape 关闭、焦点约束、关�
 
 页面与弹窗使用 Harness 原生主题语义颜色，跟随官方外观设置及系统明暗切换。
 
-公共 Button/Input 适配官方 dsh-client-ui-primitives@0.2.0-rc.2；Select/Textarea 使用 HTML 原生语义，controlsCss 提供统一 36px 表单尺寸及主题状态。业务样式放在 workdsh-business cascade layer，原生控件外观优先；controlsCss 必须与管理视图样式一起加载。
+公共 Button/Input 适配官方 dsh-client-ui-primitives@0.2.0-rc.2；Select/Textarea 使用 HTML 原生语义，controlsCss 提供统一 36px 表单尺寸及主题状态。业务样式放在 easywork-business cascade layer，原生控件外观优先；controlsCss 必须与管理视图样式一起加载。

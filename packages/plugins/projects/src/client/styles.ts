@@ -1,7 +1,7 @@
-import { controlsCss, modalCss } from 'workdsh-ui';
+import { controlsCss, modalCss } from 'easywork-ui';
 
 export const projectsCss = `${modalCss}
-@layer workdsh-business {
+@layer easywork-business {
 
 
 

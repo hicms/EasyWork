@@ -2,7 +2,7 @@
 
 状态：**0.1 契约实现中**。当前 `0.1.0-alpha.9` 提供身份 Profile/Service、成员查询、组织、资源归属、授权、Session owner、运行绑定和审计的纯 TypeScript 契约及受信边界校验。
 
-新增 `workdsh-contracts/skills`：`SkillManagementService`（`contractVersion: 1`）、现有本地管理 DTO 和 `SkillDependencyInspector`。Skill Host、页面和其他插件共享这一类型源，不横向导入功能内部实现。此子路径仅定义受信本地 Host 契约，不增加 Cordis/React/数据库依赖；业务不可变 SkillRevision、专家执行快照和企业授权仍待相应模块实现。
+新增 `easywork-contracts/skills`：`SkillManagementService`（`contractVersion: 1`）、现有本地管理 DTO 和 `SkillDependencyInspector`。Skill Host、页面和其他插件共享这一类型源，不横向导入功能内部实现。此子路径仅定义受信本地 Host 契约，不增加 Cordis/React/数据库依赖；业务不可变 SkillRevision、专家执行快照和企业授权仍待相应模块实现。
 
 - 实现阶段：P0
 - 主任务：P0-04，详见 [需求与范围](../../apps/web/docs/REQUIREMENTS.md)

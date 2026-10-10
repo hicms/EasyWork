@@ -6,7 +6,7 @@ import type {} from '@deepseek-ai/dsh-tools';
 import type {} from '@deepseek-ai/dsh-agent';
 import type {} from '@deepseek-ai/dsh-attachment';
 
-export const browserViewPath = '/api/workdsh-agent-browser';
+export const browserViewPath = '/api/easywork-agent-browser';
 const browserPrefix = 'mcp__playwright-mcp__browser_';
 const screenshotName = `${browserPrefix}take_screenshot`;
 
@@ -61,12 +61,12 @@ export function registerBrowserView(ctx: Context): void {
   const agents = new Map<string, NonNullable<Parameters<typeof ctx.tools.execute>[0]['agent']>>();
   const queues = new Map<string, Promise<void>>();
   let disposed = false;
-  ctx.effect(() => () => { disposed = true; frames.clear(); agents.clear(); queues.clear(); }, 'workdsh.browser-view');
+  ctx.effect(() => () => { disposed = true; frames.clear(); agents.clear(); queues.clear(); }, 'easywork.browser-view');
 
   ctx.on('agent/created', ({ agent }) => {
     const sessionId = String(agent.session.id);
     agents.set(sessionId, agent);
-    agent.ctx.effect(() => () => { frames.delete(sessionId); agents.delete(sessionId); queues.delete(sessionId); }, 'workdsh.browser-view.session');
+    agent.ctx.effect(() => () => { frames.delete(sessionId); agents.delete(sessionId); queues.delete(sessionId); }, 'easywork.browser-view.session');
     return undefined;
   });
 
@@ -84,7 +84,7 @@ export function registerBrowserView(ctx: Context): void {
     const queued = preceding.catch(() => undefined).then(async () => {
       if (disposed) return;
       const screenshot = await ctx.tools.execute({
-        callId: ToolCallId(`workdsh-browser-view-${randomUUID()}`),
+        callId: ToolCallId(`easywork-browser-view-${randomUUID()}`),
         rootCallId: exec.rootCallId,
         parent: exec.token,
         name: screenshotName,
@@ -137,7 +137,7 @@ export function registerBrowserView(ctx: Context): void {
         const agent = agents.get(sessionId);
         if (!action || !agent || !frames.has(sessionId)) return Response.json({ error: 'Browser action unavailable' }, { status: 400 });
         const result = await ctx.tools.execute({
-          callId: ToolCallId(`workdsh-browser-input-${randomUUID()}`), name: action.name,
+          callId: ToolCallId(`easywork-browser-input-${randomUUID()}`), name: action.name,
           arguments: action.arguments, agent, signal: AbortSignal.timeout(20_000),
         });
         if (result.isError) return Response.json({ error: 'Browser action failed' }, { status: 502 });
@@ -147,5 +147,5 @@ export function registerBrowserView(ctx: Context): void {
       return Response.json({ frame: unchanged ? null : frame, unchanged }, { headers: { 'cache-control': 'no-store' } });
     },
   });
-  ctx.effect(() => unregister, 'workdsh.browser-view.fetch');
+  ctx.effect(() => unregister, 'easywork.browser-view.fetch');
 }

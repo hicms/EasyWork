@@ -20,12 +20,12 @@ await mkdir(parent, { recursive: true, mode: 0o700 });
 assert.equal(await realpath(parent), parent, 'Output root must not traverse a symbolic link');
 const output = await mkdtemp(join(parent, 'browser-'));
 const selection = {
-  home: ['storages/workdsh_identity_local.json', 'storages/workdsh_experts',
-    'storages/workdsh_library', 'storages/workdsh_connectors',
-    'storages/workdsh_connector_selections', 'storages/workdsh_runtime_binding',
-    'storages/workdsh_projects', 'storages/workspace.json',
+  home: ['storages/easywork_identity_local.json', 'storages/easywork_experts',
+    'storages/easywork_library', 'storages/easywork_connectors',
+    'storages/easywork_connector_selections', 'storages/easywork_runtime_binding',
+    'storages/easywork_projects', 'storages/workspace.json',
     'sessions', 'library', 'skills', 'attachments', '.agent-presets'],
-  agents: ['skills', '.workdsh-state', '.workdsh-catalog', '.workdsh-disabled', '.workdsh-trash', '.skill-lock.json'],
+  agents: ['skills', '.easywork-state', '.easywork-catalog', '.easywork-disabled', '.easywork-trash', '.skill-lock.json'],
 };
 const records = [];
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');

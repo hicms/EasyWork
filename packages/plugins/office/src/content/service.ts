@@ -1,8 +1,8 @@
 import {pdfStateSchema,pdfEditInput,applyPdf,initialPdf} from "../pdf/model.js";
 import {pdfBytes} from "../pdf/encode.js";
-import type {OfficePdfOpenInput,OfficePdfEditInput} from "workdsh-contracts/office";
+import type {OfficePdfOpenInput,OfficePdfEditInput} from "easywork-contracts/office";
 import {htmlStateSchema,htmlEditInput,applyHtml} from "../html/model.js";
-import type {OfficeHtmlOpenInput,OfficeHtmlEditInput} from "workdsh-contracts/office";
+import type {OfficeHtmlOpenInput,OfficeHtmlEditInput} from "easywork-contracts/office";
 import {spreadsheetStateSchema,spreadsheetEditInput,createSpreadsheet,applySpreadsheet,spreadsheetCapabilities} from "../spreadsheet/model.js";
 import { createHash, randomUUID } from "node:crypto";
 import { Service, type Context } from "@deepseek-ai/cordis";
@@ -20,7 +20,7 @@ import type {
   ActorContext,
   AuditEvent,
   ResourceOwner,
-} from "workdsh-contracts";
+} from "easywork-contracts";
 import type {
   OfficeSnapshot,
   OfficeContentSnapshot,
@@ -30,7 +30,7 @@ import type {
   OfficeReceipt,
   OfficeEditInput,
   OfficeOpenInput,
-} from "workdsh-contracts/office";
+} from "easywork-contracts/office";
 import {
   applyOperations,
   capabilities,
@@ -50,10 +50,10 @@ import {parsePresentation,createPresentation,importPresentation,applyPresentatio
 
 declare module "@deepseek-ai/cordis" {
   interface Context {
-    workdshOfficeContent: ContentService;
-    workdshIdentity: IdentityService;
-    workdshAccess: AccessService & RuntimeBindingService;
-    workdshAudit: AuditService;
+    easyworkOfficeContent: ContentService;
+    easyworkIdentity: IdentityService;
+    easyworkAccess: AccessService & RuntimeBindingService;
+    easyworkAudit: AuditService;
   }
 }
 const runSchema = runInput.safeExtend({runId: id});
@@ -148,7 +148,7 @@ const recordSchema = z
   .strict().refine(record=>record.kind==="document"?"blocks" in record.state:record.kind==="presentation"?"deck" in record.state:record.kind==="pdf"?"pages" in record.state:record.kind==="html"?"html" in record.state:"sheets" in record.state,"State must match editor kind");
 type ContentRecord = z.infer<typeof recordSchema>;
 export const contentDomain = defineDomain({
-  name: "workdsh_office",
+  name: "easywork_office",
   version: 1,
   layout: "per-record",
   tables: { documents: domainTable<string, ContentRecord>(recordSchema) },
@@ -157,23 +157,23 @@ const hash = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
 const newId = () => randomUUID();
 
-declare const __WORKDSH_PRESENTATION_ENABLED__:boolean;
-declare const __WORKDSH_SPREADSHEET_ENABLED__:boolean;
+declare const __EASYWORK_PRESENTATION_ENABLED__:boolean;
+declare const __EASYWORK_SPREADSHEET_ENABLED__:boolean;
 export class ContentService extends Service {
-  readonly spreadsheetEnabled=typeof __WORKDSH_SPREADSHEET_ENABLED__!=="undefined"?__WORKDSH_SPREADSHEET_ENABLED__:true;
-  readonly presentationEnabled=typeof __WORKDSH_PRESENTATION_ENABLED__!=="undefined"?__WORKDSH_PRESENTATION_ENABLED__:true;
+  readonly spreadsheetEnabled=typeof __EASYWORK_SPREADSHEET_ENABLED__!=="undefined"?__EASYWORK_SPREADSHEET_ENABLED__:true;
+  readonly presentationEnabled=typeof __EASYWORK_PRESENTATION_ENABLED__!=="undefined"?__EASYWORK_PRESENTATION_ENABLED__:true;
   static inject = [
     "storageDomain",
-    "workdshIdentity",
-    "workdshAccess",
-    "workdshAudit",
+    "easyworkIdentity",
+    "easyworkAccess",
+    "easyworkAudit",
   ];
   readonly generation = newId();
   private table!: KvTable<string, ContentRecord>;
   private closed = false;
   private tail: Promise<unknown> = Promise.resolve();
   constructor(ctx: Context) {
-    super(ctx, "workdshOfficeContent");
+    super(ctx, "easyworkOfficeContent");
   }
   async [Service.init]() {
     const domain = await this.ctx.storageDomain.open(contentDomain);
@@ -184,7 +184,7 @@ export class ContentService extends Service {
         await this.tail;
         await domain.close();
       },
-      "workdshOfficeContent.close",
+      "easyworkOfficeContent.close",
     );
     // Audit events are an outbox in the same record as the committed state.
     await this.flushAudit();
@@ -208,7 +208,7 @@ export class ContentService extends Service {
       "SESSION_REQUIRED",
       "请在已授权的会话中使用文档工具。",
     );
-    const binding = this.ctx.workdshAccess.sessionOwner(actor.sessionId);
+    const binding = this.ctx.easyworkAccess.sessionOwner(actor.sessionId);
     ensure(
       binding &&
         binding.organizationId === actor.organizationId &&
@@ -230,7 +230,7 @@ export class ContentService extends Service {
       "FORBIDDEN",
       "文档属于另一个工作区。",
     );
-    const decision = await this.ctx.workdshAccess.authorize(
+    const decision = await this.ctx.easyworkAccess.authorize(
       {
         actor,
         action,
@@ -292,7 +292,7 @@ export class ContentService extends Service {
       for (const [key, item] of Object.entries(record.receipts)) {
         if (item.audited) continue;
         try {
-          await this.ctx.workdshAudit.append(item.event as AuditEvent);
+          await this.ctx.easyworkAudit.append(item.event as AuditEvent);
           await this.table.update(record.documentId, (current) => {
             const next = structuredClone(current);
             next.receipts[key]!.audited = true;
@@ -340,7 +340,7 @@ export class ContentService extends Service {
         ownerPrincipalId: actor.principalId,
         scope: "personal",
       };
-      const decision = await this.ctx.workdshAccess.authorize(
+      const decision = await this.ctx.easyworkAccess.authorize(
         {
           actor,
           action: "edit",

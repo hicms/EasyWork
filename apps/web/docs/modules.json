@@ -68,7 +68,7 @@
       "src/remote",
       "src/client/components",
       "src/harness",
-      "resources/skills/workdsh-expert-manager",
+      "resources/skills/easywork-expert-manager",
       "resources/templates",
       "src/services/preferences"
     ],
@@ -89,7 +89,7 @@
       "src/remote",
       "src/client/components",
       "src/harness",
-      "resources/skills/workdsh-skill-creator",
+      "resources/skills/easywork-skill-creator",
       "resources/templates",
       "src/services/discovery",
       "src/services/preferences"

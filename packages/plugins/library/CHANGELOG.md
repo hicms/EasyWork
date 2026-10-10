@@ -4,7 +4,7 @@
 
 ## 0.1.0-alpha.3 — Unreleased（2026-09-22）
 
-- 统一管理操作与表单：复用 Harness 原生 Button/Input，Select/Textarea 共用 workdsh-ui；声明原生 UI 依赖，保持主题与交互语义。
+- 统一管理操作与表单：复用 Harness 原生 Button/Input，Select/Textarea 共用 easywork-ui；声明原生 UI 依赖，保持主题与交互语义。
 
 - 页面和配置弹窗跟随原生主题明暗变化，移除固定深色。
 - 修复对话右侧资料引用预览的明暗主题：背景、正文、分割线、加载与错误提示使用官方语义颜色，随系统主题即时更新；HTML 原件保留文档本身样式。

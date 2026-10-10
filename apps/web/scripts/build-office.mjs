@@ -38,7 +38,7 @@ const child = await build({
   platform: "browser",
   target: "es2022",
   loader: { ".woff": "dataurl", ".woff2": "dataurl", ".ttf": "dataurl" },
-  define: { "process.env.NODE_ENV": '"production"', __WORKDSH_WORD_ONLY__: String(wordOnly) },
+  define: { "process.env.NODE_ENV": '"production"', __EASYWORK_WORD_ONLY__: String(wordOnly) },
 });
 const js = child.outputFiles
   .find((f) => f.path.endsWith(".js"))
@@ -55,7 +55,7 @@ const client = await build({
   platform: "browser",
   external: ["@deepseek-ai/dsh-client-ui-primitives", "react", "react-dom", "react/jsx-runtime"],
   loader:{".css":"text"},
-  define: { "process.env.NODE_ENV": '"production"', __WORKDSH_WORD_ONLY__: String(wordOnly) },
+  define: { "process.env.NODE_ENV": '"production"', __EASYWORK_WORD_ONLY__: String(wordOnly) },
   plugins: [
     {name:"pdf-worker-source",setup(builder){builder.onLoad({filter:/pdf\.worker\.min\.mjs$/},async args=>({contents:await readFile(args.path,"utf8"),loader:"text"}));}},
     nativePptPlugin(),
@@ -77,7 +77,7 @@ const client = await build({
 });
 await writeFile(
   new URL("dist/client.browser.js", root),
-  `window.__ModuleLoader__.load({id:"workdsh-plugin-office",factory:function(require){const module={exports:{}};${client.outputFiles[0].text}\nreturn module.exports;}});`,
+  `window.__ModuleLoader__.load({id:"easywork-plugin-office",factory:function(require){const module={exports:{}};${client.outputFiles[0].text}\nreturn module.exports;}});`,
 );
 const host = await build({
   metafile: true,
@@ -87,7 +87,7 @@ const host = await build({
   loader:{".ttf":"binary"},
   plugins: [spreadsheetScope],
   format: "esm",
-  define:{__WORKDSH_PRESENTATION_ENABLED__:String(!wordOnly),__WORKDSH_SPREADSHEET_ENABLED__:String(!wordOnly)},
+  define:{__EASYWORK_PRESENTATION_ENABLED__:String(!wordOnly),__EASYWORK_SPREADSHEET_ENABLED__:String(!wordOnly)},
   platform: "node",
   outfile: fileURLToPath(new URL("dist/index.js", root)),
 });

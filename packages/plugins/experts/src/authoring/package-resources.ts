@@ -1,10 +1,10 @@
-import type { ExpertDefinition } from 'workdsh-contracts';
+import type { ExpertDefinition } from 'easywork-contracts';
 import { ExpertsError } from '../domain/values.js';
 
 export type PackageAssets = NonNullable<ExpertDefinition['packageAssets']>;
 export function packagePath(path: string): void {
   if (!path || path.length > 512 || path.startsWith('/') || /[\\\0]/.test(path) || /^[a-z]:/i.test(path) || path.split('/').some(p => !p || p === '.' || p === '..') || path.split('/').length > 8
-    || !/^(README\.md|team\.md|settings\.json|LICENSE(?:\.[^/]+)?|NOTICE(?:\.[^/]+)?|\.(?:workdsh-expert|codebuddy-plugin)\/plugin\.json|agents\/[a-z][a-z0-9-]{1,63}\.md|(?:avatars|assets|bin)\/.+|skills\/[a-z][a-z0-9-]+\/.+)$/.test(path)) throw new ExpertsError('experts/invalid-definition', `非法专家资源路径：${path}`);
+    || !/^(README\.md|team\.md|settings\.json|LICENSE(?:\.[^/]+)?|NOTICE(?:\.[^/]+)?|\.(?:easywork-expert|codebuddy-plugin)\/plugin\.json|agents\/[a-z][a-z0-9-]{1,63}\.md|(?:avatars|assets|bin)\/.+|skills\/[a-z][a-z0-9-]+\/.+)$/.test(path)) throw new ExpertsError('experts/invalid-definition', `非法专家资源路径：${path}`);
 }
 export function assetBytes(path: string, asset: PackageAssets[string]): Buffer {
   packagePath(path);
@@ -32,7 +32,7 @@ export function validateResources(files: Readonly<Record<string, string>>, asset
   if (total > 20 * 1024 * 1024) throw new ExpertsError('experts/invalid-definition', '专家资源总大小超过20MiB。');
 }
 export function packageAvatar(files: Readonly<Record<string, string>>, assets: PackageAssets = {}): string | undefined {
-  const path = files['.workdsh-expert/plugin.json'] ?? files['.codebuddy-plugin/plugin.json'];
+  const path = files['.easywork-expert/plugin.json'] ?? files['.codebuddy-plugin/plugin.json'];
   if (!path) return;
   const avatar = JSON.parse(path).avatar;
   if (!avatar) return;

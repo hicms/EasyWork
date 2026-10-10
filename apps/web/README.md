@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/brand/workdsh-logo.svg" width="300" alt="EasyWork"></p>
+<p align="center"><img src="assets/brand/easywork-logo.svg" width="300" alt="EasyWork"></p>
 <h1 align="center">EasyWork</h1>
 <p align="center"><strong>Give AI a job. Watch it work. Open the result.</strong></p>
 <p align="center">English · <a href="README.zh-CN.md">简体中文</a></p>
@@ -7,19 +7,19 @@ EasyWork is an open-source AI workspace built on the official DeepSeek Harness. 
 
 **Desktop v2.0.6-alpha.1 · Web/plugins v0.1.0-alpha.14 · Alpha preview**
 
-[Desktop downloads](https://github.com/techflag/workdsh/releases/tag/desktop-v2.0.6-alpha.1) · [Web/plugin download](https://github.com/techflag/workdsh/releases/tag/v0.1.0-alpha.14) · [Release notes](https://github.com/techflag/workdsh/releases/tag/v0.1.0-alpha.14) · [Quick start](#quick-start) · [Gitee mirror](https://gitee.com/techflag/workdsh)
+[Desktop downloads](https://github.com/techflag/easywork/releases/tag/desktop-v2.0.6-alpha.1) · [Web/plugin download](https://github.com/techflag/easywork/releases/tag/v0.1.0-alpha.14) · [Release notes](https://github.com/techflag/easywork/releases/tag/v0.1.0-alpha.14) · [Quick start](#quick-start) · [Gitee mirror](https://gitee.com/techflag/easywork)
 
 ## Download EasyWork Desktop
 
 | System | Installer |
 | --- | --- |
-| Windows x64 | [Download Setup.exe](https://github.com/techflag/workdsh/releases/download/desktop-v2.0.6-alpha.1/dsh-plugin-desktop-windows-x64--WorkDSH-2.0.6-alpha.1-x64-Setup.exe) |
-| macOS Apple Silicon | [Download arm64 DMG](https://github.com/techflag/workdsh/releases/download/desktop-v2.0.6-alpha.1/dsh-plugin-desktop-macos-arm64--WorkDSH-2.0.6-alpha.1-arm64.dmg) |
-| macOS Intel | [Download x64 DMG](https://github.com/techflag/workdsh/releases/download/desktop-v2.0.6-alpha.1/dsh-plugin-desktop-macos-x64--WorkDSH-2.0.6-alpha.1-x64.dmg) |
+| Windows x64 | [Download Setup.exe](https://github.com/techflag/easywork/releases/download/desktop-v2.0.6-alpha.1/dsh-plugin-desktop-windows-x64--EasyWork-2.0.6-alpha.1-x64-Setup.exe) |
+| macOS Apple Silicon | [Download arm64 DMG](https://github.com/techflag/easywork/releases/download/desktop-v2.0.6-alpha.1/dsh-plugin-desktop-macos-arm64--EasyWork-2.0.6-alpha.1-arm64.dmg) |
+| macOS Intel | [Download x64 DMG](https://github.com/techflag/easywork/releases/download/desktop-v2.0.6-alpha.1/dsh-plugin-desktop-macos-x64--EasyWork-2.0.6-alpha.1-x64.dmg) |
 
-These Alpha installers bundle EasyWork v0.1.0-alpha.14 and the official Harness 0.1.7-rc.2 Profile, including Node and Python. The task browser reuses Electron; no second browser binary is bundled. macOS DMGs are unsigned previews; checksums are in the [Desktop release](https://github.com/techflag/workdsh/releases/tag/desktop-v2.0.6-alpha.1).
+These Alpha installers bundle EasyWork v0.1.0-alpha.14 and the official Harness 0.1.7-rc.2 Profile, including Node and Python. The task browser reuses Electron; no second browser binary is bundled. macOS DMGs are unsigned previews; checksums are in the [Desktop release](https://github.com/techflag/easywork/releases/tag/desktop-v2.0.6-alpha.1).
 
-![EasyWork project home — full application in dark mode](assets/screenshots/workdsh-projects-alpha8-dark.png)
+![EasyWork project home — full application in dark mode](assets/screenshots/easywork-projects-alpha8-dark.png)
 
 ## What you can do
 
@@ -41,14 +41,14 @@ Full application captures from a local workspace; example projects, installed sk
 <details>
 <summary>Light theme — project home</summary>
 
-![EasyWork project home — full application in light mode](assets/screenshots/workdsh-projects-alpha8-light.png)
+![EasyWork project home — full application in light mode](assets/screenshots/easywork-projects-alpha8-light.png)
 
 </details>
 
 <details>
 <summary>Office example — conversation and HTML deliverable</summary>
 
-![Conversation with an HTML analysis dashboard](assets/screenshots/workdsh-html-dashboard-preview.png)
+![Conversation with an HTML analysis dashboard](assets/screenshots/easywork-html-dashboard-preview.png)
 
 Earlier local preview showing the artifact workflow; it is not an alpha.8 acceptance result for every document format.
 
@@ -56,11 +56,11 @@ Earlier local preview showing the artifact workflow; it is not an alpha.8 accept
 
 ## Star history
 
-<a href="https://www.star-history.com/?repos=techflag%2Fworkdsh&type=date&legend=top-left">
+<a href="https://www.star-history.com/?repos=techflag%2Feasywork&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=techflag/workdsh&type=date&theme=dark&legend=top-left&sealed_token=BRTkOyC4czCEkIyFb5-QxrsC-kaDotBJ8tsjxrWs-UGfmBqfRCXSwieZPlVTCYOjJVEZ29uLvmBjAPREB524J5dPN1jk-UA7ajFdLdrbjumJqoOBeGWmig" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=techflag/workdsh&type=date&legend=top-left&sealed_token=BRTkOyC4czCEkIyFb5-QxrsC-kaDotBJ8tsjxrWs-UGfmBqfRCXSwieZPlVTCYOjJVEZ29uLvmBjAPREB524J5dPN1jk-UA7ajFdLdrbjumJqoOBeGWmig" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=techflag/workdsh&type=date&legend=top-left&sealed_token=BRTkOyC4czCEkIyFb5-QxrsC-kaDotBJ8tsjxrWs-UGfmBqfRCXSwieZPlVTCYOjJVEZ29uLvmBjAPREB524J5dPN1jk-UA7ajFdLdrbjumJqoOBeGWmig" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=techflag/easywork&type=date&theme=dark&legend=top-left&sealed_token=BRTkOyC4czCEkIyFb5-QxrsC-kaDotBJ8tsjxrWs-UGfmBqfRCXSwieZPlVTCYOjJVEZ29uLvmBjAPREB524J5dPN1jk-UA7ajFdLdrbjumJqoOBeGWmig" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=techflag/easywork&type=date&legend=top-left&sealed_token=BRTkOyC4czCEkIyFb5-QxrsC-kaDotBJ8tsjxrWs-UGfmBqfRCXSwieZPlVTCYOjJVEZ29uLvmBjAPREB524J5dPN1jk-UA7ajFdLdrbjumJqoOBeGWmig" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=techflag/easywork&type=date&legend=top-left&sealed_token=BRTkOyC4czCEkIyFb5-QxrsC-kaDotBJ8tsjxrWs-UGfmBqfRCXSwieZPlVTCYOjJVEZ29uLvmBjAPREB524J5dPN1jk-UA7ajFdLdrbjumJqoOBeGWmig" />
  </picture>
 </a>
 
@@ -68,13 +68,13 @@ Earlier local preview showing the artifact workflow; it is not an alpha.8 accept
 
 Requirements: Node.js `^22.19.0 || >=24.0.0`, Corepack/pnpm and the official `dsh` CLI **0.2.0-rc.2**.
 
-1. Download all 12 `.tgz` packages, `release-manifest.json`, `SHA256SUMS` and `install-workdsh.mjs` from the [alpha.14 release](https://github.com/techflag/workdsh/releases/tag/v0.1.0-alpha.14) into one directory.
+1. Download all 12 `.tgz` packages, `release-manifest.json`, `SHA256SUMS` and `install-easywork.mjs` from the [alpha.14 release](https://github.com/techflag/easywork/releases/tag/v0.1.0-alpha.14) into one directory.
 2. For an upgrade, stop the target Profile and keep a recoverable backup of its configuration and data.
 3. Run from the download directory:
 
 ```sh
-node install-workdsh.mjs --profile workdsh --dry-run
-node install-workdsh.mjs --profile workdsh
+node install-easywork.mjs --profile easywork --dry-run
+node install-easywork.mjs --profile easywork
 ```
 
 The installer verifies package checksums, pins the tested package manager and transitive Harness versions, and installs the matching official base, Web app and CLI into the Profile. **Start with the Profile-local CLI command printed by the installer.** This avoids mixing a global CLI with a different runtime installation. Use `--dsh /absolute/path/to/dsh` if the matching CLI is not on your PATH.
@@ -103,7 +103,7 @@ corepack pnpm typecheck
 corepack pnpm check:versions
 ```
 
-[Release history](https://github.com/techflag/workdsh/releases) · [Project roadmap](https://github.com/techflag/workdsh/issues)
+[Release history](https://github.com/techflag/easywork/releases) · [Project roadmap](https://github.com/techflag/easywork/issues)
 
 This is an alpha preview. Cross-platform installation, long-running real-model teams, arbitrary Office fidelity and multi-user governance are not fully accepted. Harness upgrades require compatibility checks for the native UI adapters. See the release notes for the exact validation scope.
 

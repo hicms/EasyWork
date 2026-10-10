@@ -4,7 +4,7 @@
 
 ## 0.1.0-alpha.8 — Unreleased（2026-09-22）
 
-- 统一管理操作与表单：复用 Harness 原生 Button/Input，Select/Textarea 共用 workdsh-ui；声明原生 UI 依赖，保持主题与交互语义。
+- 统一管理操作与表单：复用 Harness 原生 Button/Input，Select/Textarea 共用 easywork-ui；声明原生 UI 依赖，保持主题与交互语义。
 
 - 页面、卡片、按钮及详情/编辑弹窗改用原生主题语义颜色，支持明暗即时切换。
 - 适配 DeepSeek Harness 0.1.7-alpha.1、Cordis 4.0.3，更新精确依赖。 专家使用官方声明式预设注册表，冻结配置并在重启时恢复；旧目录修订需重新发布。
@@ -38,13 +38,13 @@
 - Add real Loader/AgentLoop cold-resume probes and independent Web Profile verification. Paid-model professional acceptance remains separate.
 
 
-- 专家管理内置技能迁入统一 `resources/skills/workdsh-expert-manager` 目录。
+- 专家管理内置技能迁入统一 `resources/skills/easywork-expert-manager` 目录。
 - 调整创建菜单、草稿审阅和详情折叠区，并更新隔离安装与冷启动探针。
 - 统一专家弹框外观；TM-01 真实模型整体验收仍未完成。
 
 ## 当前 preview 候选（未发布）
 
-- 专家管理内置技能迁入 resources/skills/workdsh-expert-manager，正文及运行资源保留，统一工程目录。
+- 专家管理内置技能迁入 resources/skills/easywork-expert-manager，正文及运行资源保留，统一工程目录。
 
 # Changelog
 

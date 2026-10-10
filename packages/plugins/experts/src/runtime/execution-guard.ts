@@ -17,10 +17,10 @@ export function registerExpertExecutionGuard(ctx: Context, options: { agentsHome
     const membership = ctx.agentTeams.tryMembership(agent);
     const root = membership?.root ?? agent;
     const header = agent.session.header;
-    const actor = await ctx.workdshIdentity.resolve({ sessionId: String(root.id) }, signal);
+    const actor = await ctx.easyworkIdentity.resolve({ sessionId: String(root.id) }, signal);
     let role;
     try {
-      role = await ctx.workdshExperts.resolveNativeRole(actor, String(root.id), membership?.role === 'teammate' ? membership.name : undefined, signal);
+      role = await ctx.easyworkExperts.resolveNativeRole(actor, String(root.id), membership?.role === 'teammate' ? membership.name : undefined, signal);
     } catch (error) {
       const unbound = error instanceof ExpertsError && error.code === 'experts/not-found' && error.details?.reason === 'unbound';
       // The trusted create endpoint stores a Lead asset binding after Agent creation.
@@ -36,7 +36,7 @@ export function registerExpertExecutionGuard(ctx: Context, options: { agentsHome
     if (role.binding.presetRevisionRef !== header.agentPreset) throw new ExpertsError('experts/conflict', '原生任务 preset 与固定专家组合不一致。');
     if (membership?.role === 'teammate') {
       if (header.parentSession !== root.id || header.cwd !== root.session.header.cwd) throw new ExpertsError('experts/conflict', '官方成员与主任务的父关系或工作区不一致。');
-      const childActor = await ctx.workdshIdentity.resolve({ sessionId: String(agent.id) }, signal);
+      const childActor = await ctx.easyworkIdentity.resolve({ sessionId: String(agent.id) }, signal);
       if (childActor.principalId !== actor.principalId || childActor.organizationId !== actor.organizationId) throw new ExpertsError('experts/forbidden', '成员和主任务不属于同一授权主体。');
     }
     const { revision } = role;

@@ -1,4 +1,5 @@
 import { ShellAppearance } from '../components/ShellAppearance.js';
+import { PluginUpdates } from '../components/PluginUpdates.js';
 import { installFreshSessionNavigation } from './fresh-session.js';
 import { communityMarketView, type MarketHost } from '../components/CommunityMarket.js';
 import type { Context } from '@deepseek-ai/cordis';
@@ -10,7 +11,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-sidebar-right/client';
 import type {} from '@deepseek-ai/dsh-client-ui-session/client';
 import type {} from '@deepseek-ai/dsh-api-session-controller/client';
 import type { ISessions } from '@deepseek-ai/dsh-api-session-controller/client';
-import * as workbench from 'workdsh-plugin-workbench';
+import * as workbench from 'easywork-plugin-workbench';
 import { BrandMark, BrandName, DiagnosticsMark } from '../components/Brand.js';
 import { DiagnosticsPanel, type Inventory } from '../components/DiagnosticsPanel.js';
 import { NavigationLocation } from '../components/NavigationLocation.js';
@@ -21,25 +22,26 @@ declare module '@deepseek-ai/cordis' {
 }
 
 declare module '@deepseek-ai/dsh-client-ui-sidebar-right/client' {
-  interface SidebarRightTabParamsMap { 'workdsh-agent-browser': Record<string, never>; }
+  interface SidebarRightTabParamsMap { 'easywork-agent-browser': Record<string, never>; }
 }
 
-export const name = 'workdsh-client';
+export const name = 'easywork-client';
 export const inject = ['slots', 'layout', 'remote', 'remote.pluginInventory', 'sessions', 'sidebarRight', 'sidebarRightTabs'];
 
 const productViews: Readonly<Record<string, string>> = {
-  experts: 'workdsh-experts', skills: 'workdsh-skills', assistant: 'workdsh-assistant', projects: 'workdsh-projects', 'project-detail': 'workdsh-project-detail',
-  library: 'workdsh-library', automation: 'workdsh-automation', more: 'workdsh-more',
+  experts: 'easywork-experts', skills: 'easywork-skills', assistant: 'easywork-assistant', projects: 'easywork-projects', 'project-detail': 'easywork-project-detail',
+  library: 'easywork-library', automation: 'easywork-automation', more: 'easywork-more',
 };
 
 export function apply(ctx: Context): void {
   installFreshSessionNavigation(ctx);
+  ctx.slots.inject('plugins.item', () => ctx.slots.register({ name: 'plugins.item', id: 'easywork-plugin-updates', label: '插件版本与更新', order: -110 }, PluginUpdates));
   ctx.inject(['market'], scope => {
     if (scope.market.version !== 1) return;
     scope.market.setSettingsVisible(false);
-    scope.effect(() => () => scope.market.setSettingsVisible(true), 'workdsh.community-market.settings-visibility');
+    scope.effect(() => () => scope.market.setSettingsVisible(true), 'easywork.community-market.settings-visibility');
     scope.slots.inject('plugins.item', () => scope.slots.register({
-      name: 'plugins.item', id: 'workdsh-community-market', order: -100,
+      name: 'plugins.item', id: 'easywork-community-market', order: -100,
       label: '发现社区插件',
     }, communityMarketView(scope.market)));
   });
@@ -59,11 +61,11 @@ export function apply(ctx: Context): void {
     // inventory rather than making a request to a route that may not exist.
     void ctx.remote.pluginInventory.list().then(response => {
       if (disposed || !response.ok) return;
-      const provider = response.value.entries.find(row => row.moduleName === 'workdsh-provider-browser-session');
+      const provider = response.value.entries.find(row => row.moduleName === 'easywork-provider-browser-session');
       if (!provider?.enabled) registerLegacy();
     }).catch(() => { /* Unknown inventory is not evidence that a provider is absent. */ });
     return () => { disposed = true; unregister?.(); };
-  }, 'workdsh.agent-browser.tab');
+  }, 'easywork.agent-browser.tab');
   ctx.slots.inject('sidebar.right.pane.tab', () => ctx.slots.register({ name: 'sidebar.right.pane.tab', key: agentBrowserKind }, AgentBrowserPage));
   ctx.effect(() => {
     const sessions = ctx.sessions as unknown as ISessions;
@@ -85,10 +87,10 @@ export function apply(ctx: Context): void {
     };
     const timer = window.setInterval(() => { void poll(); }, 900);
     return () => window.clearInterval(timer);
-  }, 'workdsh.agent-browser.auto-open');
-  ctx.slots.inject('shell.overlay', () => ctx.slots.register({ name: 'shell.overlay', id: 'workdsh-shell-appearance' }, ShellAppearance));
+  }, 'easywork.agent-browser.auto-open');
+  ctx.slots.inject('shell.overlay', () => ctx.slots.register({ name: 'shell.overlay', id: 'easywork-shell-appearance' }, ShellAppearance));
   const diagnostics = new URL(window.location.href).searchParams.get('diagnostics') === '1';
-  const viewToPanel = diagnostics ? { ...productViews, diagnostics: 'workdsh-probe' } : productViews;
+  const viewToPanel = diagnostics ? { ...productViews, diagnostics: 'easywork-probe' } : productViews;
   const panelToView = Object.fromEntries(Object.entries(viewToPanel).map(([view, panel]) => [panel, view]));
   const selectView = (view: string | null) => {
     const target = view === 'projects' && new URL(window.location.href).searchParams.has('project') ? 'project-detail' : view;
@@ -105,17 +107,17 @@ export function apply(ctx: Context): void {
   ctx.slots.inject('sidebar.brand.name', () => ctx.slots.register({ name: 'sidebar.brand.name', priority: -10 }, BrandName));
   ctx.slots.inject('sidebar.brand.mark', () => ctx.slots.register({ name: 'sidebar.brand.mark', priority: -10 }, BrandMark));
   ctx.slots.inject('shell.overlay', () => ctx.slots.register({
-    name: 'shell.overlay', id: 'workdsh-location', inject: () => ({ panelToView, selectView }),
+    name: 'shell.overlay', id: 'easywork-location', inject: () => ({ panelToView, selectView }),
   }, NavigationLocation));
 
   ctx.slots.inject('main', () => {
     const dispose = diagnostics ? ctx.slots.register({
-      name: 'main', key: 'workdsh-probe', inject: () => ({
+      name: 'main', key: 'easywork-probe', inject: () => ({
         inspect: async (): Promise<Inventory> => {
           const response = await ctx.remote.pluginInventory.list();
           if (!response.ok) throw new Error(response.error.code);
           return { total: response.value.entries.length, modules: response.value.entries
-            .filter(row => row.moduleName.startsWith('workdsh-'))
+            .filter(row => row.moduleName.startsWith('easywork-'))
             .map(row => ({ module: row.moduleName, phase: row.fiberPhase })) };
         },
         returnToConversation: () => ctx.layout.selectPanel(null),
@@ -124,6 +126,6 @@ export function apply(ctx: Context): void {
     return dispose;
   });
   if (diagnostics) ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({
-    name: 'sidebar.panellist', id: 'workdsh-probe', label: 'EasyWork 接入验证', order: 90,
+    name: 'sidebar.panellist', id: 'easywork-probe', label: 'EasyWork 接入验证', order: 90,
   }, DiagnosticsMark));
 }

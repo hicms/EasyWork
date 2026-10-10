@@ -5,7 +5,7 @@
 | 来源 | 用途 |
 | --- | --- |
 | package.json与pnpm-lock.yaml | 精确官方版本族和工程依赖 |
-| shared/workdsh-features.json | 共同自有功能包来源，不等于全部默认安装 |
+| shared/easywork-features.json | 共同自有功能包来源，不等于全部默认安装 |
 | scripts/official-web-clients.mjs | 从锁定官方base/Web及dsh.client元数据核对完整官方客户端 |
 | scripts/install-preview.mjs | 安装完整官方个人Web及显式开发功能组合 |
 | enterprise/README.md | 历史企业组合说明，当前 Desktop 不启用 |

@@ -12,7 +12,7 @@ export function watchRuntimeShutdown(child: ChildProcess): void {
   let onClose: (() => void) | undefined
   const onMessage = (message: unknown): void => {
     if (requested && message && typeof message === 'object'
-      && 'type' in message && message.type === 'workdsh-shutdown-complete') acknowledged = true
+      && 'type' in message && message.type === 'easywork-shutdown-complete') acknowledged = true
   }
   child.on('message', onMessage)
   child.once('close', (exitCode, exitSignal) => {
@@ -38,7 +38,7 @@ export function watchRuntimeShutdown(child: ChildProcess): void {
       const timer = setTimeout(force, 8000)
       onClose = () => { if (!forcing && acknowledged && code === 0 && signal === null) finish('graceful'); else force() }
       if (closed || !child.connected) { force(); return }
-      try { child.send({ type: 'workdsh-shutdown' }, error => { if (error) force() }) }
+      try { child.send({ type: 'easywork-shutdown' }, error => { if (error) force() }) }
       catch { force() }
     })
     return pending

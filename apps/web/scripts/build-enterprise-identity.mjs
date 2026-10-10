@@ -9,4 +9,4 @@ const result = await build({
   external: ['@deepseek-ai/dsh-client-ui-primitives', 'react', 'react-dom', 'react/jsx-runtime'],
 });
 await writeFile(new URL('dist/client.browser.js', entry),
-  `window.__ModuleLoader__.load({id: "workdsh-provider-identity-enterprise", factory: function(require) {\nconst module = { exports: {} };\n${result.outputFiles[0].text}\nreturn module.exports;\n}});\n`);
+  `window.__ModuleLoader__.load({id: "easywork-provider-identity-enterprise", factory: function(require) {\nconst module = { exports: {} };\n${result.outputFiles[0].text}\nreturn module.exports;\n}});\n`);

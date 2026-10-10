@@ -1,6 +1,6 @@
 /** Presentation links carry an object id, never a publish proof or authority. */
 export function expertDraftUrl(expertId: string): string {
-  return `?${new URLSearchParams({ 'workdsh-view': 'experts', 'expert-draft': expertId })}`;
+  return `?${new URLSearchParams({ 'easywork-view': 'experts', 'expert-draft': expertId })}`;
 }
 
 export function expertDraftId(search: string): string | undefined {

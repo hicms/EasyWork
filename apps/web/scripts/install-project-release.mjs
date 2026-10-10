@@ -13,7 +13,7 @@ const value = (name, fallback) => {
   return index === -1 ? fallback : argv[index + 1];
 };
 const has = name => argv.includes(name);
-const profile = value('--profile', 'workdsh');
+const profile = value('--profile', 'easywork');
 const directory = resolve(value('--directory', dirname(fileURLToPath(import.meta.url))));
 const dsh = value('--dsh', 'dsh');
 const dryRun = has('--dry-run');
@@ -31,20 +31,20 @@ if (typeof expectedHarness !== 'string' || expectedHarness.length === 0) {
 }
 const packages = new Map(manifest.packages.map(item => [item.name, item]));
 const defaultInstallOrder = [
-  'workdsh-provider-identity-local',
-  'workdsh-provider-browser-session',
-  'workdsh-plugin-audit',
-  'workdsh-plugin-access',
-  'workdsh-plugin-skills',
+  'easywork-provider-identity-local',
+  'easywork-provider-browser-session',
+  'easywork-plugin-audit',
+  'easywork-plugin-access',
+  'easywork-plugin-skills',
   // The experts layer installs and activates the three official DSH Agent Team modules.
-  'workdsh-plugin-experts',
-  'workdsh-plugin-connectors',
-  'workdsh-plugin-library',
-  'workdsh-bundle',
+  'easywork-plugin-experts',
+  'easywork-plugin-connectors',
+  'easywork-plugin-library',
+  'easywork-bundle',
 ];
 
 const optionalFeatures = {
-  office:'workdsh-plugin-office',projects:'workdsh-plugin-projects',activity:'workdsh-plugin-activity',
+  office:'easywork-plugin-office',projects:'easywork-plugin-projects',activity:'easywork-plugin-activity',
 };
 const requested = value('--with','');
 if (typeof requested !== 'string') throw new Error('--with requires comma-separated feature names');
@@ -146,8 +146,8 @@ for (const name of installOrder) {
   const item = packages.get(name);
   execute(['plugin', '--profile', profile, 'add', join(directory, item.filename)]);
   // Installing a package does not guarantee that DSH loads its bundle. The
-  // browser-session provider is inserted by workdsh-bundle's patch instead.
-  if (!dryRun && name !== 'workdsh-provider-browser-session') {
+  // browser-session provider is inserted by easywork-bundle's patch instead.
+  if (!dryRun && name !== 'easywork-provider-browser-session') {
     const profilePackage = JSON.parse(readFileSync(profileManifest, 'utf8'));
     const bundles = profilePackage.dsh?.profile?.bundles ?? [];
     if (!bundles.includes(name)) bundles.push(name);

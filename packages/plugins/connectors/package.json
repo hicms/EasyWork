@@ -1,5 +1,5 @@
 {
-  "name": "workdsh-plugin-connectors",
+  "name": "easywork-plugin-connectors",
   "version": "0.1.0-alpha.4",
   "private": false,
   "type": "module",
@@ -24,7 +24,7 @@
     "locale/*.json"
   ],
   "scripts": {
-    "build": "node ../../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../../apps/web --filter workdsh-contracts build && node ../../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../../apps/web --filter workdsh-ui build && node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json && node ../../../apps/web/scripts/build-connectors.mjs",
+    "build": "node ../../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../../apps/web --filter easywork-contracts build && node ../../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../../apps/web --filter easywork-ui build && node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json && node ../../../apps/web/scripts/build-connectors.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "peerDependencies": {
@@ -62,10 +62,10 @@
     "@types/node": "22.19.0",
     "@types/react": "19.2.14",
     "react": "19.2.4",
-    "workdsh-ui": "workspace:*",
+    "easywork-ui": "workspace:*",
     "zod": "^4.3.6",
     "@deepseek-ai/dsh-client-ui-primitives": "0.2.0-rc.2",
-    "workdsh-contracts": "workspace:*"
+    "easywork-contracts": "workspace:*"
   },
   "dsh": {
     "bundle": {

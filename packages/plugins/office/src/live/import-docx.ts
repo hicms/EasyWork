@@ -1,6 +1,6 @@
 import JSZip from "jszip";
 import { blockInput, parse } from "../content/model.js";
-import type { OfficeBlockInput, OfficeParagraphInput, OfficeMark, OfficeTextStyle } from "workdsh-contracts/office";
+import type { OfficeBlockInput, OfficeParagraphInput, OfficeMark, OfficeTextStyle } from "easywork-contracts/office";
 const W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 const children = (el: Element, name: string) => Array.from(el.children).filter(x => x.namespaceURI === W && x.localName === name);
 const child = (el: Element | undefined, name: string) => el ? children(el, name)[0] : undefined;

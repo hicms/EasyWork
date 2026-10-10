@@ -1,9 +1,9 @@
 - insert:
-    - id: workdsh-access
-      name: workdsh-plugin-access
-    - id: workdsh-session-access
-      name: workdsh-plugin-access/session
-    - id: workdsh-tool-access
-      name: workdsh-plugin-access/tool
+    - id: easywork-access
+      name: easywork-plugin-access
+    - id: easywork-session-access
+      name: easywork-plugin-access/session
+    - id: easywork-tool-access
+      name: easywork-plugin-access/tool
       config:
         autoBindPersonalSessions: true

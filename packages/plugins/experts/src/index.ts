@@ -20,18 +20,18 @@ export * from './runtime/execution-guard.js';
  * Host plugin entry for EasyWork experts (D04 / P1-02, expert module 0.1).
  *
  * This is an independent, Loader-recognised entry: `cordis.patch.yml` inserts
- * `workdsh-plugin-experts`, and the official Loader calls `apply(ctx)` after the
+ * `easywork-plugin-experts`, and the official Loader calls `apply(ctx)` after the
  * injected services resolve. It does NOT rely on the bundle calling a shared
  * helper, so experts owns its own service, transport, tools and bundled skill and
  * can be disposed completely without touching other plugins.
  */
 
-export const name = 'workdsh-plugin-experts';
+export const name = 'easywork-plugin-experts';
 
 /** Every service `apply` and `ExpertsManager` require, resolved before load. */
 export const inject = [
   'loader', 'storageDomain', 'agentPresets', 'sessionController',
-  'workdshIdentity', 'workdshAccess', 'workdshAudit', 'workdshSessionAccess', 'workdshSkills',
+  'easyworkIdentity', 'easyworkAccess', 'easyworkAudit', 'easyworkSessionAccess', 'easyworkSkills',
   'connection', 'tools', 'skills', 'agents', 'agentTeams', 'sessionQuery', 'fs',
 ];
 
@@ -41,7 +41,7 @@ export const inject = [
  * confirmation; the trusted confirm + publish and every task summon/handoff stay
  * user-driven, so the skill never claims a publish or an auto-sent task.
  *
- * The wording is owned by `resources/skills/workdsh-expert-manager/SKILL.md`; this module shape
+ * The wording is owned by `resources/skills/easywork-expert-manager/SKILL.md`; this module shape
  * only re-exports the parsed body for consumers that referenced it before the
  * move, and registers it below.
  */
@@ -59,14 +59,14 @@ export function registerExpertManagerSkill(ctx: Context): () => void {
     ...expertManagerSkillMeta,
     source: 'bundled',
     content: expertManagerSkillContent,
-    resourceBase: { kind: 'directory', path: fileURLToPath(new URL('../resources/skills/workdsh-expert-manager', import.meta.url)) },
+    resourceBase: { kind: 'directory', path: fileURLToPath(new URL('../resources/skills/easywork-expert-manager', import.meta.url)) },
   });
 }
 
 /** Independent Host apply: own service, transport, tools and bundled skill. */
 export async function applyExpertsHost(ctx: Context, options: ExpertsManagerOptions = {}): Promise<void> {
   await ctx.plugin(ExpertsManager, options);
-  await ctx.plugin({ name: 'workdsh-experts-integration', inject: [...inject, 'workdshExperts'], apply: (host: Context) => applyIntegration(host, options) });
+  await ctx.plugin({ name: 'easywork-experts-integration', inject: [...inject, 'easyworkExperts'], apply: (host: Context) => applyIntegration(host, options) });
 }
 
 /** The consumer declares the services provided by the manager child Fibers. */

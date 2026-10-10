@@ -1,6 +1,6 @@
-import { extractTabularText } from 'workdsh-plugin-office/tabular';
+import { extractTabularText } from 'easywork-plugin-office/tabular';
 import type JSZip from 'jszip';
-import type { LibraryAssetKind } from 'workdsh-contracts/library';
+import type { LibraryAssetKind } from 'easywork-contracts/library';
 
 export interface ConversionResult {
   readonly markdown: string;

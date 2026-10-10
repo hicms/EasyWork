@@ -1,4 +1,4 @@
-import type { EnterpriseRequest } from 'workdsh-contracts';
+import type { EnterpriseRequest } from 'easywork-contracts';
 import { readProtectedFile } from './protected-file.js';
 import { isAbsolute } from 'node:path';
 import type { VerifiedMember } from './request-context.js';

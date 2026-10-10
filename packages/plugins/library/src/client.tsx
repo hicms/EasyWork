@@ -1,5 +1,5 @@
-import type { ComposerHandoff, ComposerHandoffSource } from 'workdsh-contracts/composer';
-declare module '@deepseek-ai/cordis' { interface Events { 'workdsh/composer-handoff'(handoff: ComposerHandoff): Promise<void>; } }
+import type { ComposerHandoff, ComposerHandoffSource } from 'easywork-contracts/composer';
+declare module '@deepseek-ai/cordis' { interface Events { 'easywork/composer-handoff'(handoff: ComposerHandoff): Promise<void>; } }
 import type { Context } from '@deepseek-ai/cordis';
 import type {} from '@deepseek-ai/dsh-client-connection/client';
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client';
@@ -20,18 +20,18 @@ import { LibraryPanel } from './client/LibraryPanel.js';
 import { LibraryPicker } from './client/LibraryPicker.js';
 import { LibraryReferencePage } from './client/LibraryReferencePage.js';
 import { createLibraryPreviewRegistry } from './client/preview-registry.js';
-import type { LibraryOriginalPreviewRegistry, LibraryComposerReference } from 'workdsh-contracts/library';
+import type { LibraryOriginalPreviewRegistry, LibraryComposerReference } from 'easywork-contracts/library';
 
-declare module '@deepseek-ai/cordis' { interface Context { workdshLibraryPreview: LibraryOriginalPreviewRegistry; } }
-declare module '@deepseek-ai/dsh-client-ui-sidebar-right/client' { interface SidebarRightTabParamsMap { 'workdsh-library-preview': { assetId: string; revisionId: string; name: string; kind: string }; } }
+declare module '@deepseek-ai/cordis' { interface Context { easyworkLibraryPreview: LibraryOriginalPreviewRegistry; } }
+declare module '@deepseek-ai/dsh-client-ui-sidebar-right/client' { interface SidebarRightTabParamsMap { 'easywork-library-preview': { assetId: string; revisionId: string; name: string; kind: string }; } }
 
-export const name = 'workdsh-library-client';
+export const name = 'easywork-library-client';
 export const inject = ['slots', 'layout', 'connection', 'sessions', 'workspaces', 'conversation', 'inputTriggers', 'sidebarRightTabs', 'sidebarRight', 'uiWorkspace'];
 export function apply(ctx: Context): void {
-  const lifetime = new AbortController(); ctx.effect(() => () => lifetime.abort(), 'workdsh.library.client');
+  const lifetime = new AbortController(); ctx.effect(() => () => lifetime.abort(), 'easywork.library.client');
   const management = createLibraryClient(ctx, lifetime.signal);
   const previewRegistry = createLibraryPreviewRegistry();
-  ctx.provide('workdshLibraryPreview', previewRegistry);
+  ctx.provide('easyworkLibraryPreview', previewRegistry);
   const sessions = ctx.sessions as unknown as ISessions;
   const waitForInput = (milliseconds: number) => new Promise<void>((resolve, reject) => {
     lifetime.signal.throwIfAborted();
@@ -42,7 +42,7 @@ export function apply(ctx: Context): void {
   type LibraryRef = LibraryComposerReference;
   const encodeRef = (value: LibraryRef) => encodeURIComponent(JSON.stringify(value));
   const decodeRef = (value: string) => JSON.parse(decodeURIComponent(value)) as LibraryRef;
-  const referenceOf = (value: LibraryRef): ReferenceInsert => ({ source: 'workdsh-library', ref: encodeRef(value), label: value.name, appearance: 'file', clipboardText: `@资料库/${value.name}` });
+  const referenceOf = (value: LibraryRef): ReferenceInsert => ({ source: 'easywork-library', ref: encodeRef(value), label: value.name, appearance: 'file', clipboardText: `@资料库/${value.name}` });
   const insertReference = (sessionId: string, value: LibraryRef): boolean => {
     const binding = sessions.binding(sessionId as never);
     if (!binding) return false;
@@ -54,12 +54,12 @@ export function apply(ctx: Context): void {
     if (inserted) void management.taskSelection(sessionId).then(current => management.setTaskSelection(sessionId, [...new Set([...current.map(row => row.nodeId), value.nodeId])])).catch(() => []);
     return inserted;
   };
-  ctx.on('workdsh/composer-handoff', async handoff => {
+  ctx.on('easywork/composer-handoff', async handoff => {
     const selected = await management.taskSelection(handoff.sourceSessionId);
-    const referenced = handoff.references.filter(reference => reference.source === 'workdsh-library').map(reference => decodeRef(reference.ref).nodeId);
+    const referenced = handoff.references.filter(reference => reference.source === 'easywork-library').map(reference => decodeRef(reference.ref).nodeId);
     await management.setTaskSelection(handoff.targetSessionId, [...new Set([...selected.map(row => row.nodeId), ...referenced])]);
     for (const reference of handoff.references) {
-      if (reference.source !== 'workdsh-library') continue;
+      if (reference.source !== 'easywork-library') continue;
       const value = decodeRef(reference.ref);
       reference.ref = encodeRef({ ...value, sessionId: handoff.targetSessionId });
     }
@@ -78,7 +78,7 @@ export function apply(ctx: Context): void {
       ?? workspaces.find(row => row.path === (currentId ? state.byId[currentId]?.cwd : undefined))
       ?? workspaces[0];
   };
-  const startConversation = async (entry: import('workdsh-contracts/library').LibraryTreeEntry): Promise<void> => {
+  const startConversation = async (entry: import('easywork-contracts/library').LibraryTreeEntry): Promise<void> => {
     if (!entry.asset || !entry.revision) throw new Error('文件夹不能添加到对话。');
     const workspace = resolveWorkspace();
     if (!workspace) throw new Error('请先选择工作空间。');
@@ -94,7 +94,7 @@ export function apply(ctx: Context): void {
     throw new Error('新对话输入框尚未就绪，请稍后重试。');
   };
   const source: InputTriggerSource = {
-    trigger: '@', name: 'workdsh-library', order: 30, showGroupTitle: false,
+    trigger: '@', name: 'easywork-library', order: 30, showGroupTitle: false,
     candidates: async (_session, request) => {
       if (!request.query.trim()) {
         const collect = async (parentId?: string): Promise<LibraryRef[]> => (await Promise.all((await management.list(parentId)).map(row => row.kind === 'folder' ? collect(row.id) : Promise.resolve(row.asset && row.revision ? [{ assetId: row.asset.id, revisionId: row.revision.id, nodeId: row.id, name: row.name, kind: row.asset.kind }] : [])))).flat();
@@ -113,7 +113,7 @@ export function apply(ctx: Context): void {
     },
     openReference: (session, reference) => {
       const value = decodeRef(reference.ref);
-      void ctx.sidebarRight.openTabIn(session.sessionId as never, 'workdsh-library-preview', { params: { assetId: value.assetId, revisionId: value.revisionId, name: value.name, kind: value.kind } });
+      void ctx.sidebarRight.openTabIn(session.sessionId as never, 'easywork-library-preview', { params: { assetId: value.assetId, revisionId: value.revisionId, name: value.name, kind: value.kind } });
       return true;
     },
     codec: {
@@ -148,17 +148,17 @@ export function apply(ctx: Context): void {
         const hit = hits.find(row => row.name === name) ?? hits[0];
         const sessionId = currentSessionId();
         if (!hit || !sessionId) return;
-        return ctx.sidebarRight.openTabIn(sessionId as never, 'workdsh-library-preview', { params: { assetId: hit.assetId, revisionId: hit.revisionId, name: hit.name, kind: hit.kind } });
+        return ctx.sidebarRight.openTabIn(sessionId as never, 'easywork-library-preview', { params: { assetId: hit.assetId, revisionId: hit.revisionId, name: hit.name, kind: hit.kind } });
       }).catch(() => undefined);
     };
     document.addEventListener('click', openTranscriptReference, true);
     return () => document.removeEventListener('click', openTranscriptReference, true);
-  }, 'workdsh.library.transcriptReferences');
-  ctx.effect(() => ctx.sidebarRightTabs.register({ id: 'workdsh-library-preview', kind: 'workdsh-library-preview', title: () => '资料预览' }));
-  ctx.slots.inject('sidebar.right.pane.tab', () => ctx.slots.register({ name: 'sidebar.right.pane.tab', key: 'workdsh-library-preview', inject: () => ({ management, previewRegistry }) }, LibraryReferencePage));
-  ctx.slots.inject('main', () => ctx.slots.register({ name: 'main', key: 'workdsh-library', inject: () => ({ management, previewRegistry, toggleNavigation: () => ctx.layout.toggleSidebar(), startConversation }) }, LibraryPanel));
+  }, 'easywork.library.transcriptReferences');
+  ctx.effect(() => ctx.sidebarRightTabs.register({ id: 'easywork-library-preview', kind: 'easywork-library-preview', title: () => '资料预览' }));
+  ctx.slots.inject('sidebar.right.pane.tab', () => ctx.slots.register({ name: 'sidebar.right.pane.tab', key: 'easywork-library-preview', inject: () => ({ management, previewRegistry }) }, LibraryReferencePage));
+  ctx.slots.inject('main', () => ctx.slots.register({ name: 'main', key: 'easywork-library', inject: () => ({ management, previewRegistry, toggleNavigation: () => ctx.layout.toggleSidebar(), startConversation }) }, LibraryPanel));
   ctx.slots.inject('conversation.input.left', () => ctx.slots.register({
-    name: 'conversation.input.left', id: 'workdsh-library-picker', order: 35,
-    inject: () => ({ management, openLibrary: () => ctx.layout.selectPanel('workdsh-library' as Parameters<typeof ctx.layout.selectPanel>[0]), addReference: (sessionId: string, entry: import('workdsh-contracts/library').LibraryTreeEntry) => entry.asset && entry.revision ? insertReference(sessionId, { assetId: entry.asset.id, revisionId: entry.revision.id, nodeId: entry.id, name: entry.name, kind: entry.asset.kind }) : false }),
+    name: 'conversation.input.left', id: 'easywork-library-picker', order: 35,
+    inject: () => ({ management, openLibrary: () => ctx.layout.selectPanel('easywork-library' as Parameters<typeof ctx.layout.selectPanel>[0]), addReference: (sessionId: string, entry: import('easywork-contracts/library').LibraryTreeEntry) => entry.asset && entry.revision ? insertReference(sessionId, { assetId: entry.asset.id, revisionId: entry.revision.id, nodeId: entry.id, name: entry.name, kind: entry.asset.kind }) : false }),
   }, LibraryPicker));
 }

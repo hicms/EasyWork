@@ -1,7 +1,7 @@
 import type { IncomingMessage } from 'node:http';
 import type { VerifiedMember } from './request-context.js';
 
-const cookieName = 'workdsh-admin-session';
+const cookieName = 'easywork-admin-session';
 const denied = () => new Error('Enterprise authentication required');
 
 /** Host-only extraction; never expose this return value to a Client or model. */

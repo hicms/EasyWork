@@ -32,6 +32,8 @@ This repository owns EasyWork Web and Desktop. Desktop and Web consume the same 
 
 ## Personal product boundary
 
+- Product prose uses EasyWork; owned identifiers, packages, environment variables and data keys use `easywork` or `EASYWORK`. Rename definitions and callers together. Do not retain retired product names, compatibility aliases, fallback paths or migration code for earlier product names. `corepack yarn check:naming` must pass without allowlist exceptions.
+- Profile packaging must also verify names inside owned archives and release metadata. Desktop `afterPack` must verify the actual native Skill command registry and MCP tool schemas in an isolated headless runtime; source-only name checks are insufficient.
 - Desktop supports personal use only and starts the existing personal Home/Profile automatically, without a mode picker. Preserve the complete official interface; never copy its settings, sidebar or right panel.
 - Do not restore enterprise login, account authority bridges, member spaces, remote member processes, model injection, collaboration connections or company deployment configuration in the carrier.
 - There is one personal Desktop installer. Projects are included in Desktop and Web. Independent historical enterprise extension source does not imply supported Desktop integration and must not be attached to current Desktop releases. Other business applications and notifications remain optional external plugins.

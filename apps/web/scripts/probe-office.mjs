@@ -24,7 +24,7 @@ try {
   await page.evaluate(({ html, bytes, kind }) => {
     const frame = document.querySelector('iframe');
     window.addEventListener('message', event => {
-      if (event.source === frame.contentWindow && event.data?.type === 'workdsh-office-ready') frame.contentWindow.postMessage({ type: 'workdsh-office-open', bytes: new Uint8Array(bytes), extension: kind }, '*');
+      if (event.source === frame.contentWindow && event.data?.type === 'easywork-office-ready') frame.contentWindow.postMessage({ type: 'easywork-office-open', bytes: new Uint8Array(bytes), extension: kind }, '*');
     }); frame.srcdoc = html;
   }, { html, bytes: Array.from(bytes), kind });
   const frame = page.frameLocator('iframe');

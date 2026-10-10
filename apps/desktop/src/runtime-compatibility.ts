@@ -40,8 +40,8 @@ function writeGrants(filename: string, grants: Grants): void {
  * A malformed user file remains untouched so DSH can report its own warnings.
  */
 export function syncBundledCompatibility(sourceProfile: string, targetProfile: string, runtimeVersion: string): void {
-  const marker = join(targetProfile, '.workdsh-desktop-compatibility')
-  const previousBundledFile = join(targetProfile, '.workdsh-desktop-bundled-grants.json')
+  const marker = join(targetProfile, '.easywork-desktop-compatibility')
+  const previousBundledFile = join(targetProfile, '.easywork-desktop-bundled-grants.json')
   if (existsSync(marker) && readFileSync(marker, 'utf8').trim() === runtimeVersion) return
   const source = join(sourceProfile, 'compatibility.json')
   const target = join(targetProfile, 'compatibility.json')

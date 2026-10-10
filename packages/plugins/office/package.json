@@ -1,5 +1,5 @@
 {
-  "name": "workdsh-plugin-office",
+  "name": "easywork-plugin-office",
   "version": "0.1.0-alpha.9",
   "private": true,
   "type": "module",
@@ -99,7 +99,7 @@
     "@univerjs/preset-docs-core": "0.25.1",
     "@univerjs/slides": "0.25.1",
     "@univerjs/slides-ui": "0.25.1",
-    "workdsh-contracts": "workspace:*",
+    "easywork-contracts": "workspace:*",
     "@deepseek-ai/dsh-fs": "0.2.0-rc.2"
   },
   "peerDependencies": {

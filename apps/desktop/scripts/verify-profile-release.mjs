@@ -1,4 +1,4 @@
-import { UNSUPPORTED_ENTERPRISE_PACKAGES, PRODUCT_PACKAGES, RELEASE_PACKAGES } from './workdsh-package-boundary.mjs'
+import { UNSUPPORTED_ENTERPRISE_PACKAGES, PRODUCT_PACKAGES, RELEASE_PACKAGES } from './easywork-package-boundary.mjs'
 import { createHash } from 'node:crypto'
 import { existsSync, globSync, readFileSync, readdirSync, realpathSync } from 'node:fs'
 import { join } from 'node:path'
@@ -14,22 +14,41 @@ export function verifyReleaseArchives(manifest, directory) {
   }
 }
 
-/** Check transitive pnpm instances too, not just the root package symlinks. */
-export function verifyInstalledDshVersions(profile, expectedDshVersion) {
-  const modules = join(profile, 'node_modules')
-  const store = join(modules, '.pnpm')
-  const scopes = [join(modules, '@deepseek-ai')]
-  if (existsSync(store)) for (const entry of readdirSync(store)) scopes.push(join(store, entry, 'node_modules', '@deepseek-ai'))
-  const instances = new Set()
-  for (const scope of scopes) {
-    if (!existsSync(scope)) continue
-    for (const name of readdirSync(scope).filter(name => name === 'dsh' || name.startsWith('dsh-'))) {
-      const path = realpathSync(join(scope, name, 'package.json'))
-      if (instances.has(path)) continue
-      instances.add(path)
-      const pkg = JSON.parse(readFileSync(path, 'utf8'))
-      if (pkg.version !== expectedDshVersion) throw new Error(`Installed ${pkg.name} is ${pkg.version}; expected ${expectedDshVersion}`)
+/** Traverse physical nested dependencies and pnpm instances without following cycles. */
+export function* installedPackageDirectories(profile) {
+  const pending = [join(profile, 'node_modules')]
+  const visited = new Set()
+  while (pending.length) {
+    const modules = pending.pop()
+    if (!existsSync(modules)) continue
+    const canonical = realpathSync(modules)
+    if (visited.has(canonical)) continue
+    visited.add(canonical)
+    const store = join(modules, '.pnpm')
+    if (existsSync(store)) for (const entry of readdirSync(store)) pending.push(join(store, entry, 'node_modules'))
+    for (const entry of readdirSync(modules, { withFileTypes: true })) {
+      if (entry.name.startsWith('.') || (!entry.isDirectory() && !entry.isSymbolicLink())) continue
+      const path = join(modules, entry.name)
+      const packages = entry.name.startsWith('@') ? readdirSync(path).map(name => join(path, name)) : [path]
+      for (const directory of packages) {
+        if (!existsSync(join(directory, 'package.json'))) continue
+        yield directory
+        pending.push(join(directory, 'node_modules'))
+      }
     }
+  }
+}
+
+/** Check nested official versions as well as the root installation. */
+export function verifyInstalledDshVersions(profile, expectedDshVersion) {
+  const instances = new Set()
+  for (const directory of installedPackageDirectories(profile)) {
+    const path = realpathSync(join(directory, 'package.json'))
+    if (instances.has(path)) continue
+    const pkg = JSON.parse(readFileSync(path, 'utf8'))
+    if (pkg.name !== '@deepseek-ai/dsh' && !pkg.name?.startsWith('@deepseek-ai/dsh-')) continue
+    instances.add(path)
+    if (pkg.version !== expectedDshVersion) throw new Error(`Installed ${pkg.name} is ${pkg.version}; expected ${expectedDshVersion}`)
   }
   if (!instances.size) throw new Error('Installation has no official DSH packages')
   return instances.size
@@ -52,9 +71,9 @@ export function verifyOfficialWebPackages(manifest, profile, config) {
 }
 
 export function verifyDefaultProfile(manifest) {
-  const selected = (manifest.dsh?.profile?.bundles ?? []).filter(name => name.startsWith('workdsh-')).sort()
-  const direct = Object.keys(manifest.dependencies ?? {}).filter(name => name.startsWith('workdsh-')).sort()
-  const installed = [...direct, ...Object.keys(manifest.optionalDependencies ?? {}).filter(name => name.startsWith('workdsh-'))].sort()
+  const selected = (manifest.dsh?.profile?.bundles ?? []).filter(name => name.startsWith('easywork-')).sort()
+  const direct = Object.keys(manifest.dependencies ?? {}).filter(name => name.startsWith('easywork-')).sort()
+  const installed = [...direct, ...Object.keys(manifest.optionalDependencies ?? {}).filter(name => name.startsWith('easywork-'))].sort()
   for (const [kind, actual, expected] of [
     ['selected features', selected, PRODUCT_PACKAGES],
     ['direct features', direct, PRODUCT_PACKAGES],

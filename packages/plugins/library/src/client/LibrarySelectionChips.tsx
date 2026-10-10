@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import type { PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots';
-import type { LibraryAssetKind, LibraryTaskReference } from 'workdsh-contracts/library';
+import type { LibraryAssetKind, LibraryTaskReference } from 'easywork-contracts/library';
 import type { LibraryClient } from './management.js';
 import { listenForLibrarySelection, notifyLibrarySelectionChanged, requestLibraryPicker } from './selection-events.js';
 

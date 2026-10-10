@@ -3,8 +3,8 @@ import type { ConnectionRpcResult, HostConnectionHandle } from '@deepseek-ai/dsh
 import type { SkillInstallScope, SkillManagementEndpoint, SkillManagementService } from '../shared.js';
 import { skillCatalogIconPath } from './catalog.js';
 
-export const skillManagementPath = '/api/workdsh-skills';
-export const skillImportPath = '/api/workdsh-skills/import';
+export const skillManagementPath = '/api/easywork-skills';
+export const skillImportPath = '/api/easywork-skills/import';
 const maximumBodyBytes = 1024 * 1024 + 64 * 1024;
 const maximumUploadBytes = 50 * 1024 * 1024;
 
@@ -139,7 +139,7 @@ function json(result: ConnectionRpcResult<unknown>, status = 200): Response {
 /** Register the management API inside Connection's authenticated `/api` carrier. */
 export function registerSkillManagementConnection(ctx: Context): void {
   const connection = (ctx as Context & { connection: HostConnectionHandle }).connection;
-  const manager = ctx.workdshSkills;
+  const manager = ctx.easyworkSkills;
   const lifetime = new AbortController();
   const pending = new Set<Promise<Response>>();
   const handle = (fetcher: (request: Request) => Promise<Response>) => (request: Request) => {
@@ -157,7 +157,7 @@ export function registerSkillManagementConnection(ctx: Context): void {
     lifetime.abort();
     await Promise.all(unregister.map(dispose => dispose()));
     await Promise.allSettled([...pending]);
-  }, 'workdsh.skills.fetch');
+  }, 'easywork.skills.fetch');
   unregister.push(connection.fetch.register({
     path: skillManagementPath,
     methods: ['POST'],
@@ -205,7 +205,7 @@ export function registerSkillManagementConnection(ctx: Context): void {
     fetch: handle(async request => {
       const declaredLength = Number(request.headers.get('content-length') ?? '0');
       if (Number.isFinite(declaredLength) && declaredLength > maximumUploadBytes) return json(fail('skill/import-too-large', '技能包不得超过 50 MiB。'), 413);
-      const encodedName = request.headers.get('x-workdsh-file-name');
+      const encodedName = request.headers.get('x-easywork-file-name');
       if (!encodedName) return json(fail('skill/invalid-request', '请求缺少文件名。'), 400);
       try {
         const fileName = decodeURIComponent(encodedName);

@@ -1,5 +1,5 @@
 {
-  "name": "workdsh-plugin-enterprise-collaboration",
+  "name": "easywork-plugin-enterprise-collaboration",
   "version": "0.1.0-alpha.1",
   "private": true,
   "type": "module",
@@ -70,7 +70,7 @@
     "@types/react": "19.2.14",
     "react": "19.2.4",
     "@types/node": "22.19.0",
-    "workdsh-contracts": "workspace:*",
+    "easywork-contracts": "workspace:*",
     "react-dom": "19.2.4",
     "@types/react-dom": "19.2.3",
     "@deepseek-ai/dsh-api-session-controller": "0.2.0-rc.2",

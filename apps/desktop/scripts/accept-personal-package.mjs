@@ -4,10 +4,10 @@ import { mkdtempSync, writeFileSync, createWriteStream } from 'node:fs'
 import { join } from 'node:path'
 const require=createRequire(new URL('../../web/package.json',import.meta.url))
 const {chromium}=require('@playwright/test')
-const app=process.env.WORKDSH_TEST_APP ?? new URL('../dist/mac-smoke/arm64/mac-arm64/EasyWork.app',import.meta.url).pathname
-const directory=mkdtempSync('/private/tmp/workdsh-package-gui-')
+const app=process.env.EASYWORK_TEST_APP ?? new URL('../dist/mac-smoke/arm64/mac-arm64/EasyWork.app',import.meta.url).pathname
+const directory=mkdtempSync('/private/tmp/easywork-package-gui-')
 const report={app,directory,checks:{}}
-const env={...process.env,WORKDSH_DESKTOP_USER_DATA:join(directory,'user-data'),npm_config_registry:'https://registry.npmmirror.com'}
+const env={...process.env,EASYWORK_DESKTOP_USER_DATA:join(directory,'user-data'),npm_config_registry:'https://registry.npmmirror.com'}
 for(const key of Object.keys(env)) if(/KEY|SECRET|TOKEN|PASSWORD|^DSH_|^NODE_OPTIONS$|^NODE_PATH$/.test(key)) delete env[key]
 const log=createWriteStream(join(directory,'application.log'))
 const child=spawn(join(app,'Contents/MacOS/EasyWork'),['--remote-debugging-port=19531','--remote-debugging-address=127.0.0.1'],{env,stdio:['ignore','pipe','pipe']})
@@ -20,7 +20,7 @@ try {
  if(!browser) throw new Error('Candidate did not open its test browser endpoint')
  const pages=()=>browser.contexts().flatMap(c=>c.pages())
  async function waitPage(test,timeout=20000) { const until=Date.now()+timeout; while(Date.now()<until) { for(const p of pages()) { try {if(!p.isClosed() && await test(p)) return p} catch {}} await new Promise(r=>setTimeout(r,100)) } throw new Error('Expected application page did not appear') }
- const personal=await waitPage(p=>p.url().startsWith('workdsh-app://app/')&&p.getByText('新会话',{exact:true}).count(),120000)
+ const personal=await waitPage(p=>p.url().startsWith('easywork-app://app/')&&p.getByText('新会话',{exact:true}).count(),120000)
  report.checks.directPersonalStartup=true
  report.checks.noModePicker=await personal.getByRole('heading',{name:'选择使用方式'}).count()===0
  const text=await personal.locator('body').innerText()
@@ -32,11 +32,11 @@ try {
  report.checks.pluginsPresent=text.includes('插件')
  await personal.screenshot({path:join(directory,'personal.png')})
  const projectOperation=await personal.evaluate(async()=>{
- const call=async(endpoint,payload)=>{const r=await fetch('/api/workdsh-projects',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({endpoint,payload})});const j=await r.json();if(!j.ok)throw Error('Project operation failed: '+endpoint);return j.value};
+ const call=async(endpoint,payload)=>{const r=await fetch('/api/easywork-projects',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({endpoint,payload})});const j=await r.json();if(!j.ok)throw Error('Project operation failed: '+endpoint);return j.value};
  const created=await call('create',{name:'Package acceptance '+Date.now()});const id=created.project.id;await call('get',{projectId:id});await call('archive',{projectId:id});return Boolean(id);
  });
  report.checks.projectCreateReadArchive=projectOperation;
- const resources=join(app,'Contents/Resources/workdsh-runtime')
+ const resources=join(app,'Contents/Resources/easywork-runtime')
  const output=execFileSync(join(resources,'runtime/cli/bin/dsh'),['--version'],{env,encoding:'utf8',timeout:30000})
  report.checks.bundledDshCommandVersion=output.trim()
  const node=join(resources,'primary-runtime/dependencies/node/bin/node')

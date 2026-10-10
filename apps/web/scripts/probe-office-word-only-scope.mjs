@@ -51,7 +51,7 @@ async function smoke(label) {
   let plugin;
   const mockScope = {
     effect: run,
-    workdshLibraryPreview: { register: () => () => {} },
+    easyworkLibraryPreview: { register: () => () => {} },
   };
   const ctx = {
     inject: (_deps, callback) => callback(mockScope),
@@ -93,7 +93,7 @@ async function smoke(label) {
     console, process, setTimeout, clearTimeout, setInterval, clearInterval, queueMicrotask,
     URL, URLSearchParams, TextEncoder, TextDecoder,
     crypto: globalThis.crypto, performance: globalThis.performance, structuredClone,
-    navigator: { userAgent: "workdsh-probe" },
+    navigator: { userAgent: "easywork-probe" },
     fetch: async () => { throw new Error("network is not expected in this probe"); },
     ...domGlobals,
   };
@@ -111,19 +111,19 @@ async function smoke(label) {
 
 function verify(wordOnly, result) {
   const failures = [];
-  const officePreview = result.previews.find(row => row.id === "workdsh-office");
-  const csvPreview = result.previews.find(row => row.id === "workdsh-office-csv");
+  const officePreview = result.previews.find(row => row.id === "easywork-office");
+  const csvPreview = result.previews.find(row => row.id === "easywork-office-csv");
   const expectedExtensions = wordOnly ? ["docx"] : ["xlsx", "docx", "pptx"];
-  if (!officePreview) failures.push(`${result.label}: workdsh-office preview not registered`);
-  else if (JSON.stringify(officePreview.extensions) !== JSON.stringify(expectedExtensions)) failures.push(`${result.label}: workdsh-office extensions ${JSON.stringify(officePreview.extensions)} != ${JSON.stringify(expectedExtensions)}`);
-  if (!result.slots.includes("workdsh-office")) failures.push(`${result.label}: workdsh-office tab slot not registered`);
+  if (!officePreview) failures.push(`${result.label}: easywork-office preview not registered`);
+  else if (JSON.stringify(officePreview.extensions) !== JSON.stringify(expectedExtensions)) failures.push(`${result.label}: easywork-office extensions ${JSON.stringify(officePreview.extensions)} != ${JSON.stringify(expectedExtensions)}`);
+  if (!result.slots.includes("easywork-office")) failures.push(`${result.label}: easywork-office tab slot not registered`);
   if (wordOnly) {
     if (csvPreview) failures.push(`${result.label}: CSV preview still registered`);
-    if (result.slots.includes("workdsh-office-csv")) failures.push(`${result.label}: CSV tab slot still registered`);
+    if (result.slots.includes("easywork-office-csv")) failures.push(`${result.label}: CSV tab slot still registered`);
   } else {
     if (!csvPreview) failures.push(`${result.label}: CSV preview missing`);
     else if (JSON.stringify(csvPreview.extensions) !== JSON.stringify(["csv"]) || csvPreview.wrap !== true) failures.push(`${result.label}: CSV preview definition drifted ${JSON.stringify(csvPreview)}`);
-    if (!result.slots.includes("workdsh-office-csv")) failures.push(`${result.label}: CSV tab slot missing`);
+    if (!result.slots.includes("easywork-office-csv")) failures.push(`${result.label}: CSV tab slot missing`);
   }
   return failures;
 }

@@ -1,6 +1,6 @@
 # EasyWork 专家插件 / Experts plugin
 
-一个插件管理多个专家与专家团配置。当前源码候选为 `workdsh-plugin-experts@0.1.0-alpha.8`，精确锁定 **DeepSeek Harness 0.2.0-rc.2 / Cordis 4.0.4**；实际构建、安装与运行范围见[验收要求](../../../apps/web/docs/ACCEPTANCE.md)，旧探针和已发布安装包不能证明本轮候选已验收。
+一个插件管理多个专家与专家团配置。当前源码候选为 `easywork-plugin-experts@0.1.0-alpha.8`，精确锁定 **DeepSeek Harness 0.2.0-rc.2 / Cordis 4.0.4**；实际构建、安装与运行范围见[验收要求](../../../apps/web/docs/ACCEPTANCE.md)，旧探针和已发布安装包不能证明本轮候选已验收。
 
 EasyWork manages authored expert assets and immutable revisions. Team execution, messaging, tasks and the Web team panel use the official DSH Agent Teams plugins.
 
@@ -29,11 +29,11 @@ EasyWork 的必需组合仍包含 identity-local、audit、access、skills、exp
 
 ## 旧版迁移边界
 
-已删除自建 `TeamRunsManager`、SOP 运行状态机、`workdsh_expert_team_*` 工具及 `workdsh-expert` 委派 provider。构建前清理 `dist`，防止旧执行器残留在新安装包里。
+已删除自建 `TeamRunsManager`、SOP 运行状态机、`easywork_expert_team_*` 工具及 `easywork-expert` 委派 provider。构建前清理 `dist`，防止旧执行器残留在新安装包里。
 
 用户的专家、技能、发布修订、文件和旧任务历史保留。旧版委派子任务不再续跑旧调度器，应从专家团重新召唤官方 Team 任务。旧团队运行表不会转写成伪造的官方执行记录。团队配置仍可复用，不要求重建用户作品。
 
-原 WorkBuddy 规范与许可证归属保留在资源目录；平台适配说明维护在 `resources/skills/workdsh-expert-manager/references/authoring-api.md`，团队运行指引维护在 `runtime/team-lead.md`。
+原 WorkBuddy 规范与许可证归属保留在资源目录；平台适配说明维护在 `resources/skills/easywork-expert-manager/references/authoring-api.md`，团队运行指引维护在 `runtime/team-lead.md`。
 
 ## 构建与验证
 
@@ -58,13 +58,13 @@ corepack pnpm probe:experts:team
 当前源码依赖 DSH 0.2.0-rc.2 / Cordis 4.0.4，应使用同一次构建产出的配套 tgz；不要把旧 Release 的安装包当作已含本次升级。先在独立 Profile 验证，再部署实际使用的 Profile：
 
 ```sh
-dsh --profile workdsh --from-default-profile web --dump-config
-dsh plugin --profile workdsh add /absolute/path/release/workdsh-provider-identity-local-0.1.0-alpha.6.tgz \
-  /absolute/path/release/workdsh-plugin-audit-0.1.0-alpha.5.tgz \
-  /absolute/path/release/workdsh-plugin-access-0.1.0-alpha.6.tgz \
-  /absolute/path/release/workdsh-plugin-skills-0.1.0-alpha.32.tgz \
-  /absolute/path/release/workdsh-plugin-experts-0.1.0-alpha.8.tgz
-dsh --profile workdsh
+dsh --profile easywork --from-default-profile web --dump-config
+dsh plugin --profile easywork add /absolute/path/release/easywork-provider-identity-local-0.1.0-alpha.6.tgz \
+  /absolute/path/release/easywork-plugin-audit-0.1.0-alpha.5.tgz \
+  /absolute/path/release/easywork-plugin-access-0.1.0-alpha.6.tgz \
+  /absolute/path/release/easywork-plugin-skills-0.1.0-alpha.32.tgz \
+  /absolute/path/release/easywork-plugin-experts-0.1.0-alpha.8.tgz
+dsh --profile easywork
 ```
 
 在专家入口保存、校验、预览并确认发布，然后召唤。示例只填入原生草稿，发送后才执行；模型与账号在 Harness 中配置。

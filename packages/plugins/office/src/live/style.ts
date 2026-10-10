@@ -3,9 +3,9 @@ export const officeCss = `
 .wd-office-live .wd-office-docpicker,.wd-office-live .wd-office-toolbar,.wd-office-live .wd-office-format{display:flex;align-items:center;gap:8px;padding:5px 12px;min-height:34px;flex-shrink:0;border-bottom:1px solid var(--dsw-border-default,#dde1e7);background:var(--dsw-bg-elevated,#fff)}
 .wd-office-live .wd-office-title{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:40px}
 .wd-office-live .wd-office-status{margin-left:auto;font-size:12px;color:var(--dsw-fg-muted,#697386);white-space:nowrap}
-.wd-office-live button:not(.workdsh-ppt-editor *, .workdsh-sheet-editor *),.wd-office-live select:not(.workdsh-ppt-editor *, .workdsh-sheet-editor *){font:inherit;color:inherit;background:transparent;border:1px solid var(--dsw-border-default,#d4d9e1);border-radius:5px;padding:3px 9px;min-height:28px;cursor:pointer}
-.wd-office-live button:not(.workdsh-ppt-editor *, .workdsh-sheet-editor *):hover:enabled{background:var(--dsw-bg-hover,#edf3ff)}
-.wd-office-live button:not(.workdsh-ppt-editor *, .workdsh-sheet-editor *):disabled,.wd-office-live select:not(.workdsh-ppt-editor *, .workdsh-sheet-editor *):disabled{opacity:.45;cursor:default}
+.wd-office-live button:not(.easywork-ppt-editor *, .easywork-sheet-editor *),.wd-office-live select:not(.easywork-ppt-editor *, .easywork-sheet-editor *){font:inherit;color:inherit;background:transparent;border:1px solid var(--dsw-border-default,#d4d9e1);border-radius:5px;padding:3px 9px;min-height:28px;cursor:pointer}
+.wd-office-live button:not(.easywork-ppt-editor *, .easywork-sheet-editor *):hover:enabled{background:var(--dsw-bg-hover,#edf3ff)}
+.wd-office-live button:not(.easywork-ppt-editor *, .easywork-sheet-editor *):disabled,.wd-office-live select:not(.easywork-ppt-editor *, .easywork-sheet-editor *):disabled{opacity:.45;cursor:default}
 .wd-office-live .tiptap-toolbar{height:44px;max-height:44px;min-width:0;flex:0 0 44px;display:flex;align-items:center;gap:4px;box-sizing:border-box;flex-shrink:0;max-width:100%;min-height:44px;padding:4px 8px;background:var(--dsw-bg-elevated,#fff);border-bottom:1px solid var(--dsw-border-default,#dde1e7);overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
 .wd-office-live .wd-office-ribbon fieldset,.wd-office-live .wd-office-ribbon-row{display:contents;border:0;margin:0;padding:0;min-width:0}
 .wd-office-live .wd-office-toolgroup,.wd-office-live .tiptap-toolbar-group{display:flex;align-items:center;gap:2px;flex:0 0 auto;padding-right:6px;border-right:1px solid var(--dsw-border-default,#e5e7eb)}
@@ -15,7 +15,7 @@ export const officeCss = `
 .wd-office-live .tiptap-button-icon{width:18px;height:18px;flex-shrink:0}
 .wd-office-live .wd-office-ribbon button:hover:enabled,.wd-office-live .wd-office-ribbon select:hover:enabled{background:#f1f2f5}
 .wd-office-live .wd-office-ribbon :is(button,select,input):focus-visible{outline:2px solid #6685dd;outline-offset:-2px}
-.wd-office-live button:not(.workdsh-ppt-editor *, .workdsh-sheet-editor *)[aria-pressed=true]{color:#3159b9;background:#edf1fc;border-color:transparent}
+.wd-office-live button:not(.easywork-ppt-editor *, .easywork-sheet-editor *)[aria-pressed=true]{color:#3159b9;background:#edf1fc;border-color:transparent}
 .wd-office-live .wd-office-toolgroup select[aria-label="字体"]{width:108px}.wd-office-live .wd-office-toolgroup select[aria-label="字号"]{width:48px}.wd-office-live .wd-office-toolgroup select[aria-label="段落样式"]{width:80px}
 .wd-office-live .wd-office-color{display:flex;align-items:center;gap:0;padding:0 2px;min-height:32px;box-sizing:border-box}
 .wd-office-live .wd-office-color input{width:16px;height:20px;cursor:pointer;border:0;padding:0;background:transparent}

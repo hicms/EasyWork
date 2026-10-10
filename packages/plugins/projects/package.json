@@ -1,5 +1,5 @@
 {
-  "name": "workdsh-plugin-projects",
+  "name": "easywork-plugin-projects",
   "version": "0.1.0-alpha.4",
   "private": false,
   "type": "module",
@@ -24,7 +24,7 @@
     "locale/*.json"
   ],
   "scripts": {
-    "build": "node ../../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../../apps/web --filter workdsh-contracts build && node ../../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../../apps/web --filter workdsh-ui build && tsc -p tsconfig.json && node ../../../apps/web/scripts/build-projects.mjs",
+    "build": "node ../../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../../apps/web --filter easywork-contracts build && node ../../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../../apps/web --filter easywork-ui build && tsc -p tsconfig.json && node ../../../apps/web/scripts/build-projects.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "peerDependencies": {
@@ -44,7 +44,7 @@
     "@deepseek-ai/dsh-client-ui-renderer": "0.2.0-rc.2",
     "@deepseek-ai/dsh-client-ui-conversation": "0.2.0-rc.2",
     "@deepseek-ai/dsh-client-store": "0.2.0-rc.2",
-    "workdsh-ui": "workspace:*",
+    "easywork-ui": "workspace:*",
     "@deepseek-ai/dsh-client-ui-primitives": "0.2.0-rc.2",
     "@deepseek-ai/dsh-client-ui-input-trigger": "0.2.0-rc.2",
     "react-dom": "19.2.4",
@@ -68,8 +68,8 @@
     "@types/node": "22.19.0",
     "@types/react": "19.2.14",
     "react": "19.2.4",
-    "workdsh-contracts": "workspace:*",
-    "workdsh-ui": "workspace:*",
+    "easywork-contracts": "workspace:*",
+    "easywork-ui": "workspace:*",
     "@deepseek-ai/dsh-client-ui-renderer": "0.2.0-rc.2",
     "@deepseek-ai/dsh-client-ui-conversation": "0.2.0-rc.2",
     "@deepseek-ai/dsh-client-store": "0.2.0-rc.2",

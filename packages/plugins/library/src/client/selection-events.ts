@@ -1,5 +1,5 @@
-export const librarySelectionChangedEvent = 'workdsh:library-selection-changed';
-export const libraryPickerRequestedEvent = 'workdsh:library-picker-requested';
+export const librarySelectionChangedEvent = 'easywork:library-selection-changed';
+export const libraryPickerRequestedEvent = 'easywork:library-picker-requested';
 
 export function notifyLibrarySelectionChanged(sessionId: string): void {
   window.dispatchEvent(new CustomEvent(librarySelectionChangedEvent, { detail: { sessionId } }));

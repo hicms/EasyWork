@@ -1,7 +1,7 @@
 import {PDFDocument,rgb,PDFFont} from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import fontBytes from './fonts/NotoSansSC.ttf';
-import type {OfficePdfSnapshot} from 'workdsh-contracts/office';
+import type {OfficePdfSnapshot} from 'easywork-contracts/office';
 import {pdfStateSchema} from './model.js';
 const color=(hex:string)=>rgb(...[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255) as [number,number,number]);
 function lines(text:string,font:PDFFont,size:number,width:number){const output:string[]=[],supported=new Set(font.getCharacterSet()),cache=new Map<string,number>();for(const paragraph of text.split('\n')){let line='',used=0;for(const ch of paragraph){if(!supported.has(ch.codePointAt(0)!))throw Error(`PDF 字体不支持字符 ${ch}，请更换文字。`);const advance=cache.get(ch)??font.widthOfTextAtSize(ch,size);cache.set(ch,advance);if(advance>width)throw Error('PDF 文本框过窄。');if(line&&used+advance>width){output.push(line);line=ch;used=advance;}else{line+=ch;used+=advance;}}output.push(line);}return output;}

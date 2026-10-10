@@ -4,7 +4,7 @@ import type {
   DomainIssue,
   ExpertDefinition,
   ExpertExport,
-} from 'workdsh-contracts';
+} from 'easywork-contracts';
 import { ExpertsError } from '../domain/values.js';
 import { byteLength, digestOf, sha256Bytes } from '../domain/digest.js';
 import { normalizeDefinition, validateDefinition } from '../domain/definition.js';
@@ -13,7 +13,7 @@ import { authoringDocuments, definitionFromDocuments } from '../authoring/docume
 /**
  * Local expert package portability (EP-06, CONTRACTS §6, AT-21).
  *
- * Format `workdsh-expert` schemaVersion 1 — a EasyWork product format, never the
+ * Format `easywork-expert` schemaVersion 1 — a EasyWork product format, never the
  * official Harness skill format. A package carries `manifest.json` + `expert.json`
  * (the definition + source attribution) and nothing that auto-installs: no owner,
  * internal preset id, granted permission, session id, credential, executable
@@ -29,7 +29,7 @@ import { authoringDocuments, definitionFromDocuments } from '../authoring/docume
  * it is written), so it is exempt from the listed-entry check but must be present.
  */
 
-export const EXPERT_FORMAT = 'workdsh-expert';
+export const EXPERT_FORMAT = 'easywork-expert';
 export const EXPERT_SCHEMA_VERSION = 1;
 
 const MANIFEST_FILE = 'manifest.json';
@@ -153,7 +153,7 @@ function isPermittedImage(bytes: Uint8Array): boolean {
 function assertManifest(value: unknown): ExpertPackageManifest {
   if (!value || typeof value !== 'object' || Array.isArray(value)) invalid('manifest.json 结构无效。');
   const record = value as Record<string, unknown>;
-  if (record.format !== EXPERT_FORMAT) invalid('manifest.format 不是 workdsh-expert，可能是其他格式的包。');
+  if (record.format !== EXPERT_FORMAT) invalid('manifest.format 不是 easywork-expert，可能是其他格式的包。');
   const schemaVersion = record.schemaVersion;
   if (typeof schemaVersion !== 'number' || !Number.isInteger(schemaVersion) || schemaVersion < 1) {
     invalid('manifest.schemaVersion 无效。');
@@ -244,7 +244,7 @@ export function preflightPackage(zipBytes: Uint8Array): {
   }
   if (totalUncompressed > (entries[EXPERT_FILE] ? 48 * 1024 * 1024 : MAX_UNCOMPRESSED_BYTES)) invalid('专家包总解压大小超过 20 MiB 上限。');
 
-  if (!paths.includes(MANIFEST_FILE) && (paths.includes('.workdsh-expert/plugin.json') || paths.includes('.codebuddy-plugin/plugin.json'))) {
+  if (!paths.includes(MANIFEST_FILE) && (paths.includes('.easywork-expert/plugin.json') || paths.includes('.codebuddy-plugin/plugin.json'))) {
     const documents: Record<string, string> = {};
     const assets: Record<string, PackageAssets[string]> = {};
     for (const path of paths) {

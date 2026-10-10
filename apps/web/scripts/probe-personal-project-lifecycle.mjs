@@ -8,9 +8,9 @@ import { chromium, expect } from '@playwright/test';
 const root=new URL('../',import.meta.url).pathname,evidence=join(root,'.artifacts/plugin-delivery');
 const baseline=JSON.parse(await readFile(join(evidence,'personal-default-runtime.json'),'utf8'));
 const home=await realpath(baseline.home);
-assert.match(home,/\/T\/workdsh-personal-default-[\w-]+$/);
+assert.match(home,/\/T\/easywork-personal-default-[\w-]+$/);
 const manifestPath=join(home,'../../profiles/personal/package.json');
-const before=JSON.parse(await readFile(manifestPath,'utf8'));assert.ok(!before.dependencies['workdsh-plugin-projects']);
+const before=JSON.parse(await readFile(manifestPath,'utf8'));assert.ok(!before.dependencies['easywork-plugin-projects']);
 const env={PATH:`${root}/node_modules/.bin:${dirname(process.execPath)}:/usr/bin:/bin`,HOME:process.env.HOME,DSH_HOME:home,DSH_AGENTS_HOME:join(home,'agents'),npm_config_offline:'true'};
 const cli=join(home,'../../profiles/personal/node_modules/@deepseek-ai/dsh/lib/bin.js'),exec=promisify(execFile);
 const run=async(args)=>exec(process.execPath,[cli,...args],{cwd:home,env,timeout:120000,maxBuffer:8*1024*1024});
@@ -23,8 +23,8 @@ async function inspect(installed){
  assert.ok(host,'Personal Host boots after lifecycle operation');browser=await chromium.launch({headless:true});const context=await browser.newContext({viewport:{width:1440,height:1000}});
  await context.addCookies(host.cookie.split('; ').map(pair=>{const i=pair.indexOf('=');return{name:pair.slice(0,i),value:pair.slice(i+1),url:host.address};}));const page=await context.newPage();await page.goto(host.address);
  const dismiss=async()=>{for(const name of ['Continue','Configure later','Keep current display','Not now','Got it','继续','稍后配置','保留当前显示','暂不开启','知道了'])await page.getByRole('button',{name,exact:true}).last().click({timeout:500}).catch(()=>{});};await dismiss();
- const entries=await page.evaluate(()=>window.__DSH_BOOT__.entries.map(x=>x.id));assert.equal(entries.includes('workdsh-plugin-projects'),installed);assert.ok(!entries.some(x=>/enterprise/.test(x)));
- for(const name of ['skills','experts','connectors','library'])assert.ok(entries.includes('workdsh-plugin-'+name));
+ const entries=await page.evaluate(()=>window.__DSH_BOOT__.entries.map(x=>x.id));assert.equal(entries.includes('easywork-plugin-projects'),installed);assert.ok(!entries.some(x=>/enterprise/.test(x)));
+ for(const name of ['skills','experts','connectors','library'])assert.ok(entries.includes('easywork-plugin-'+name));
  const project=page.getByRole('button',{name:'项目',exact:true});await expect(project).toHaveCount(installed?1:0);
  if(installed){for(let attempt=0;attempt<3;attempt++){await dismiss();try{await project.click({timeout:2000});break;}catch(e){if(e.name!=='TimeoutError'||attempt===2)throw e;}}await expect(page.getByRole('heading',{name:'项目',exact:true})).toBeVisible();}
  await page.screenshot({path:join(evidence,installed?'projects-installed.png':'projects-removed.png')});

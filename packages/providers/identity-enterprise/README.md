@@ -25,7 +25,7 @@
 
 ## 可见正文同步契约
 
-同步监听官方公开 `session/created`、`session/event` 与 `session/flush`，随后通过共同 `workdshSessionAccess.inspect` 冷读，核验真实固定成员及 Session 所有权。上传范围只包括 `source.kind === 'user'` 的用户文字和已提交的助手文字，包括已提交的中断前缀；系统消息、注入内容、思考、工具轨迹和附件不进入 payload。
+同步监听官方公开 `session/created`、`session/event` 与 `session/flush`，随后通过共同 `easyworkSessionAccess.inspect` 冷读，核验真实固定成员及 Session 所有权。上传范围只包括 `source.kind === 'user'` 的用户文字和已提交的助手文字，包括已提交的中断前缀；系统消息、注入内容、思考、工具轨迹和附件不进入 payload。
 
 正文是按官方事件序号稳定标识的可见文字日志：后续编辑不会改写已上传的旧前缀。客户端只提交 `{ version: 1, deviceId, sessionId, revision, requestId, entries }`，entry 仅含 `{ seq, recordId, role, text }`；组织和成员由后台当前登录确定。Main 注入冻结设备，后台拒绝同一 Session 的无约束多设备写入。
 
@@ -43,4 +43,4 @@
 
 ## 独立业务插件认证
 
-历史 Desktop 身份入口提供 `workdshEnterprise` 服务，业务插件通过 Cordis 注入，使用 `identity()` 与 `request()` 调用当前公司后台。凭据留在 Main，不读取 Token；允许的路径为 `/api/extensions/<plugin>/<operation>`。接口见[公开企业契约](../../contracts/src/enterprise.ts)，历史实现见[Desktop 身份入口](src/desktop.ts)；当前个人 Desktop 不提供企业登录或认证桥接，也不启用本包。
+历史 Desktop 身份入口提供 `easyworkEnterprise` 服务，业务插件通过 Cordis 注入，使用 `identity()` 与 `request()` 调用当前公司后台。凭据留在 Main，不读取 Token；允许的路径为 `/api/extensions/<plugin>/<operation>`。接口见[公开企业契约](../../contracts/src/enterprise.ts)，历史实现见[Desktop 身份入口](src/desktop.ts)；当前个人 Desktop 不提供企业登录或认证桥接，也不启用本包。

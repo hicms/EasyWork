@@ -4,7 +4,7 @@ import type {
   OfficeSnapshot,
   OfficeReceipt,
   OfficeEditInput,
-} from "workdsh-contracts/office";
+} from "easywork-contracts/office";
 import { downloadDocument } from "./docx.js";
 import {
   documentDiff,
@@ -32,7 +32,7 @@ export interface DocumentOptions {
 export interface OfficeClient {
   request: Rpc;
   createPresentation(options:DocumentOptions):ReturnType<typeof import("../presentation/client-model.js").createPresentationModel>;
-  importDocument(sessionId: string, input: Extract<import("workdsh-contracts/office").OfficeOpenInput, {source: "import"}>, signal: AbortSignal): Promise<OfficeSnapshot>;
+  importDocument(sessionId: string, input: Extract<import("easywork-contracts/office").OfficeOpenInput, {source: "import"}>, signal: AbortSignal): Promise<OfficeSnapshot>;
   download(sessionId: string, documentId: string): Promise<void>;
   open(sessionId: string, documentId: string): void;
   list(

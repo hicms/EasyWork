@@ -1,4 +1,4 @@
-import { Input, Button } from 'workdsh-ui';
+import { Input, Button } from 'easywork-ui';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { EXPERT_LIMITS } from '../shared.js';

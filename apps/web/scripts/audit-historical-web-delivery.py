@@ -9,12 +9,12 @@ root = pathlib.Path(__file__).resolve().parents[1]
 release = root / '.artifacts/project-v0.1.0-alpha.13'
 manifest_path = release / 'release-manifest.json'
 manifest = json.loads(manifest_path.read_text())
-installer = (release / 'install-workdsh.mjs').read_text()
+installer = (release / 'install-easywork.mjs').read_text()
 block = re.search(r'const installOrder = \[([\s\S]*?)\];', installer)
 assert block, 'Historical installer order missing'
 defaults = re.findall(r"'([^']+)'", block[1])
 assert len(defaults) == len(set(defaults))
-external = {'workdsh-provider-identity-enterprise', 'workdsh-plugin-enterprise-collaboration', 'workdsh-plugin-enterprise-orders'}
+external = {'easywork-provider-identity-enterprise', 'easywork-plugin-enterprise-collaboration', 'easywork-plugin-enterprise-orders'}
 rows = []
 for item in manifest['../../packages']:
     filename = item['filename']
@@ -28,7 +28,7 @@ for item in manifest['../../packages']:
         assert all(m.name.startswith('package/') and '..' not in pathlib.PurePosixPath(m.name).parts for m in members)
         package = json.loads(archive.extractfile('package/package.json').read())
         assert package['name'] == item['name'] and package['version'] == item['version']
-        dependencies = {name for field in ('dependencies', 'optionalDependencies', 'peerDependencies', 'devDependencies') for name in package.get(field, {}) if name.startswith('workdsh-')}
+        dependencies = {name for field in ('dependencies', 'optionalDependencies', 'peerDependencies', 'devDependencies') for name in package.get(field, {}) if name.startswith('easywork-')}
         assert not dependencies & external, (filename, dependencies & external)
         scanned = 0
         for member in members:
@@ -38,10 +38,10 @@ for item in manifest['../../packages']:
                 scanned += 1
         rows.append({'name': item['name'], 'sha256': digest, 'ownedDependencies': sorted(dependencies), 'runtimeFilesScanned': scanned})
 assert set(defaults) <= {row['name'] for row in rows}
-optional = ['workdsh-plugin-office', 'workdsh-plugin-projects', 'workdsh-plugin-activity']
+optional = ['easywork-plugin-office', 'easywork-plugin-projects', 'easywork-plugin-activity']
 proof = {'scope': 'Retained local alpha.13 assets only; no remote release, Desktop or runtime compatibility claim',
          'manifestSha256': hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
-         'installerSha256': hashlib.sha256((release / 'install-workdsh.mjs').read_bytes()).hexdigest(),
+         'installerSha256': hashlib.sha256((release / 'install-easywork.mjs').read_bytes()).hexdigest(),
          '../../packages': rows, 'historicalDefaultPackages': defaults,
          'enterprisePackageIdentifiersAbsent': True,
          'currentOptionalFeaturesInstalledByHistoricalDefault': [name for name in optional if name in defaults],

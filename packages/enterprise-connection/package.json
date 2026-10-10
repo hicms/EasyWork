@@ -1,5 +1,5 @@
 {
-  "name": "workdsh-enterprise-connection",
+  "name": "easywork-enterprise-connection",
   "version": "0.1.0-alpha.2",
   "private": true,
   "type": "module",
@@ -32,12 +32,12 @@
     }
   },
   "dependencies": {
-    "workdsh-provider-identity-enterprise": "0.1.0-alpha.3",
-    "workdsh-plugin-enterprise-collaboration": "0.1.0-alpha.1"
+    "easywork-provider-identity-enterprise": "0.1.0-alpha.3",
+    "easywork-plugin-enterprise-collaboration": "0.1.0-alpha.1"
   },
   "bundledDependencies": [
-    "workdsh-provider-identity-enterprise",
-    "workdsh-plugin-enterprise-collaboration"
+    "easywork-provider-identity-enterprise",
+    "easywork-plugin-enterprise-collaboration"
   ],
   "peerDependencies": {
     "@deepseek-ai/cordis": "4.0.4",

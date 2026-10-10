@@ -4,7 +4,7 @@ import { existsSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
-  smokeBundledWorkdshProfile,
+  smokeBundledEasyWorkProfile,
   type PackagedElectronSmoke,
 } from './verify-electron-fuses.ts'
 
@@ -24,7 +24,7 @@ function message(cause: unknown): string {
  */
 export function probeInstalledWindowsRuntime(
   installRoot: string,
-  smoke: PackagedElectronSmoke = smokeBundledWorkdshProfile,
+  smoke: PackagedElectronSmoke = smokeBundledEasyWorkProfile,
   platform: NodeJS.Platform = process.platform,
 ): InstalledWindowsRuntimeProbe {
   const root = resolve(installRoot)

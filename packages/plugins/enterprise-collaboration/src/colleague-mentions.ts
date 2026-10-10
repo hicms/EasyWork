@@ -3,7 +3,7 @@ import type { Colleague } from './index.js';
 
 /** Directory is always fetched as the signed-in member, never trusted from a chip. */
 export function colleagueMentionSource(read: (signal: AbortSignal) => Promise<Colleague[]>, handoff?: (sessionId:string,recipientId:string,name:string,note:string)=>Promise<string>): InputTriggerSource {
-  const source = 'workdsh-colleagues';
+  const source = 'easywork-colleagues';
   return {
     trigger: '@', name: source, order: -30,
     async candidates(_session, request) {

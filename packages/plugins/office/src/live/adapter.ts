@@ -7,11 +7,11 @@ import type {
   OfficeOperation,
   OfficeList,
   OfficeTextStyle,
-} from "workdsh-contracts/office";
+} from "easywork-contracts/office";
 
 /** Semantic styles cross the Host boundary; editor HTML/JSON never does. */
 export const BlockIdentity = Extension.create({
-  name: "workdshBlockIdentity",
+  name: "easyworkBlockIdentity",
   addGlobalAttributes() {
     return [
       {

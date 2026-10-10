@@ -1,7 +1,7 @@
 import type { Context } from '@deepseek-ai/cordis';
 import type {} from '@deepseek-ai/dsh-agent';
 import type {} from '@deepseek-ai/dsh-system-prompt';
-import type { ActorContext, LibraryService } from 'workdsh-contracts';
+import type { ActorContext, LibraryService } from 'easywork-contracts';
 
 const MAX_DOCUMENT_CHARS = 40_000;
 const MAX_CONTEXT_CHARS = 80_000;
@@ -57,11 +57,11 @@ export function registerLibraryContextInjection(ctx: Context): void {
     const sessionId = context.agent ? String(context.agent.id) : undefined;
     if (!sessionId) return resolved;
 
-    const actor = await ctx.workdshIdentity.resolve({ sessionId }, context.signal);
-    const text = await buildLibrarySelectionContext(ctx.workdshLibrary, actor, sessionId, context.signal);
+    const actor = await ctx.easyworkIdentity.resolve({ sessionId }, context.signal);
+    const text = await buildLibrarySelectionContext(ctx.easyworkLibrary, actor, sessionId, context.signal);
     if (!text) return resolved;
     resolved.contexts.push({
-      name: 'workdsh:library-selection',
+      name: 'easywork:library-selection',
       text,
     });
     return resolved;

@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
-import type { ActorContext, IdentityProfile, IdentityResolutionContext, IdentityService, Membership } from 'workdsh-contracts';
+import type { ActorContext, IdentityProfile, IdentityResolutionContext, IdentityService, Membership } from 'easywork-contracts';
 import type { VerifiedMember } from './request-context.js';
 
 /** Internal Agent-owned identity. The trusted verifier retains authentication, not this DTO. */
 export class EnterpriseMemberIdentity implements IdentityService {
-  readonly id = 'workdsh-enterprise-member';
+  readonly id = 'easywork-enterprise-member';
   private revoked = false;
   private readonly revision = randomUUID();
   private constructor(private readonly member: VerifiedMember,

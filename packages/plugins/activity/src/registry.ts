@@ -1,4 +1,4 @@
-import type { ActivityIdentity, ActivityPresentation } from 'workdsh-contracts/activity';
+import type { ActivityIdentity, ActivityPresentation } from 'easywork-contracts/activity';
 /** Optional identity/title adapters. This registry stores no session or task facts. */
 export function createPresentationRegistry(): ActivityPresentation {
   const identities = new Set<Parameters<ActivityPresentation['registerIdentity']>[0]>();

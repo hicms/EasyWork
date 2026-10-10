@@ -4,7 +4,7 @@ import type {} from '@deepseek-ai/dsh-api-remotes/client';
 import type {} from '@deepseek-ai/dsh-api-session-controller/client';
 import type { ManagedSkillDetail, ManagedSkillResource, ManagedSkillSummary, SkillBatchAction, SkillBatchResult, SkillCatalogSummary, SkillDependencyImpact, SkillInstallScope, SkillMutationReceipt, SkillResourceWriteRequest, SkillWriteRequest, StagedSkillImport, TrashedSkillSummary } from '../shared.js';
 
-const path = '/api/workdsh-skills';
+const path = '/api/easywork-skills';
 
 function isRecord(value: unknown): value is Record<string, unknown> { return value !== null && typeof value === 'object' && !Array.isArray(value); }
 function failure(value: unknown): Error {
@@ -61,7 +61,7 @@ export function createSkillManagementClient(ctx: Context, lifetime?: AbortSignal
     stageImport: async (file: File, signal?: AbortSignal) => {
       return request<StagedSkillImport>(`${path}/import`, {
         method: 'POST', credentials: 'same-origin',
-        headers: { 'content-type': file.type || 'application/octet-stream', 'x-workdsh-file-name': encodeURIComponent(file.name) },
+        headers: { 'content-type': file.type || 'application/octet-stream', 'x-easywork-file-name': encodeURIComponent(file.name) },
         body: file,
       }, 120_000, scoped(signal));
     },

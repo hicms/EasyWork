@@ -38,13 +38,13 @@ export function resolvePackagedExecutablePath(context: PackagedRuntimeContext): 
 }
 
 /** The CLI lives in the single bundled Profile, outside app.asar. */
-export function smokeBundledWorkdshProfile(context: PackagedRuntimeContext): void {
+export function smokeBundledEasyWorkProfile(context: PackagedRuntimeContext): void {
   const resources = context.electronPlatformName === 'darwin'
     ? join(context.appOutDir, `${context.packager.appInfo.productFilename}.app`, 'Contents', 'Resources')
     : join(context.appOutDir, 'resources')
-  const runtime = join(resources, 'workdsh-runtime')
+  const runtime = join(resources, 'easywork-runtime')
   const node = join(runtime, 'primary-runtime', 'dependencies', 'node', 'bin', context.electronPlatformName === 'win32' ? 'node.exe' : 'node')
-  const cli = join(runtime, 'profiles', 'workdsh', 'node_modules', '@deepseek-ai', 'dsh', 'lib', 'bin.js')
+  const cli = join(runtime, 'profiles', 'easywork', 'node_modules', '@deepseek-ai', 'dsh', 'lib', 'bin.js')
   // An Intel macOS artifact is smoke-tested under Rosetta on arm64 CI runners.
   // Loading its bundled dependency graph can exceed the native 30-second limit.
   const emulatedMac = context.electronPlatformName === 'darwin'
@@ -358,7 +358,7 @@ export async function afterAllArtifactBuild(
   result: ElectronArtifactBuildResult,
   read: ElectronFuseReader = getCurrentFuseWire,
   exists: (filename: string) => boolean = existsSync,
-  smoke: PackagedElectronSmoke = smokeBundledWorkdshProfile,
+  smoke: PackagedElectronSmoke = smokeBundledEasyWorkProfile,
 ): Promise<string[]> {
   const contexts = resolveFinalPackagedRuntimeContexts(result, exists)
   for (const context of contexts) {

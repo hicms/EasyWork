@@ -11,9 +11,9 @@ import type { SkillCatalogEntry, SkillCatalogIcon, SkillCatalogStatus, SkillCata
  * payload resolution only; installation itself stays in the skill manager's
  * import path so Harness remains the discovery and execution owner.
  */
-export const skillCatalogIconPath = '/api/workdsh-skills/icon';
+export const skillCatalogIconPath = '/api/easywork-skills/icon';
 const CATALOG_SCHEMA = 1;
-const CATALOG_KIND = 'workdsh-skill-catalog';
+const CATALOG_KIND = 'easywork-skill-catalog';
 const skillNamePattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const contentTypes: Record<string, string> = {
   '.svg': 'image/svg+xml',
@@ -116,13 +116,13 @@ export class SkillCatalogStore {
     }
     // Product-owned labels; third-party names are never translated automatically.
     const builtinTitles: Readonly<Record<string, string>> = {
-      'workdsh-skill-creator': '技能创建与优化',
-      'workdsh-expert-manager': '专家与专家团制作',
-      'workdsh-ppt-design': 'PPT 专业设计',
-      'workdsh-word-design': 'Word 文档设计',
-      'workdsh-excel-design': 'Excel 表格设计',
-      'workdsh-web-design': '网页设计与制作',
-      'workdsh-pdf-design': 'PDF 文档设计',
+      'easywork-skill-creator': '技能创建与优化',
+      'easywork-expert-manager': '专家与专家团制作',
+      'easywork-ppt-design': 'PPT 专业设计',
+      'easywork-word-design': 'Word 文档设计',
+      'easywork-excel-design': 'Excel 表格设计',
+      'easywork-web-design': '网页设计与制作',
+      'easywork-pdf-design': 'PDF 文档设计',
     };
     for (const [name, title] of Object.entries(builtinTitles)) {
       if (installed.has(name) && (!rows.get(name)?.title || rows.get(name)?.title === name)) rows.set(name, { ...rows.get(name), title });

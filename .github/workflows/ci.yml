@@ -97,12 +97,13 @@ jobs:
       - if: needs.changes.outputs.web == 'true'
         working-directory: apps/web
         run: |
+          node ../../scripts/verify-product-names.mjs
           corepack pnpm build
-          corepack pnpm --filter workdsh-provider-identity-enterprise build
-          corepack pnpm --filter workdsh-plugin-enterprise-collaboration build
+          corepack pnpm --filter easywork-provider-identity-enterprise build
+          corepack pnpm --filter easywork-plugin-enterprise-collaboration build
           corepack pnpm typecheck
-          corepack pnpm --filter workdsh-provider-identity-enterprise typecheck
-          corepack pnpm --filter workdsh-plugin-enterprise-collaboration typecheck
+          corepack pnpm --filter easywork-provider-identity-enterprise typecheck
+          corepack pnpm --filter easywork-plugin-enterprise-collaboration typecheck
           corepack pnpm check:versions
           corepack pnpm check:plan
       - if: needs.changes.outputs.web == 'false'

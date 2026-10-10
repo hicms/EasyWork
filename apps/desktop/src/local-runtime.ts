@@ -8,15 +8,15 @@ import { syncBundledCompatibility } from './runtime-compatibility.ts'
 import { cachedPackageManager } from './plugin-archive-cache.ts'
 
 type ProfilePackage = { dependencies?: Record<string, string>, optionalDependencies?: Record<string, string>, dsh?: { profile?: { bundles?: string[] } }, [key: string]: unknown }
-const BASE_STATE = '.workdsh-desktop-base.json'
+const BASE_STATE = '.easywork-desktop-base.json'
 const json = (file: string): ProfilePackage => JSON.parse(readFileSync(file, 'utf8')) as ProfilePackage
 const writeJson = (file: string, value: unknown): void => writeFileSync(file, JSON.stringify(value, null, 2) + '\n', { mode: 0o600 })
 function memberDefaults(release: ProfilePackage): ProfilePackage {
-  return { name: 'workdsh-member-profile', private: true, type: 'module', packageManager: release.packageManager,
+  return { name: 'easywork-member-profile', private: true, type: 'module', packageManager: release.packageManager,
     dependencies: {}, ...(release.dsh ? { dsh: structuredClone(release.dsh) } : {}) }
 }
 function baseDigest(source: string, base: ProfilePackage, version: string): string {
-  const marker = join(source, '.workdsh-desktop-release.json')
+  const marker = join(source, '.easywork-desktop-release.json')
   const workspace = join(source, 'pnpm-workspace.yaml')
   return createHash('sha256').update('installation-owned-defaults-v2').update(JSON.stringify(base)).update(version).update(existsSync(marker) ? readFileSync(marker) : '')
     .update(existsSync(workspace) ? readFileSync(workspace) : '').digest('hex')
@@ -50,7 +50,7 @@ function updatePackagePolicy(source: string, target: string): boolean {
 }
 
 export function materializeRuntimeProfile(source: string, home: string): { profile: string, changed: boolean } {
-  const target = join(home, 'profiles', 'workdsh')
+  const target = join(home, 'profiles', 'easywork')
   const release = json(join(source, 'package.json'))
   // Defaults are already installed in the immutable runtime. The member project owns only explicit additions.
   const base = memberDefaults(release)
@@ -120,7 +120,7 @@ export function officialLauncher(source: string, home: string, executable: strin
   const cli = join(source, 'node_modules', '@deepseek-ai', 'dsh', 'lib', 'bin.js')
   if (!existsSync(cli) || !existsSync(packageManager)) throw new Error('安装包缺少官方 DSH 或锁定的插件安装工具')
   const pnpm = cachedPackageManager(home, packageManager)
-  const launcher = join(home, '.workdsh-launch.mjs')
+  const launcher = join(home, '.easywork-launch.mjs')
   writeFileSync(launcher, `import { runCli } from ${JSON.stringify(pathToFileURL(cli).href)};\nawait runCli({ manageDesktopProfile: true, packageManager: { command: ${JSON.stringify(executable)}, args: [${JSON.stringify(pnpm)}] } });\n`, { mode: 0o600 })
   return launcher
 }
@@ -130,15 +130,27 @@ export function officialHostLauncher(source: string, home: string, executable: s
   const boot = join(source, 'node_modules', '@deepseek-ai', 'dsh', 'lib', 'profile-boot.js')
   const appBoot = join(source, 'node_modules', '@deepseek-ai', 'dsh-app-boot', 'lib', 'index.js')
   if (!existsSync(boot) || !existsSync(appBoot) || !existsSync(packageManager)) throw new Error('安装包缺少官方 Profile 启动接口')
-  const anchor = join(source, 'profile-installation.json'), profile = join(home, 'profiles', 'workdsh')
+  const anchor = join(source, 'profile-installation.json'), profile = join(home, 'profiles', 'easywork')
   if (!existsSync(anchor)) throw new Error('安装包缺少完整官方与 EasyWork 安装清单')
-  const launcher = join(home, '.workdsh-host.mjs')
+  const launcher = join(home, '.easywork-host.mjs')
   packageManager = cachedPackageManager(home, packageManager)
-  writeFileSync(launcher, `import { runProfile } from ${JSON.stringify(pathToFileURL(boot).href)};
-import { loadProfileDirectory, loadLayeredEnv, reportSkippedBundles } from ${JSON.stringify(pathToFileURL(appBoot).href)};
-const installAnchor = ${JSON.stringify(anchor)};
+  writeFileSync(launcher, `const startupAt = performance.now();
+function startupPhase(stage, state, started) {
+  try {
+    if (process.connected) process.send?.({ type: 'easywork-startup-phase', stage, state, durationMs: Math.round(performance.now() - started) }, () => {});
+  } catch { /* Diagnostics must not change Host startup or shutdown. */ }
+}
+startupPhase('runtime.import', 'begin', startupAt);
+const { runProfile } = await import(${JSON.stringify(pathToFileURL(boot).href)});
+const { loadProfileDirectory, loadLayeredEnv, reportSkippedBundles } = await import(${JSON.stringify(pathToFileURL(appBoot).href)});
+startupPhase('runtime.import', 'end', startupAt);
+const resolveAt = performance.now();
+startupPhase('profile.resolve', 'begin', resolveAt);
+const { personalInstallationAnchor } = await import(${JSON.stringify(pathToFileURL(join(source, 'node_modules', 'easywork-bundle', 'dist', 'updates', 'profile-anchor.js')).href)});
+const installAnchor = await personalInstallationAnchor(${JSON.stringify(anchor)}, ${JSON.stringify(profile)}, ${JSON.stringify(home)});
 const profile = loadProfileDirectory('dsh', ${JSON.stringify(profile)}, installAnchor);
 reportSkippedBundles('dsh', profile);
+startupPhase('profile.resolve', 'end', resolveAt);
 let stopping = false;
 async function stop() {
   if (stopping) return;
@@ -147,15 +159,18 @@ async function stop() {
     const running = await application;
     await running.shutdown.shutdown(0);
     if (process.connected) {
-      await new Promise((resolve, reject) => process.send({ type: 'workdsh-shutdown-complete' }, error => error ? reject(error) : resolve()));
+      await new Promise((resolve, reject) => process.send({ type: 'easywork-shutdown-complete' }, error => error ? reject(error) : resolve()));
       process.disconnect();
     }
   } catch (error) { console.error('EasyWork Host shutdown failed:', error); process.exit(1); }
 }
-process.on('message', message => { if (message?.type === 'workdsh-shutdown') void stop(); });
-const application = runProfile({ environment: loadLayeredEnv('dsh'), profile: 'workdsh', resolvedProfile: { profile, installAnchor }, patchFiles: ${JSON.stringify(patches)}, args: process.argv.slice(2), packageManager: { command: ${JSON.stringify(executable)}, args: [${JSON.stringify(packageManager)}] } });
+process.on('message', message => { if (message?.type === 'easywork-shutdown') void stop(); });
+const activateAt = performance.now();
+startupPhase('plugins.activate', 'begin', activateAt);
+const application = runProfile({ environment: loadLayeredEnv('dsh'), profile: 'easywork', resolvedProfile: { profile, installAnchor }, patchFiles: ${JSON.stringify(patches)}, args: process.argv.slice(2), packageManager: { command: ${JSON.stringify(executable)}, args: [${JSON.stringify(packageManager)}] } });
 const { ctx } = await application;
-if (!stopping && process.connected) process.send?.({ type: 'workdsh-ready', url: ctx.connection.authenticatedUrl('http://127.0.0.1:' + ctx.webServer.port), injections: ctx.webServer.collectIndexInjections() });
+startupPhase('plugins.activate', 'end', activateAt);
+if (!stopping && process.connected) process.send?.({ type: 'easywork-ready', url: ctx.connection.authenticatedUrl('http://127.0.0.1:' + ctx.webServer.port), injections: ctx.webServer.collectIndexInjections() });
 `, { mode: 0o600 })
   return launcher
 }

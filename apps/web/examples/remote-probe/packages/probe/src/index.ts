@@ -3,7 +3,7 @@ import { Remote, RemoteError, TypertRemoteService } from '@deepseek-ai/dsh-typer
 import { setTimeout as delay } from 'node:timers/promises';
 
 declare module '@deepseek-ai/cordis' {
-  interface Context { workdshProbe: WorkdshProbe; }
+  interface Context { easyworkProbe: EasyWorkProbe; }
 }
 
 /** Diagnostic counters only; no user, session or business data. */
@@ -14,14 +14,14 @@ export interface ProbeState {
 }
 
 /** Local D01 fixture using the official Remote service and carrier cancellation. */
-export class WorkdshProbe extends TypertRemoteService {
+export class EasyWorkProbe extends TypertRemoteService {
   private active = 0;
   private completed = 0;
   private cancelled = 0;
   private readonly lifetime = new AbortController();
 
   constructor(ctx: Context) {
-    super(ctx, 'workdshProbe', { namespace: 'workdshProbe' });
+    super(ctx, 'easyworkProbe', { namespace: 'easyworkProbe' });
     ctx.effect(() => () => this.lifetime.abort());
   }
 
