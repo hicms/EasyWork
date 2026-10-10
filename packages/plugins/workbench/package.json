@@ -18,8 +18,9 @@
     "locale/*.json"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "build": "node ../../../apps/web/scripts/build-workspace.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build:local": "tsc -p tsconfig.json"
   },
   "peerDependencies": {
     "react": "^19.2.4",

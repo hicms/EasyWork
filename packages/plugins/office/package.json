@@ -26,8 +26,9 @@
     "locale/*.json"
   ],
   "scripts": {
-    "build": "node ../../../apps/web/scripts/build-office.mjs",
-    "typecheck": "tsc -p tsconfig.json"
+    "build": "node ../../../apps/web/scripts/build-workspace.mjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "build:local": "node ../../../apps/web/scripts/build-office.mjs"
   },
   "dsh": {
     "bundle": {

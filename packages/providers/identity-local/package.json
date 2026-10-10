@@ -24,8 +24,9 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "build": "node ../../../apps/web/scripts/build-workspace.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build:local": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@deepseek-ai/schemastery": "3.18.3",

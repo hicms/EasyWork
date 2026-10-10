@@ -32,7 +32,7 @@
     },
     "packages/plugins/connectors/package.json": {
       "source": "plugins/connectors/package.json",
-      "sha256": "5144be578ad9b7ebfb2939d111293cb36afc5a93e5abbcf30eb1bddba8bd59dc"
+      "sha256": "40cc246542ecd263c3620704c12b9bfdc5676030b9551ad1372ebbb5edd5f18c"
     },
     "packages/plugins/connectors/src/client.tsx": {
       "source": "plugins/connectors/src/client.tsx",
@@ -132,7 +132,7 @@
     },
     "packages/plugins/experts/package.json": {
       "source": "plugins/experts/package.json",
-      "sha256": "5f36541d5708be688c9a37e762f81cf2779a4d27ebadec22dfa7bfd5d4baedbb"
+      "sha256": "0c0e18919024cf83c24238c0b2d4c70943e7d7b8584c29fb2be94d1235c8986c"
     },
     "packages/plugins/experts/resources/skills/easywork-expert-manager/LICENSE.workbuddy.txt": {
       "source": "plugins/experts/resources/skills/easywork-expert-manager/LICENSE.workbuddy.txt",
@@ -364,7 +364,7 @@
     },
     "packages/plugins/library/package.json": {
       "source": "plugins/library/package.json",
-      "sha256": "16276895205f2d2e47eb4b9f8feff5e2fe79698d7f20eaf5fb3d8a41de9c6cd6"
+      "sha256": "8897c996949823b4ca4f09e0fe68388d8b5683f5e4dc3da12c19e6efd25322b5"
     },
     "packages/plugins/library/src/client.tsx": {
       "source": "plugins/library/src/client.tsx",
@@ -480,7 +480,7 @@
     },
     "packages/plugins/projects/package.json": {
       "source": "plugins/projects/package.json",
-      "sha256": "932d7936111aef6b92f820e57b24f3d41dc74f879e680373a848eaa717e3c690"
+      "sha256": "405f9a0ae7108d8f8ea90f0e50cf1c952fe56dcec0378394502cc5566ee9a005"
     },
     "packages/plugins/projects/resources/skills/project-manager/.gitkeep": {
       "source": "plugins/projects/resources/skills/project-manager/.gitkeep",
@@ -632,7 +632,7 @@
     },
     "packages/plugins/skills/package.json": {
       "source": "plugins/skills/package.json",
-      "sha256": "760902f3552d3b183fcff4697cf099baa3bd8b123b0197c0231e85f7b286001f"
+      "sha256": "f1b491ecd653dd36ef59edbd9eaac054a4bec947b770c8bc1234202052a18c65"
     },
     "packages/plugins/skills/resources/skills/easywork-excel-design/SKILL.md": {
       "source": "plugins/skills/resources/skills/easywork-excel-design/SKILL.md",

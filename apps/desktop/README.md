@@ -20,12 +20,15 @@ Use Node.js `^22.19.0` or `>=24` and Corepack Yarn 4.18.0. At the repository roo
 
 ```sh
 corepack yarn install --immutable
-corepack pnpm --dir apps/web build
+cd apps/web
+corepack pnpm install --frozen-lockfile
+corepack pnpm build
+cd ../..
 node apps/desktop/scripts/pack-easywork-profile.mjs apps/web
 corepack yarn dev
 ```
 
-`dev` builds the carrier, prepares its pinned Profile and primary runtime, then launches Electron. Keep graphical launch explicit. Headless verification uses:
+`dev` builds the carrier, prepares its pinned Profile and primary runtime, then launches Electron. The Web build runs each selected package and its dependencies once; a package's own `build` command also prepares its dependencies. Primary-runtime and Office preparation reuses identical files. Private build receipts let later runs reuse verified file pairs when their identities, sizes, modes and modification/change times match; missing or changed files are compared and repaired as needed. Receipts are not shipped or used as release integrity evidence. Python, Office, skills and the existing checksum and packaged-runtime gates remain intact. Keep graphical launch explicit. Headless verification uses:
 
 ```sh
 corepack yarn typecheck

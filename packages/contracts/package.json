@@ -50,8 +50,9 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "build": "node ../../apps/web/scripts/build-workspace.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build:local": "tsc -p tsconfig.json"
   },
   "devDependencies": {
     "@types/node": "22.19.0"

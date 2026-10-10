@@ -94,6 +94,8 @@ corepack pnpm preview:install
 corepack pnpm preview
 ```
 
+Run these commands from `apps/web`. The full build follows workspace dependency order and builds each selected package once, retaining the existing feature scope. Standalone commands such as `corepack pnpm --filter easywork-plugin-skills build` also build their prerequisites. `build:local` is the orchestration's internal entry and does not prepare dependencies. Single-package build arguments are forwarded only to the target package.
+
 ## Architecture and development
 
 EasyWork extends the published Harness packages through plugins, services and UI slots. It does not maintain a modified upstream runtime. Business modules own their data; the bundle composes navigation and presentation.
