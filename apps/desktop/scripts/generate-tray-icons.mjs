@@ -29,7 +29,7 @@ const variants = [
 await Promise.all(variants.map(async ([filename, color, size]) => {
   const rendered = source.replaceAll(BRAND_TEAL, color)
   await sharp(Buffer.from(rendered))
-    .resize({ width: size, height: size, fit: 'contain' })
+    .resize({ width: size, height: size, fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .png({ compressionLevel: 9 })
     .toFile(join(buildRoot, filename))
 }))
