@@ -6,6 +6,8 @@
 
 `profiles/shared/easywork-features.json` 声明共同业务包来源。个人和企业复用同一领域插件、业务服务、工具与页面；不同组合只提供实际身份、存储、执行和同步适配。共同来源清单不决定默认安装，交付边界见 [EXTERNAL-PLUGINS](EXTERNAL-PLUGINS.md)。
 
+技能、专家、资料库、连接器和项目的权威源码位于私有 `hicms/easywork-plugins` 仓库，本地 `packages/plugins` 下对应目录是由提交号和逐文件哈希锁定的构建副本。同步工具仅转换应用构建脚本，业务源码保持一致；Desktop/Web CI 均校验副本，构建期间无需跨私有仓库鉴权。共享 contracts/UI 仍由本应用维护，插件仓库只读取固定版本的构建支持快照。
+
 | 来源 | 唯一所有权 |
 | --- | --- |
 | packages/contracts | 小而明确的跨插件领域契约与引用 |

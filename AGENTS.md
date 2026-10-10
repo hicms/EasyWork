@@ -28,6 +28,7 @@ This repository owns EasyWork Web and Desktop. Desktop and Web consume the same 
 - `apps/desktop/` owns the Electron carrier, packaging, and release verification. DSH Host and Client code comes from the published official runtime Profile; EasyWork features belong to the EasyWork Profile packages.
 - The Desktop workspace uses the root Yarn release with `nodeLinker: node-modules`. The nested `apps/web/` workspace retains its own pinned pnpm lockfile and package manager; run its commands from that directory. Do not install it into the root Yarn workspace.
 - Keep presentation and EasyWork feature changes in the Profile rather than adding a second Desktop Host or Client implementation.
+- Skills, experts, library, connectors and projects are maintained in the private `hicms/easywork-plugins` repository. Their directories here are generated source mirrors locked by `profiles/shared/plugin-sources.lock.json`; do not edit them independently. Sync a clean source commit with `node scripts/sync-plugin-sources.mjs <source-repository> <full-commit-sha>` and run `corepack yarn check:plugin-sources`. Shared contracts/UI and other plugins remain owned here.
 - Keep graphical application launch explicit. Builds, typechecks, and Loader smokes must remain headless-safe.
 
 ## Personal product boundary

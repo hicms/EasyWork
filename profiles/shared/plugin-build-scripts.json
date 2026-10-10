@@ -1,0 +1,27 @@
+{
+  "connectors": {
+    "build": "node ../../../apps/web/scripts/build-workspace.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build:local": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json && node ../../../apps/web/scripts/build-connectors.mjs"
+  },
+  "experts": {
+    "build": "node ../../../apps/web/scripts/build-workspace.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build:local": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json && node ../../../apps/web/scripts/build-experts.mjs"
+  },
+  "library": {
+    "build": "node ../../../apps/web/scripts/build-workspace.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build:local": "tsc -p tsconfig.json && node ../../../apps/web/scripts/build-library.mjs"
+  },
+  "projects": {
+    "build": "node ../../../apps/web/scripts/build-workspace.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build:local": "tsc -p tsconfig.json && node ../../../apps/web/scripts/build-projects.mjs"
+  },
+  "skills": {
+    "build": "node ../../../apps/web/scripts/build-workspace.mjs",
+    "typecheck": "node ../../../apps/web/scripts/generate-builtin-skills.mjs && tsc -p tsconfig.json --noEmit",
+    "build:local": "node ../../../apps/web/scripts/generate-builtin-skills.mjs && tsc -p tsconfig.json && node ../../../apps/web/scripts/build-skills.mjs"
+  }
+}

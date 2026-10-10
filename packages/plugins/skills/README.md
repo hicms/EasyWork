@@ -1,10 +1,10 @@
 # 技能管理插件
 
-> 当前源码精确锁定 Harness **0.2.0-rc.2 / Cordis 4.0.4**；实际构建、安装与运行范围见[验收要求](../../../apps/web/docs/ACCEPTANCE.md)。[历史发布说明](https://github.com/techflag/easywork/releases)及旧探针不能证明本轮源码或 Desktop 安装包已验收。
+> 当前源码精确锁定 Harness **0.2.0-rc.2 / Cordis 4.0.4**；实际构建、安装与运行范围见[验收要求](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/ACCEPTANCE.md)。[历史发布说明](https://github.com/techflag/easywork/releases)及旧探针不能证明本轮源码或 Desktop 安装包已验收。
 
-状态：**Skill 0.1 开发候选，已提供本地技能管理和独立插件入口**。当前构建、安装和运行验收以[验收要求](../../../apps/web/docs/ACCEPTANCE.md)为准。当前候选制品 `easywork-plugin-skills@0.1.0-alpha.34`，尚未发布 npm。一个插件管理多个 Skill 业务对象；用户制作技能不需要发布 npm 包。
+状态：**Skill 0.1 开发候选，已提供本地技能管理和独立插件入口**。当前构建、安装和运行验收以[验收要求](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/ACCEPTANCE.md)为准。当前候选制品 `easywork-plugin-skills@0.1.0-alpha.34`，尚未发布 npm。一个插件管理多个 Skill 业务对象；用户制作技能不需要发布 npm 包。
 
-本包提供标准 Host `apply/inject`、独立 Client `apply/inject`、`dsh.bundle` 配置 patch 和 `dsh.client` 浏览器产物。官方 Loader/Profile/Cordis 拥有加载及生命周期；不依赖 EasyWork 总包或另一个插件框架。旧候选的独立安装、默认组合、移除与重装过程见[历史记录](../../../apps/web/docs/CONTRACTS.md)，不代替当前版本验收。
+本包提供标准 Host `apply/inject`、独立 Client `apply/inject`、`dsh.bundle` 配置 patch 和 `dsh.client` 浏览器产物。官方 Loader/Profile/Cordis 拥有加载及生命周期；不依赖 EasyWork 总包或另一个插件框架。旧候选的独立安装、默认组合、移除与重装过程见[历史记录](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/CONTRACTS.md)，不代替当前版本验收。
 
 - 模块版本线：**0.1**，Host、Client、资源和内置管理 Skill 共用版本。
 - 主任务：P1-03；任务编号用于开发追溯，不代表当前版本已经完成验收。
@@ -68,13 +68,13 @@ export function apply(ctx: Context) {
 
 内置 `easywork-skill-creator` 使用官方 `defineTool` 调用同一个 Host 服务，经过私有草稿、校验、精确 revision 和确认发布。默认共享目标为 `$DSH_AGENTS_HOME/skills`，未配置时为 `~/.agents/skills`；只有明确选择 Harness Profile 范围时使用 `$DSH_HOME/skills`。不得覆盖无关技能。
 
-本包独立贡献能力中心侧栏入口和 Skill 页面，移除后这些贡献随插件消失；官方工作区、会话、原生 `/`、`@`、附件、模型和权限仍由 Harness 拥有。显式选择的本地目录只提供数据，不成为默认市场或技能执行器。SkillHub 和第三方市场独立提供目录内容，不代表内置或审核全部技能；[ADR-0015](../../../apps/web/docs/CONTRACTS.md) 的后期组织资产设想不构成当前交付承诺。
+本包独立贡献能力中心侧栏入口和 Skill 页面，移除后这些贡献随插件消失；官方工作区、会话、原生 `/`、`@`、附件、模型和权限仍由 Harness 拥有。显式选择的本地目录只提供数据，不成为默认市场或技能执行器。SkillHub 和第三方市场独立提供目录内容，不代表内置或审核全部技能；[ADR-0015](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/CONTRACTS.md) 的后期组织资产设想不构成当前交付承诺。
 
-开发前阅读[规则](../../../apps/web/AGENTS.md)、[验收要求](../../../apps/web/docs/ACCEPTANCE.md)、[契约](../../../apps/web/docs/CONTRACTS.md)、[团队设计](../../../apps/web/docs/CONTRACTS.md)和[ADR-0018](../../../apps/web/docs/CONTRACTS.md)。
+开发前阅读[规则](https://github.com/hicms/EasyWork/blob/main/apps/web/AGENTS.md)、[验收要求](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/ACCEPTANCE.md)、[契约](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/CONTRACTS.md)、[团队设计](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/CONTRACTS.md)和[ADR-0018](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/CONTRACTS.md)。
 
 ## 专业内容制作指南
 
-内置 `easywork-ppt-design`、`easywork-word-design`、`easywork-excel-design`、`easywork-web-design`，参考腾讯 / WorkBuddy 的产品化方法，由 EasyWork 按当前工具重新编写。包含叙事、排版、公式审查、响应式与交付参考；不是腾讯 SDK、转换引擎或云服务。感谢相关产品提供的设计启发。指南不能扩充当前编辑器或工具能力，具体来源与边界见[适配说明](../../../apps/web/docs/CONTRACTS.md)。
+内置 `easywork-ppt-design`、`easywork-word-design`、`easywork-excel-design`、`easywork-web-design`，参考腾讯 / WorkBuddy 的产品化方法，由 EasyWork 按当前工具重新编写。包含叙事、排版、公式审查、响应式与交付参考；不是腾讯 SDK、转换引擎或云服务。感谢相关产品提供的设计启发。指南不能扩充当前编辑器或工具能力，具体来源与边界见[适配说明](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/CONTRACTS.md)。
 
 创建指南使用 EasyWork 独立命令，保留用户同名原版技能。多阶段创建要求更新原生任务进度；中断恢复先核对已有草稿与成果。
 
@@ -82,7 +82,7 @@ export function apply(ctx: Context) {
 
 ## 内置技能工程维护
 
-五个内置技能位于 `resources/skills/<name>/SKILL.md`，正文不在 TypeScript 独立维护。执行 build/typecheck 前由 `scripts/generate-builtin-skills.mjs` 使用官方 Harness provider 解析并生成注册内容；references 随本包交付。用户创建技能仍由管理服务保存到官方用户根。内置在管理页保持只读，工程修改后随插件更新。唯一内置 PPT 制作技能采用已合并的设计方法，不包含腾讯专属引擎或原版脚本。目录及来源规则见[架构](../../../apps/web/docs/ARCHITECTURE.md)。
+五个内置技能位于 `resources/skills/<name>/SKILL.md`，正文不在 TypeScript 独立维护。执行 build/typecheck 前由 `scripts/generate-builtin-skills.mjs` 使用官方 Harness provider 解析并生成注册内容；references 随本包交付。用户创建技能仍由管理服务保存到官方用户根。内置在管理页保持只读，工程修改后随插件更新。唯一内置 PPT 制作技能采用已合并的设计方法，不包含腾讯专属引擎或原版脚本。目录及来源规则见[架构](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/ARCHITECTURE.md)。
 
 ### 完整技能制作
 
@@ -94,4 +94,4 @@ export function apply(ctx: Context) {
 
 可信 Host 装配可以使用 `new SkillManager(ctx, { dshHome, agentsHome, catalogRoot })`，并给官方 `dsh-skill-filesystem` 配置相同的 `dshHome` 和 `agentsHome`。未指定 catalogRoot 时默认不读取任何推荐目录；只有未指定 agentsHome 的个人运行可显式使用 EASYWORK_SKILL_CATALOG。指定 agentsHome 的账号运行不继承进程级目录配置。目录不能来自未验证的浏览器或模型输入。
 
-省略 options 保留个人版环境变量和 Home 解析。当前企业路线为独立账号进程，同一技能包使用该进程的独立 Home、Agents home 和官方 Skill provider；配置目录本身不提供执行沙箱。旧共享 Host 的成员 selector 与 scoped registry 装配已删除。管理 HTTP 端点与草稿工具使用本进程服务，按实际 Session/Agent 归属授权。账号进程、文件及工具边界的实际验证范围见[验收要求](../../../apps/web/docs/ACCEPTANCE.md)。
+省略 options 保留个人版环境变量和 Home 解析。当前企业路线为独立账号进程，同一技能包使用该进程的独立 Home、Agents home 和官方 Skill provider；配置目录本身不提供执行沙箱。旧共享 Host 的成员 selector 与 scoped registry 装配已删除。管理 HTTP 端点与草稿工具使用本进程服务，按实际 Session/Agent 归属授权。账号进程、文件及工具边界的实际验证范围见[验收要求](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/ACCEPTANCE.md)。
