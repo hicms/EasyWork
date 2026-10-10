@@ -52,8 +52,9 @@
     }
   },
   "scripts": {
-    "build": "node ../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../apps/web --filter easywork-ui build && node ../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../apps/web --filter easywork-plugin-workbench build && tsc -p tsconfig.json && node ../../apps/web/scripts/build-client-probe.mjs",
-    "typecheck": "node ../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../apps/web --filter easywork-ui build && node ../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../apps/web --filter easywork-plugin-workbench typecheck && tsc -p tsconfig.json --noEmit"
+    "build": "node ../../apps/web/scripts/build-workspace.mjs",
+    "typecheck": "node ../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../apps/web --filter easywork-ui build && node ../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../apps/web --filter easywork-plugin-workbench typecheck && tsc -p tsconfig.json --noEmit",
+    "build:local": "tsc -p tsconfig.json && node ../../apps/web/scripts/build-client-probe.mjs"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "4.0.4",

@@ -94,6 +94,8 @@ corepack pnpm preview:install
 corepack pnpm preview
 ```
 
+在 `apps/web` 目录运行上述命令。全量构建按工作区依赖顺序执行，每个选中的包只构建一次，保留原有功能范围。单独构建仍可使用 `corepack pnpm --filter easywork-plugin-skills build`，会先构建所需公共包；`build:local` 是编排内部入口，不负责准备依赖。单包构建参数仅传给目标包。
+
 ## 架构与开发
 
 EasyWork 通过插件、服务和 UI 插槽扩展官方已发布的 Harness 包，不维护修改版上游运行时。业务模块各自拥有领域数据，由整合包组合导航和展示。

@@ -20,12 +20,15 @@ Desktop 不提供企业登录、账号认证桥接、成员空间或公司专用
 
 ```sh
 corepack yarn install --immutable
-corepack pnpm --dir apps/web build
+cd apps/web
+corepack pnpm install --frozen-lockfile
+corepack pnpm build
+cd ../..
 node apps/desktop/scripts/pack-easywork-profile.mjs apps/web
 corepack yarn dev
 ```
 
-`dev` 构建外壳、准备固定版本 Profile 和主运行时，再启动 Electron。图形启动保持显式。无界面验证使用：
+`dev` 构建外壳、准备固定版本 Profile 和主运行时，再启动 Electron。Web 构建对所选包及其依赖各执行一次；单个包的 `build` 命令也会准备所需依赖。主运行时和 Office 准备会复用内容一致的文件，私有构建记录让后续运行在文件标识、大小、权限和修改/变更时间均一致时复用已核对的文件对；文件缺失或变化时重新比较并按需修复。记录不随产品发行，也不作为发行完整性证据。Python、Office、技能及既有校验和与打包运行时门禁全部保留。图形启动保持显式。无界面验证使用：
 
 ```sh
 corepack yarn typecheck

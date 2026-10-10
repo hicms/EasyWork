@@ -22,8 +22,9 @@
     "locale/*.json"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json && node ../../../apps/web/scripts/build-browser-session.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "build": "node ../../../apps/web/scripts/build-workspace.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build:local": "tsc -p tsconfig.json && node ../../../apps/web/scripts/build-browser-session.mjs"
   },
   "dependencies": {
     "@playwright/mcp": "0.0.80",

@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
-import { cpSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { prepareOfficialRelease } from './official-desktop-release.mjs'
 import { DSH_VERSION } from './runtime-version.mjs'
+import { copyRuntimeAssets } from './copy-runtime-assets.mjs'
 
 const desktopRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const target = process.platform === 'win32' ? 'win-x64'
@@ -20,7 +21,10 @@ if (!existsSync(profileMarker) || JSON.parse(readFileSync(profileMarker, 'utf8')
   throw new Error('Prepare and verify the target EasyWork Profile before its primary runtime')
 }
 const released = await prepareOfficialRelease(desktopRoot, target)
-for (const name of ['primary-runtime', 'office-skills']) cpSync(join(released, 'runtime', name), join(output, name), { recursive: true, force: true, dereference: false })
+for (const name of ['primary-runtime', 'office-skills']) {
+  const result = copyRuntimeAssets(join(released, 'runtime', name), join(output, name), join(output, `.easywork-${name}-copy.json`))
+  console.log(`${name}: copied ${result.copiedFiles} files (${result.copiedBytes} bytes), reused ${result.unchangedFiles} unchanged files (${result.reusedChecks} cached checks), copied ${result.copiedLinks} links`)
+}
 const manifestPath = join(output, 'primary-runtime', 'runtime.json')
 if (!existsSync(manifestPath) || !existsSync(join(output, 'office-skills'))) {
   throw new Error('Official primary runtime payload is incomplete')
@@ -49,5 +53,6 @@ const patchPath = join(profile, 'cordis.patch.yml')
 const currentPatch = existsSync(patchPath) ? readFileSync(patchPath, 'utf8') : ''
 const previousOfficial = currentPatch.indexOf('# Official DeepSeek Harness Desktop workspace dependencies and Office skills.')
 const easyworkPatch = previousOfficial === -1 ? currentPatch : currentPatch.slice(0, previousOfficial)
-writeFileSync(patchPath, (easyworkPatch.trim() === '[]' ? '' : easyworkPatch) + patch)
+const nextPatch = (easyworkPatch.trim() === '[]' ? '' : easyworkPatch) + patch
+if (nextPatch !== currentPatch) writeFileSync(patchPath, nextPatch)
 console.log(`Prepared official DeepSeek Harness ${target} primary runtime at ${output}`)

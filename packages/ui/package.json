@@ -15,8 +15,9 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "node ../../scripts/generate-brand-assets.mjs && tsc -p tsconfig.json",
-    "typecheck": "node ../../scripts/generate-brand-assets.mjs --check && tsc -p tsconfig.json --noEmit"
+    "build": "node ../../apps/web/scripts/build-workspace.mjs",
+    "typecheck": "node ../../scripts/generate-brand-assets.mjs --check && tsc -p tsconfig.json --noEmit",
+    "build:local": "node ../../scripts/generate-brand-assets.mjs && tsc -p tsconfig.json"
   },
   "peerDependencies": {
     "react": "^19.2.4",
