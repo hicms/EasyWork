@@ -11,9 +11,9 @@ await writeFile(new URL('dist/client.browser.js', entry), `window.__ModuleLoader
 const requireOffice = createRequire(new URL('package.json', entry));
 await build({
   entryPoints: [fileURLToPath(new URL('src/index.ts', entry))],
-  bundle: true, format: 'esm', platform: 'node', target: 'node22', packages: 'external',
+  bundle: true, splitting: true, format: 'esm', platform: 'node', target: 'node22', packages: 'external',
   plugins: [{ name: 'office-tabular-only', setup(builder) {
     builder.onResolve({ filter: /^easywork-plugin-office\/tabular$/ }, () => ({ path: requireOffice.resolve('easywork-plugin-office/tabular') }));
   } }],
-  outfile: fileURLToPath(new URL('dist/index.js', entry)),
+  outdir: fileURLToPath(new URL('dist/', entry)),
 });

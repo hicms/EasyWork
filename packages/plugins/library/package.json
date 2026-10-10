@@ -26,7 +26,7 @@
   "scripts": {
     "build": "node ../../../apps/web/scripts/build-workspace.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "build:local": "tsc -p tsconfig.json && node ../../../apps/web/scripts/build-library.mjs"
+    "build:local": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json && node ../../../apps/web/scripts/build-library.mjs"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "4.0.4",
