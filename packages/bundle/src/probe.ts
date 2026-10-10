@@ -5,7 +5,6 @@ import type {} from '@deepseek-ai/dsh-agent';
 import type {} from '@deepseek-ai/dsh-attachment';
 import type {} from '@deepseek-ai/dsh-system-prompt';
 import { registerBrowserView } from './browser-view.js';
-import { registerPluginUpdates } from './updates/route.js';
 
 /** Product diagnostics only. Feature packages are installed as separate Profile layers. */
 export const name = 'easywork-installation-probe';
@@ -13,7 +12,6 @@ export const inject = ['connection', 'tools', 'agents', 'attachments', 'systemPr
 
 export function apply(ctx: Context): void {
   registerBrowserView(ctx);
-  registerPluginUpdates(ctx);
   ctx.effect(() => ctx.systemPrompt.section({
     name: 'easywork:browser-in-sidebar',
     order: ctx.systemPrompt.getSectionOrder('TOOL_REPORT'),

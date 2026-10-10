@@ -146,8 +146,7 @@ const { loadProfileDirectory, loadLayeredEnv, reportSkippedBundles } = await imp
 startupPhase('runtime.import', 'end', startupAt);
 const resolveAt = performance.now();
 startupPhase('profile.resolve', 'begin', resolveAt);
-const { personalInstallationAnchor } = await import(${JSON.stringify(pathToFileURL(join(source, 'node_modules', 'easywork-bundle', 'dist', 'updates', 'profile-anchor.js')).href)});
-const installAnchor = await personalInstallationAnchor(${JSON.stringify(anchor)}, ${JSON.stringify(profile)}, ${JSON.stringify(home)});
+const installAnchor = ${JSON.stringify(anchor)};
 const profile = loadProfileDirectory('dsh', ${JSON.stringify(profile)}, installAnchor);
 reportSkippedBundles('dsh', profile);
 startupPhase('profile.resolve', 'end', resolveAt);

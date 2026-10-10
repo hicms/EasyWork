@@ -24,7 +24,7 @@ Read [requirements](docs/REQUIREMENTS.md), [architecture](docs/ARCHITECTURE.md) 
 ## Implementation and lifecycle
 
 - Plugins live at `packages/plugins/<domain>` and providers at `packages/providers/<name>`. Parent directories only categorize packages. Register new modules in `docs/modules.json`; keep planned scaffolds free of loadable DSH/package entry points or fake responses.
-- The skills, experts, library, connectors and projects directories are generated mirrors from `hicms/easywork-plugins`, pinned by the root plugin-sources lock. Make business changes in that source repository and sync a clean commit; run the root `check:plugin-sources` gate before Web validation.
+- The skills, experts, library, connectors and projects sources are owned by the root `packages/plugins/` directories. Build and validate these shared sources for both Desktop and Web; default plugins are packaged locally.
 - Use official declared Slots and their owner props. Keep native Session/Workspace/Settings owners. Register lifecycle effects through `ctx.effect`, `ctx.on`, `ctx.slots.inject` or official managed APIs, and verify disposal.
 - Published object revisions are immutable. File imports create explicit copies; uncertain external writes require result reconciliation and idempotent retry. A model's completion message cannot replace an actual receipt.
 - Credentials stay outside prompts, browser state, logs, exports and source. UI filtering or plugin scope cannot replace identity and operation authorization.

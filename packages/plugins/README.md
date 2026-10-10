@@ -2,7 +2,7 @@
 
 此目录仅用于归类，不是 npm 包，不声明 package.json、加载入口或统一版本。
 
-技能、专家、资料库、连接器和项目的维护入口已迁至私有 [easywork-plugins](https://github.com/hicms/easywork-plugins) 仓库。本仓库保留由固定提交生成的构建副本，来源与逐文件哈希见 `profiles/shared/plugin-sources.lock.json`。修改在源仓库提交后，用根目录的 `scripts/sync-plugin-sources.mjs` 同步，并运行 `corepack yarn check:plugin-sources`；不要分别编辑两处源码。应用构建脚本映射由 `profiles/shared/plugin-build-scripts.json` 拥有。其余插件及共享 contracts/UI 仍在应用仓库维护。
+技能、专家、资料库、连接器和项目的唯一维护源码位于本仓库 `packages/plugins/{skills,experts,library,connectors,projects}`。Desktop 与 Web 使用相同源码构建，本地默认插件随应用打包；构建与启动不依赖独立后端。
 
 子目录分别拥有独立包、版本、依赖、迁移和 CHANGELOG。skills 管理多个技能，experts 管理多个专家；跨插件通过公共服务契约协作。
 

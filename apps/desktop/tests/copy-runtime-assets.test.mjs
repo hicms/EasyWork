@@ -128,7 +128,7 @@ test('relative symbolic links stay links and are reused', t => {
   try { symlinkSync('bin/node', join(f.source, 'node-link'), 'file') }
   catch (error) { if (process.platform === 'win32' && error.code === 'EPERM') { t.skip('File symlinks require Windows Developer Mode'); return }; throw error }
   assert.equal(f.run().copiedLinks, 1)
-  assert.equal(readlinkSync(join(f.destination, 'node-link')), 'bin/node')
+  assert.equal(readlinkSync(join(f.destination, 'node-link')), readlinkSync(join(f.source, 'node-link')))
   assert.equal(f.run().copiedLinks, 0)
 });
 

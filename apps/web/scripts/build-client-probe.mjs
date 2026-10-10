@@ -23,6 +23,6 @@ const hostResult = await build({
   format: 'esm',
   platform: 'node',
   target: 'node22',
-  external: ['@deepseek-ai/cordis', '@deepseek-ai/dsh-*', 'yaml', 'semver'],
+  external: ['@deepseek-ai/cordis', '@deepseek-ai/dsh-*', 'yaml'],
 });
 writeFileSync(new URL('../../../packages/bundle/dist/probe.js', import.meta.url), hostResult.outputFiles[0].text);

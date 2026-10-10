@@ -1,5 +1,4 @@
 import { ShellAppearance } from '../components/ShellAppearance.js';
-import { PluginUpdates } from '../components/PluginUpdates.js';
 import { installFreshSessionNavigation } from './fresh-session.js';
 import { communityMarketView, type MarketHost } from '../components/CommunityMarket.js';
 import type { Context } from '@deepseek-ai/cordis';
@@ -35,7 +34,6 @@ const productViews: Readonly<Record<string, string>> = {
 
 export function apply(ctx: Context): void {
   installFreshSessionNavigation(ctx);
-  ctx.slots.inject('plugins.item', () => ctx.slots.register({ name: 'plugins.item', id: 'easywork-plugin-updates', label: '插件版本与更新', order: -110 }, PluginUpdates));
   ctx.inject(['market'], scope => {
     if (scope.market.version !== 1) return;
     scope.market.setSettingsVisible(false);

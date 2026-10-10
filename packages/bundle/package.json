@@ -18,11 +18,7 @@
       "default": "./dist/probe.js"
     },
     "./package.json": "./package.json",
-    "./locale/*.json": "./locale/*.json",
-    "./profile-anchor": {
-      "types": "./dist/updates/profile-anchor.d.ts",
-      "default": "./dist/updates/profile-anchor.js"
-    }
+    "./locale/*.json": "./locale/*.json"
   },
   "files": [
     "dist",
@@ -54,14 +50,10 @@
   "scripts": {
     "build": "node ../../apps/web/scripts/build-workspace.mjs",
     "typecheck": "node ../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../apps/web --filter easywork-ui build && node ../../apps/web/node_modules/pnpm/bin/pnpm.cjs --dir ../../apps/web --filter easywork-plugin-workbench typecheck && tsc -p tsconfig.json --noEmit",
-    "build:local": "tsc -p tsconfig.json && node ../../apps/web/scripts/build-client-probe.mjs"
+    "build:local": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json && node ../../apps/web/scripts/build-client-probe.mjs"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "4.0.4",
-    "@deepseek-ai/dsh-plugin-manager": "0.2.0-rc.2",
-    "@deepseek-ai/dsh-app-boot": "0.2.0-rc.2",
-    "@deepseek-ai/dsh-atomic-write": "0.2.0-rc.2",
-    "@deepseek-ai/dsh-subprocess": "0.2.0-rc.2"
+    "@deepseek-ai/cordis": "4.0.4"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "4.0.4",
@@ -88,12 +80,7 @@
     "easywork-ui": "workspace:*",
     "@types/node": "22.19.0",
     "@deepseek-ai/dsh-agent": "0.2.0-rc.2",
-    "@deepseek-ai/dsh-client-ui-workspace": "0.2.0-rc.2",
-    "@deepseek-ai/dsh-plugin-manager": "0.2.0-rc.2",
-    "@deepseek-ai/dsh-app-boot": "0.2.0-rc.2",
-    "@deepseek-ai/dsh-atomic-write": "0.2.0-rc.2",
-    "@deepseek-ai/dsh-subprocess": "0.2.0-rc.2",
-    "@types/semver": "7.7.1"
+    "@deepseek-ai/dsh-client-ui-workspace": "0.2.0-rc.2"
   },
   "dependencies": {
     "@deepseek-ai/dsh-browser-use": "0.2.0-rc.2",
@@ -101,7 +88,6 @@
     "@deepseek-ai/dsh-experimental-auto-review": "0.2.0-rc.2",
     "@deepseek-ai/dsh-experimental-browser-use-playwright-mcp": "0.2.0-rc.2",
     "@deepseek-ai/dsh-experimental-computer-use-cua-driver-native": "0.2.0-rc.2",
-    "yaml": "2.9.0",
-    "semver": "7.8.5"
+    "yaml": "2.9.0"
   }
 }
