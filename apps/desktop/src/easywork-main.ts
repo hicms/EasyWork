@@ -3,6 +3,7 @@ import { app, BrowserWindow, dialog, ipcMain, Menu, protocol, session, shell, Tr
 import { spawn, type ChildProcess } from 'node:child_process'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join } from 'node:path'
+import { uptime } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { startupErrorHtml } from './startup-surface.ts'
 import { CarrierWeb, officialFrontendDirectory } from './carrier-web.ts'
@@ -13,6 +14,7 @@ import { cleanOwnedProcessTree, stopOwnedProcess, markWindowsJobProcess } from '
 import { windowsJobArguments } from './windows-process-job.ts'
 import { watchRuntimeShutdown, stopRuntimeProcess } from './runtime-shutdown.ts'
 import { StartupLog, startupErrorFields } from './startup-log.ts'
+import { runtimeProfileDirectory } from './runtime-layout.ts'
 
 const PROFILE_NAME = 'easywork'
 
@@ -39,7 +41,7 @@ const errorNavigations = new WeakMap<BrowserWindow, Promise<void>>()
 function bundledProfileDirectory(): string {
   const overridden = process.env.EASYWORK_BUNDLED_PROFILE
   if (overridden !== undefined && overridden.length > 0) return overridden
-  return join(process.resourcesPath, 'easywork-runtime', 'profiles', PROFILE_NAME)
+  return runtimeProfileDirectory(join(process.resourcesPath, 'easywork-runtime'))
 }
 
 function runtimeHome(): string {
@@ -219,7 +221,7 @@ function runtimeEnvironment(home: string): NodeJS.ProcessEnv {
     DSH_BUNDLED_PRIMARY_RUNTIME: bundledPrimaryRuntime(),
     DSH_ELECTRON_EXECUTABLE: process.execPath,
     EASYWORK_ELECTRON_APP_PATH: app.isPackaged ? undefined : app.getAppPath(),
-    ELECTRON_RUN_AS_NODE: undefined,
+    ELECTRON_RUN_AS_NODE: '1',
   }
 }
 
@@ -228,7 +230,7 @@ async function officialCommand(home: string, args: string[], timeoutMs = 240_000
   const executable = bundledNodeExecutable()
   const launcher = officialLauncher(bundledProfileDirectory(), home, executable, join(bundledPrimaryRuntime(), 'dependencies', 'pnpm', 'bin', 'pnpm.cjs'))
   await new Promise<void>((resolve, reject) => {
-    const child = spawn(executable, [...windowsJobArguments(bundledProfileDirectory(), home), launcher, ...args], { env: runtimeEnvironment(home), cwd: home, detached: process.platform !== 'win32', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
+    const child = spawn(process.execPath, ['--expose-internals', ...windowsJobArguments(bundledProfileDirectory(), home), launcher, ...args], { env: runtimeEnvironment(home), cwd: home, detached: process.platform !== 'win32', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
     markWindowsJobProcess(child)
     installer = child
     let settled = false
@@ -278,8 +280,9 @@ function startRuntime(home: string): void {
   if (!existsSync(executable)) throw new Error(`Bundled Node.js runtime is missing: ${executable}`)
   const basePatch = join(bundledProfileDirectory(), 'cordis.patch.yml')
   const layers = existsSync(basePatch) ? [basePatch] : []
-  const launcher = officialHostLauncher(bundledProfileDirectory(), home, executable, join(bundledPrimaryRuntime(), 'dependencies', 'pnpm', 'bin', 'pnpm.cjs'), layers)
-  const child = spawn(executable, [...windowsJobArguments(bundledProfileDirectory(), home), launcher, '--no-open'], {
+  const traceDirectory = existsSync(join(app.getPath('userData'), 'logs', 'startup-trace.enabled')) ? join(app.getPath('userData'), 'logs') : undefined
+  const launcher = officialHostLauncher(bundledProfileDirectory(), home, executable, join(bundledPrimaryRuntime(), 'dependencies', 'pnpm', 'bin', 'pnpm.cjs'), layers, traceDirectory)
+  const child = spawn(process.execPath, ['--expose-internals', ...windowsJobArguments(bundledProfileDirectory(), home), launcher, '--no-open'], {
     env: runtimeEnvironment(home), cwd: home, detached: process.platform !== 'win32',
     stdio: ['ignore', 'pipe', 'pipe', 'ipc'], windowsHide: true,
   })
@@ -456,7 +459,7 @@ if (worker !== undefined) {
     app.quit()
   } else {
     log = new StartupLog(desktopUserData)
-    log.write('app.start', { version: app.getVersion(), packaged: app.isPackaged })
+    log.write('app.start', { version: app.getVersion(), packaged: app.isPackaged, osUptimeSeconds: Math.floor(uptime()) })
     process.on('uncaughtExceptionMonitor', error => { log!.crash(error) })
     app.on('quit', () => { if (heartbeat) clearInterval(heartbeat) })
     protocol.registerSchemesAsPrivileged([{ scheme: APP_SCHEME,

@@ -23,6 +23,8 @@ MCP client 是一种执行适配，复用官方 stdio/Streamable HTTP 生命周�
 
 新会话默认不选择连接器。已保存的会话选择在刷新和重启后保留，即使尚未发送第一条消息。用户在输入框的链形图标中选择后，名称显示在输入框旁，Host 在官方 `agent/created` 生命周期中只开放对应 `mcp__<server>__*` 工具命名空间。连接器的全局启用状态与当前会话选择互相独立。
 
+随包示例在连接时使用当前安装目录的脚本及 Node 或 Electron 可执行文件，保留移动安装目录后的可用性。用户自己配置的服务器命令与参数保持原值。
+
 完整 D05 仍须完成对应 PLAN 任务及 [验收矩阵](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/ACCEPTANCE.md) 的交互式 OAuth、多账号、公共授权、写操作确认和审计场景。本 alpha 不代表完整连接器产品已验收。
 
 ## 项目界面联动

@@ -126,24 +126,28 @@ export function officialLauncher(source: string, home: string, executable: strin
 }
 
 /** The official application-owned Profile API supplies the full installation dependency graph. */
-export function officialHostLauncher(source: string, home: string, executable: string, packageManager: string, patches: string[]): string {
+export function officialHostLauncher(source: string, home: string, executable: string, packageManager: string, patches: string[], traceDirectory?: string): string {
   const boot = join(source, 'node_modules', '@deepseek-ai', 'dsh', 'lib', 'profile-boot.js')
   const appBoot = join(source, 'node_modules', '@deepseek-ai', 'dsh-app-boot', 'lib', 'index.js')
   if (!existsSync(boot) || !existsSync(appBoot) || !existsSync(packageManager)) throw new Error('安装包缺少官方 Profile 启动接口')
   const anchor = join(source, 'profile-installation.json'), profile = join(home, 'profiles', 'easywork')
   if (!existsSync(anchor)) throw new Error('安装包缺少完整官方与 EasyWork 安装清单')
   const launcher = join(home, '.easywork-host.mjs')
+  const trace = join(home, '.easywork-startup-trace.mjs')
+  if (traceDirectory) writeFileSync(trace, readFileSync(new URL('./startup-trace.mjs', import.meta.url)), { mode: 0o600 })
   packageManager = cachedPackageManager(home, packageManager)
-  writeFileSync(launcher, `const startupAt = performance.now();
-function startupPhase(stage, state, started) {
+  writeFileSync(launcher, `function startupPhase(stage, state, started, fields = {}) {
   try {
-    if (process.connected) process.send?.({ type: 'easywork-startup-phase', stage, state, durationMs: Math.round(performance.now() - started) }, () => {});
+    if (process.connected) process.send?.({ type: 'easywork-startup-phase', stage, state, durationMs: Math.round(performance.now() - started), ...fields }, () => {});
   } catch { /* Diagnostics must not change Host startup or shutdown. */ }
 }
-startupPhase('runtime.import', 'begin', startupAt);
+let finishTrace;
+${traceDirectory ? `try { const { startStartupTrace } = await import(${JSON.stringify(pathToFileURL(trace).href)}); finishTrace = await startStartupTrace(${JSON.stringify(source)}, ${JSON.stringify(traceDirectory)}); } catch { /* Optional diagnostics must not block startup. */ }` : ''}
+const importAt = performance.now();
+startupPhase('runtime.import', 'begin', importAt);
 const { runProfile } = await import(${JSON.stringify(pathToFileURL(boot).href)});
 const { loadProfileDirectory, loadLayeredEnv, reportSkippedBundles } = await import(${JSON.stringify(pathToFileURL(appBoot).href)});
-startupPhase('runtime.import', 'end', startupAt);
+startupPhase('runtime.import', 'end', importAt);
 const resolveAt = performance.now();
 startupPhase('profile.resolve', 'begin', resolveAt);
 const installAnchor = ${JSON.stringify(anchor)};
@@ -169,6 +173,7 @@ startupPhase('plugins.activate', 'begin', activateAt);
 const application = runProfile({ environment: loadLayeredEnv('dsh'), profile: 'easywork', resolvedProfile: { profile, installAnchor }, patchFiles: ${JSON.stringify(patches)}, args: process.argv.slice(2), packageManager: { command: ${JSON.stringify(executable)}, args: [${JSON.stringify(packageManager)}] } });
 const { ctx } = await application;
 startupPhase('plugins.activate', 'end', activateAt);
+try { await finishTrace?.(); } catch { /* Optional diagnostics must not block readiness. */ }
 if (!stopping && process.connected) process.send?.({ type: 'easywork-ready', url: ctx.connection.authenticatedUrl('http://127.0.0.1:' + ctx.webServer.port), injections: ctx.webServer.collectIndexInjections() });
 `, { mode: 0o600 })
   return launcher

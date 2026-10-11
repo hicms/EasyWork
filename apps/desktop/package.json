@@ -21,6 +21,7 @@
     "build/tray-icon*.png",
     "lib/easywork-main.js",
     "lib/startup-preload.cjs",
+    "lib/startup-trace.mjs",
     "README.md",
     "README.zh.md",
     "THIRD_PARTY_NOTICES.md"
@@ -46,7 +47,7 @@
     "prepare:easywork-command": "node scripts/prepare-easywork-command.mjs"
   },
   "peerDependencies": {
-    "electron": "43.3.0"
+    "electron": "44.7.0"
   },
   "devDependencies": {
     "@electron/asar": "3.4.1",
@@ -54,7 +55,7 @@
     "@types/node": "^22.20.0",
     "adm-zip": "^0.6.0",
     "builder-util": "26.15.3",
-    "electron": "43.3.0",
+    "electron": "44.7.0",
     "electron-builder": "26.15.7",
     "js-yaml": "4.3.1",
     "sharp": "0.35.3",
@@ -64,6 +65,7 @@
   "build": {
     "appId": "io.techflag.dsh.ssh",
     "productName": "EasyWork",
+    "executableName": "EasyWork",
     "asar": {
       "smartUnpack": true
     },
@@ -94,16 +96,34 @@
       "build/tray-icon*.png",
       "lib/easywork-main.js",
       "lib/startup-preload.cjs",
+      "lib/startup-trace.mjs",
       "package.json",
-      "!node_modules/**"
+      "!node_modules/**",
+      {
+        "from": "build/easywork-runtime/profiles/easywork",
+        "to": "profiles/easywork",
+        "filter": [
+          "**/*",
+          "!node_modules/**",
+          "!.easywork-startup-files.json"
+        ]
+      },
+      {
+        "from": "build/easywork-runtime/profiles/easywork/node_modules",
+        "to": "profiles/easywork/node_modules",
+        "filter": [
+          "**/*",
+          "!**/*.d.ts",
+          "!**/*.d.mts",
+          "!**/*.d.cts",
+          "!**/*.pdb",
+          "!**/*.map",
+          "!@trycua/cua-driver-*/**"
+        ]
+      }
     ],
     "mac": {
       "artifactName": "EasyWork-${version}-${arch}.${ext}",
-      "asarUnpack": [
-        "build/app-icon-mac.png",
-        "build/tray-iconTemplate.png",
-        "build/tray-iconTemplate@2x.png"
-      ],
       "target": [
         "dir"
       ],
@@ -128,13 +148,6 @@
       "format": "UDBZ"
     },
     "win": {
-      "asarUnpack": [
-        "build/app-icon.png",
-        "build/tray-icon-blue.png",
-        "build/tray-icon-blue@1.25x.png",
-        "build/tray-icon-blue@1.5x.png",
-        "build/tray-icon-blue@2x.png"
-      ],
       "target": [
         {
           "target": "nsis",
@@ -162,13 +175,6 @@
       "artifactName": "EasyWork-${version}-${arch}-Setup.${ext}"
     },
     "linux": {
-      "asarUnpack": [
-        "build/app-icon.png",
-        "build/tray-icon-blue.png",
-        "build/tray-icon-blue@1.25x.png",
-        "build/tray-icon-blue@1.5x.png",
-        "build/tray-icon-blue@2x.png"
-      ],
       "target": [
         "dir"
       ],
@@ -180,18 +186,28 @@
         "to": "easywork-runtime",
         "filter": [
           "runtime/cli/**",
-          "profiles/easywork/**",
           "package-cache/**",
           "node/**",
           "primary-runtime/**",
-          "office-skills/**",
-          "!profiles/easywork/node_modules/**/*.d.ts",
-          "!profiles/easywork/node_modules/**/*.d.mts",
-          "!profiles/easywork/node_modules/**/*.d.cts",
-          "!profiles/easywork/node_modules/**/*.pdb",
-          "!profiles/easywork/node_modules/**/*.map"
+          "office-skills/**"
+        ]
+      },
+      {
+        "from": "build/easywork-runtime/profiles/easywork/node_modules/@trycua",
+        "to": "node_modules/@trycua",
+        "filter": [
+          "cua-driver-*/**/*"
         ]
       }
+    ],
+    "asarUnpack": [
+      "build/app-icon*.png",
+      "build/tray-icon*.png",
+      "profiles/easywork/**/*.{node,dll,exe,pyd,dylib,so}",
+      "profiles/easywork/**/*.so.*",
+      "profiles/easywork/**/spawn-helper",
+      "profiles/easywork/**/bin/rg",
+      "profiles/easywork/**/libreoffice-kit-*/**/*"
     ]
   }
 }

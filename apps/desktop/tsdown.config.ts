@@ -15,4 +15,6 @@ export default defineConfig([{
   entry: { 'command-cli': 'src/command-cli.ts' }, outDir: 'lib', format: 'esm', platform: 'node', target: 'es2024', fixedExtension: false, dts: false, clean: false,
 }, {
   entry: { 'startup-preload': 'src/startup-preload.ts' }, outDir: 'lib', format: 'cjs', platform: 'node', target: 'es2024', fixedExtension: false, dts: false, clean: false,
+}, {
+  entry: { 'startup-trace': 'src/startup-trace.mjs' }, outDir: 'lib', format: 'esm', platform: 'node', target: 'es2024', fixedExtension: true, dts: false, clean: false,
 }])

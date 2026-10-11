@@ -5,6 +5,8 @@ import { dirname, join, isAbsolute } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawn } from 'node:child_process'
 import { PRODUCT_NAME, USER_DATA_DIRECTORY_NAME } from './startup-contract.ts'
+import { archivedRuntimeProfile, packagedHostExecutable, runtimeProfileDirectory } from './runtime-layout.ts'
+import { officialLauncher } from './local-runtime.ts'
 
 export interface CommandSpace { mode: 'personal'; home: string; label: string }
 export function selectCommandSpace(context: { personalHome: string; active?: unknown }, request?: string): CommandSpace {
@@ -22,12 +24,23 @@ async function main(): Promise<void> {
   const launcher = join(space.home, '.easywork-launch.mjs')
   if (!existsSync(launcher)) throw new Error('请先在 Desktop 打开此工作区，完成官方 Profile 初始化')
   const runtime = dirname(dirname(dirname(fileURLToPath(import.meta.url)))), primary = join(runtime, 'primary-runtime')
-  const basePatch = join(runtime, 'profiles/easywork/cordis.patch.yml')
-  const patches = existsSync(basePatch) ? ['--patch', basePatch] : []
-  const env = { ...process.env, DSH_HOME: space.home, DSH_AGENTS_HOME: join(space.home, 'agents'), DSH_BUNDLED_PRIMARY_RUNTIME: primary, ELECTRON_RUN_AS_NODE: undefined }
+  const profile = runtimeProfileDirectory(runtime)
+  const archived = archivedRuntimeProfile(profile)
+  const commandEnv = { ...process.env, DSH_HOME: space.home, DSH_AGENTS_HOME: join(space.home, 'agents'), DSH_BUNDLED_PRIMARY_RUNTIME: primary, ELECTRON_RUN_AS_NODE: archived ? '1' : undefined }
+  const run = (command: string, args: string[]): void => {
+    const child = spawn(command, args, { cwd: space.home, env: commandEnv, stdio: 'inherit', windowsHide: true })
+    child.once('error', error => { process.stderr.write(error.message + '\n'); process.exitCode = 1 })
+    child.once('exit', code => { process.exitCode = code ?? 1 })
+  }
+  if (archived && !process.versions.electron) {
+    run(packagedHostExecutable(runtime), ['--expose-internals', fileURLToPath(import.meta.url), ...process.argv.slice(2)])
+    return
+  }
+  // An already initialized Home may still refer to the previous installation layout.
+  officialLauncher(profile, space.home, join(primary, 'dependencies/node/bin', process.platform === 'win32' ? 'node.exe' : 'node'), join(primary, 'dependencies/pnpm/bin/pnpm.cjs'))
+  const basePatch = join(profile, 'cordis.patch.yml')
+  const patches = archived || existsSync(basePatch) ? ['--patch', basePatch] : []
   process.stderr.write(`${PRODUCT_NAME}：${space.label}\n`)
-  const child = spawn(process.execPath, [launcher, '--profile', 'easywork', ...patches, ...args], { cwd: space.home, env, stdio: 'inherit' })
-  child.once('error', error => { process.stderr.write(error.message + '\n'); process.exitCode = 1 })
-  child.once('exit', code => { process.exitCode = code ?? 1 })
+  run(process.execPath, ['--expose-internals', launcher, '--profile', 'easywork', ...patches, ...args])
 }
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) void main().catch(error => { process.stderr.write(String(error instanceof Error ? error.message : error) + '\n'); process.exitCode = 1 })

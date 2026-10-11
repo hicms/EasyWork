@@ -2,6 +2,7 @@
 
 import { existsSync, lstatSync, readdirSync, writeFileSync } from 'node:fs'
 import { join, relative, resolve, sep } from 'node:path'
+import { listPackage, statFile } from '@electron/asar'
 
 const [applicationPath, outputPath] = process.argv.slice(2)
 if (!applicationPath || !outputPath) {
@@ -14,7 +15,9 @@ const resources = existsSync(join(application, 'Contents', 'Resources'))
   ? join(application, 'Contents', 'Resources')
   : join(application, 'resources')
 const runtime = join(resources, 'easywork-runtime')
-const profileModules = join(runtime, 'profiles', 'easywork', 'node_modules')
+const profileArchive = join(resources, 'app.asar')
+const archived = existsSync(profileArchive) && !existsSync(join(runtime, 'profiles', 'easywork'))
+const profileModules = archived ? join(profileArchive + '.unpacked', 'profiles', 'easywork', 'node_modules') : join(runtime, 'profiles', 'easywork', 'node_modules')
 const groups = new Map()
 const packages = new Map()
 const extensions = new Map()
@@ -29,7 +32,7 @@ function add(map, key, bytes) {
 
 function groupFor(path) {
   const within = relative(runtime, path)
-  if (within.startsWith('..' + sep) || within === '..') return 'electron-and-carrier'
+  if (within.startsWith('..' + sep) || within === '..') return archived ? 'electron-carrier-and-profile' : 'electron-and-carrier'
   const parts = within.split(sep)
   if (parts[0] === 'profiles' && parts[1] === 'easywork' && parts[2] === 'node_modules') return 'profile-node-modules'
   if (parts[0] === 'primary-runtime') return 'primary-runtime'
@@ -38,11 +41,14 @@ function groupFor(path) {
 }
 
 function packageFor(path) {
-  const within = relative(profileModules, path)
-  if (within.startsWith('..' + sep) || within === '..') return null
-  const parts = within.split(sep)
-  if (parts[0] === '.pnpm') return '.pnpm'
-  return parts[0]?.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0]
+  for (const modules of [profileModules, join(resources, 'node_modules')]) {
+    const within = relative(modules, path)
+    if (within.startsWith('..' + sep) || within === '..') continue
+    const parts = within.split(sep)
+    if (parts[0] === '.pnpm') return '.pnpm'
+    return parts[0]?.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0]
+  }
+  return null
 }
 
 function visit(directory) {
@@ -74,6 +80,16 @@ function visit(directory) {
 }
 
 visit(application)
+if (archived) {
+  for (const entry of listPackage(profileArchive)) {
+    const path = entry.replace(/^[/\\]/u, ''), metadata = statFile(profileArchive, path)
+    if (metadata.size === undefined || metadata.unpacked) continue
+    const parts = path.split(sep)
+    if (parts[0] !== 'profiles' || parts[1] !== 'easywork' || parts[2] !== 'node_modules') continue
+    const name = parts[3]?.startsWith('@') ? parts.slice(3, 5).join('/') : parts[3]
+    if (name) add(packages, name, metadata.size)
+  }
+}
 const ordered = map => Object.fromEntries([...map.entries()].sort((a, b) => b[1].bytes - a[1].bytes))
 const report = {
   schemaVersion: 1,

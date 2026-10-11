@@ -5,10 +5,13 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createRequire } from 'node:module'
+import { execFileSync } from 'node:child_process'
+import { runtimeProfileDirectory } from '../src/runtime-layout.ts'
+import { DSH_VERSION } from './runtime-version.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const runtime = resolve(process.argv[2]), built = resolve(process.argv[3]), output = resolve(process.argv[4])
-const profile = join(runtime, 'profiles/easywork')
+const profile = runtimeProfileDirectory(runtime)
 const { _electron } = createRequire(import.meta.url)(resolve(process.env.EASYWORK_PLAYWRIGHT_ENTRY))
 const electron = createRequire(join(root, 'package.json'))('electron')
 const owned = await mkdtemp(join(tmpdir(), 'easywork-personal-startup-'))
@@ -107,6 +110,13 @@ try {
   assert.ok(!menu.some(label => /企业|切换使用方式/u.test(label)))
   await personal.getByText('项目', { exact: true }).first().waitFor({ timeout: 30_000 })
   const startupMs = Date.now() - started
+  if (packaged) {
+    const node = join(runtime, 'primary-runtime/dependencies/node/bin', process.platform === 'win32' ? 'node.exe' : 'node')
+    const version = execFileSync(node, [join(runtime, 'runtime/cli/command-cli.js'), '--version'], {
+      env: options.env, windowsHide: true, encoding: 'utf8', timeout: 30_000,
+    })
+    assert.ok(version.includes(DSH_VERSION), 'The installed command must load the archived official CLI')
+  }
   const skipKey = personal.getByRole('button', { name: '稍后配置', exact: true })
   await skipKey.waitFor({ state: 'visible', timeout: 10_000 })
   assert.equal(await personal.getByRole('heading', { name: '预览版说明', exact: true }).count(), 0)
@@ -188,7 +198,7 @@ try {
     fiveFeatureManifestPresent: true, fiveFeatureUiOpened: true, personalHostStoppedOnQuit: true, ownedHomeDataPreserved: true,
     personalRestart: true, failedHostQuitAndRestart: true, previewNoticeSuppressed: true, projectCreateReadArchive: true, sameDocumentReopen: true, closeKeepsHost: true,
     firstDocumentMs, firstVisibleMs, bootReadyMs, reopenMs,
-    startupMs, modelCallsRequested: 0, packagedRuntimeVerified: packaged }
+    startupMs, modelCallsRequested: 0, packagedRuntimeVerified: packaged, packagedCommandVerified: packaged }
 } catch (error) {
   failed = true
   const pages = app?.windows() ?? []
