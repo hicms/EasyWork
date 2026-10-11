@@ -11,6 +11,10 @@
 
 EasyWork 不复制 Workspace、Session 列表、Conversation、Composer、模型设置、插件管理或执行状态。左栏使用新稳定 list id，与 main keyed entry 配对，不占用已有 single/keyed owner。右栏属于确定 Session，tab 身份由 kind/address 决定；注册 tab definition 与 keyed pane 正文，通过公开 Resource provider 交接数据。
 
+全局外观由 `easywork-ui` 提供同一份明暗主题令牌，`easywork-bundle` 通过官方 `ctx.theme.overrideTokens` 注册，并由 `ctx.effect` 释放。用户的 `light`、`dark`、`system` 偏好仍由官方设置拥有；移除 EasyWork 覆盖只恢复此前的主题叠加结果，不重写用户配置。业务页面复用共享控件、字体、间距和表面样式；官方侧栏、会话、设置与右栏继续使用自己的布局和行为，不依赖其编译后 CSS 类名或 DOM 层级。
+
+DSH 升级时，除版本对齐、类型检查和完整构建外，还必须运行 `check:build` 中的主题契约检查：从当前安装的官方包验证使用的主题令牌，检查覆盖与释放以及用户偏好的保留。随后分别完成实际安装 Profile、打包 Desktop 和明暗模式下的页面、会话、设置与导航验收。令牌和 Slot 契约变化需要先适配再升级；无源码分叉不等于跳过兼容性验证。
+
 Client 通过 `ctx.slots.inject` 等待 owner 声明，owner 卸载时撤销贡献。组件 props 来自公开 Slot 类型；owner 已知状态使用 props，私有 callback 使用 entry inject，共享视图使用 Slot store。React 组件不接收 Cordis ctx、Remote service、凭据或领域服务；复杂页面使用 TSX，由官方唯一 renderer 挂载。
 
 Cordis 与官方 Harness 运行依赖通过 `peerDependencies` 声明兼容边界，开发依赖精确锁定。Client bundle 的 dsh.client.inject 记录所需官方模块；必需服务写入 inject，可选服务按操作解析，配置顺序不表示依赖。跨插件只用公开类型和服务，不导入内部组件或数据表。

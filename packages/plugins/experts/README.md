@@ -25,7 +25,7 @@ EasyWork manages authored expert assets and immutable revisions. Team execution,
 
 启用 Team 时，按官方 Profile 组合停用旧 `subagent`、`subagent_fork` 及旧控制工具。默认成员创建上限为 16。九项工具为 `spawn_teammate`、`send_message`、`list_agents`、`wait_agent`、`interrupt_agent`、`team_task_create`、`team_task_list`、`team_task_get`、`team_task_update`。
 
-EasyWork 的必需组合仍包含 identity-local、audit、access、skills、experts；可选 bundle 提供工作台导航，activity 仅显示个人工作动态。各包通过官方 Loader/Profile 和公开服务注入装配；无自建 Agent loop、消息邮箱、团队执行表或插件加载器。
+EasyWork 的必需组合仍包含 identity-local、audit、access、skills、experts；专家 Client 通过官方 sidebar.panellist 提供独立“专家”入口，页面标签与原生任务入口保留；可选 bundle 提供其余工作台导航，activity 仅显示个人工作动态。各包通过官方 Loader/Profile 和公开服务注入装配；无自建 Agent loop、消息邮箱、团队执行表或插件加载器。
 
 ## 旧版迁移边界
 

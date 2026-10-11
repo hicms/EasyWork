@@ -1,5 +1,9 @@
 import { chromium, expect } from '@playwright/test';
 
+// The official sidebar owns this public navigation landmark. Scope entry checks
+// here so the page's capability tabs do not mask a missing plugin registration.
+const sidebarPanel = (page, name) => page.getByRole('navigation', { name: /^(全局面板|Global panels)$/ }).getByRole('button', { name, exact: true });
+
 function sessionCookies(address, sessionCookie) {
   return sessionCookie.split('; ').filter(Boolean).map(pair => {
     const at = pair.indexOf('=');
@@ -54,7 +58,7 @@ export async function probeBrowser(address, sessionCookie, screenshotPath, { ins
       await expect(page.getByTestId('easywork-brand')).toHaveCount(0);
       await expect(page.getByTestId('easywork-probe')).toHaveCount(0);
       // Removing the presentation bundle must leave the separate Skill layer usable.
-      await page.getByRole('button', { name: '专家 · 技能 · 连接器', exact: true }).click();
+      await sidebarPanel(page, '技能').click();
       await expect(page.getByRole('button', { name: '查看技能 easywork-browser-fixture', exact: true })).toBeVisible();
       if (errors.length) throw new Error(`Browser reported ${errors.length} uncaught errors after removal`);
       console.log('PASS: removed bundle absent from Client boot graph, sidebar, and panel after Host restart');
@@ -64,16 +68,16 @@ export async function probeBrowser(address, sessionCookie, screenshotPath, { ins
     // Harness stays the sole Sidebar owner; EasyWork contributes only public slots.
     await expect(page.getByTestId('easywork-brand')).toHaveText('EasyWork', { timeout: 30000 });
     await expect(page.getByTestId('easywork-sidebar')).toHaveCount(0);
-    await expect(page.getByRole('button', { name: '专家 · 技能 · 连接器', exact: true })).toBeVisible();
+    await expect(sidebarPanel(page, '技能')).toBeVisible();
     await expect(page.getByRole('button', { name: '返回 EasyWork', exact: true })).toHaveCount(0);
     const newSession = page.getByText(/新会话|New Session/, { exact: true }).first();
     await expect(newSession).toBeVisible();
-    for (const label of ['项目', '专家 · 技能 · 连接器', '资料库']) {
-      await expect(page.getByRole('button', { name: label, exact: true })).toBeVisible();
+    for (const label of ['项目', '技能', '资料库']) {
+      await expect(sidebarPanel(page, label)).toBeVisible();
     }
     // 规划中、尚无领域实现的功能不注册导航入口（用户 2026-09-17 决定先隐藏）。
     for (const label of ['助理', '定时任务', '更多']) {
-      await expect(page.getByRole('button', { name: label, exact: true })).toHaveCount(0);
+      await expect(sidebarPanel(page, label)).toHaveCount(0);
     }
     await expect(nav).toBeVisible();
 
@@ -100,9 +104,9 @@ export async function probeBrowser(address, sessionCookie, screenshotPath, { ins
 
     await page.goto(`${address}/?diagnostics=1&easywork-view=skills`, { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('easywork-skills')).toBeVisible();
-    await expect(page.getByRole('heading', { name: '技能库', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '把常用能力，放在手边。', exact: true })).toBeVisible();
     await expect(page.getByRole('combobox', { name: '选择任务' })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: '专家 · 技能 · 连接器', exact: true })).toBeVisible();
+    await expect(sidebarPanel(page, '技能')).toBeVisible();
     await expect(page.getByText('SkillHub', { exact: true })).toHaveCount(0);
     await expect(page.getByText('套件', { exact: true })).toHaveCount(0);
     await later.waitFor({ state: 'visible', timeout: 3000 }).then(() => later.click()).catch(() => {});
@@ -111,7 +115,6 @@ export async function probeBrowser(address, sessionCookie, screenshotPath, { ins
     await expect(page.getByRole('status', { name: /已安装 \d+ 个技能/ })).toBeVisible();
     await expect(page.getByRole('button', { name: /我安装的/ })).toHaveCount(0);
     for (const label of ['办公协同', '开发工具', '数据分析', '内容创作', '知识学习']) await expect(page.getByRole('button', { name: label, exact: true })).toBeDisabled();
-    await expect(page.locator('body')).toHaveAttribute('data-ds-dark-theme');
     for (const width of [1440, 1920, 390]) {
       await page.setViewportSize({ width, height: 1000 });
       await page.screenshot({ path: screenshotPath.replace('.png', `-skills-${width}.png`), fullPage: true });
@@ -139,7 +142,7 @@ export async function probeBrowser(address, sessionCookie, screenshotPath, { ins
     await page.getByRole('button', { name: '返回概述', exact: true }).click();
     await expect(page.getByRole('button', { name: 'references/browser-check.md', exact: true })).toBeVisible();
     await page.getByRole('button', { name: '关闭', exact: true }).click();
-    await expect(page.getByRole('heading', { name: '技能库', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '把常用能力，放在手边。', exact: true })).toBeVisible();
     await page.getByRole('switch', { name: '停用技能 easywork-browser-fixture', exact: true }).click();
     await expect(page.getByRole('switch', { name: '启用技能 easywork-browser-fixture', exact: true })).toBeVisible();
     await page.getByRole('switch', { name: '启用技能 easywork-browser-fixture', exact: true }).click();
@@ -148,8 +151,8 @@ export async function probeBrowser(address, sessionCookie, screenshotPath, { ins
     await page.getByRole('button', { name: '去试试', exact: true }).click();
     await expect.poll(() => new URL(page.url()).searchParams.get('easywork-view')).toBe('conversation');
     await expect(page.getByText('/easywork-browser-fixture', { exact: false }).first()).toBeVisible();
-    await page.getByRole('button', { name: '专家 · 技能 · 连接器', exact: true }).click();
-    await expect(page.getByRole('heading', { name: '技能库', exact: true })).toBeVisible();
+    await sidebarPanel(page, '技能').click();
+    await expect(page.getByRole('heading', { name: '把常用能力，放在手边。', exact: true })).toBeVisible();
     await addSkill.click();
     for (const label of ['查找技能', '上传技能', '创建技能']) await expect(page.getByRole('menuitem', { name: label, exact: true })).toBeVisible();
     await page.getByRole('menuitem', { name: '查找技能', exact: true }).click();
@@ -173,7 +176,7 @@ export async function probeBrowser(address, sessionCookie, screenshotPath, { ins
     await expect.poll(() => new URL(page.url()).searchParams.get('easywork-view')).toBe('conversation');
     await expect(page.getByText('/skill-creator', { exact: false }).first()).toBeVisible();
     await expect(page.getByText('请帮我创建一个可以实现「……」的 skill', { exact: false }).first()).toBeVisible();
-    await page.getByRole('button', { name: '专家 · 技能 · 连接器', exact: true }).click();
+    await sidebarPanel(page, '技能').click();
     await expect(page.getByTestId('easywork-skills')).toBeVisible();
     await expect(page.getByText('skill-creator', { exact: true }).first()).toBeVisible();
     await page.getByRole('button', { name: '管理技能 easywork-browser-fixture', exact: true }).click();
@@ -245,13 +248,13 @@ export async function probeProductWithoutSkills(address, sessionCookie) {
     await page.goto(`${address}/?easywork-view=skills`);
     await dismissSetup(page);
     await expect(page.getByTestId('easywork-brand')).toHaveText('EasyWork');
-    await expect(page.getByRole('button', { name: '专家 · 技能 · 连接器', exact: true })).toHaveCount(0);
+    await expect(sidebarPanel(page, '技能')).toHaveCount(0);
     await expect.poll(() => new URL(page.url()).searchParams.get('easywork-view')).toBe('conversation');
     const graph = await page.evaluate(() => window.__DSH_BOOT__.entries.map(row => row.id));
     expect(graph).toContain('easywork-bundle');
     expect(graph).not.toContain('easywork-plugin-skills');
-    await page.getByRole('button', { name: '项目', exact: true }).click();
-    await expect(page.getByRole('heading', { name: '项目', exact: true })).toBeVisible();
+    await sidebarPanel(page, '项目').click();
+    await expect(page.getByRole('heading', { name: '让想法，有处安放。', exact: true })).toBeVisible();
     await page.getByText(/新会话|New Session/, { exact: true }).first().click();
     await expect(page.getByText(/探索未至之境|Into the Unknown/, { exact: true }).first()).toBeVisible();
     expect(errors).toEqual([]);

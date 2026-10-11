@@ -51,19 +51,21 @@ try{
  const entries=await page.evaluate(()=>window.__DSH_BOOT__.entries.map(r=>r.id));
  for(const name of ['skills','experts','connectors','library'])assert.ok(entries.includes('easywork-plugin-'+name),name);
  assert.ok(!entries.some(name=>/enterprise|easywork-plugin-(office|projects|activity)$/.test(name)));
- await expect(page.getByRole('button',{name:'专家 · 技能 · 连接器',exact:true})).toBeVisible();
- await expect(page.getByRole('button',{name:'资料库',exact:true})).toBeVisible();
- await expect(page.getByRole('button',{name:'项目',exact:true})).toHaveCount(0);
- await expect(page.getByRole('button',{name:'协作',exact:true})).toHaveCount(0);
+ const panels=page.getByRole('navigation',{name:/^(全局面板|Global panels)$/});
+ for(const name of ['专家','技能','连接器','资料库'])await expect(panels.getByRole('button',{name,exact:true})).toBeVisible();
+ await expect(panels.getByRole('button',{name:'项目',exact:true})).toHaveCount(0);
+ await expect(panels.getByRole('button',{name:'协作',exact:true})).toHaveCount(0);
  pass('Real browser loads four default feature Clients without enterprise or dangling project navigation');
  // Official first-run dialogs can arrive after initial rendering; dismiss via
  // their normal buttons and retry the first navigation without forced clicks.
  for(let attempt=0;attempt<3;attempt++){
   for(const name of ['Continue','Configure later','Keep current display','Not now','Got it','继续','稍后配置','保留当前显示','暂不开启','知道了'])await page.getByRole('button',{name,exact:true}).last().click({timeout:700}).catch(()=>{});
-  try{await page.getByRole('button',{name:'专家 · 技能 · 连接器',exact:true}).click({timeout:2000});break;}catch(error){if(error.name!=='TimeoutError'||attempt===2)throw error;}
+  try{await panels.getByRole('button',{name:'技能',exact:true}).click({timeout:2000});break;}catch(error){if(error.name!=='TimeoutError'||attempt===2)throw error;}
  }
- for(const name of ['专家','技能','连接器'])await expect(page.getByRole('button',{name,exact:true})).toBeVisible();
- pass('Shared feature center exposes experts, Skills and connectors');
+ const skillsPage=page.getByTestId('easywork-skills');
+ await expect(skillsPage).toBeVisible();
+ for(const name of ['专家','技能','连接器'])await expect(skillsPage.getByRole('button',{name,exact:true})).toBeVisible();
+ pass('Independent sidebar entries coexist with the preserved feature-page tabs');
  await page.screenshot({path:join(evidence,'personal-default.png')});
  await writeFile(join(evidence,'personal-default-runtime.json'),JSON.stringify({home,checks,packages,entries,modelCalls:0,originalProfilesModified:false},null,2));
 }catch(error){await writeFile(join(evidence,'personal-default-failure.json'),JSON.stringify({home,error:String(error),hostLog:log.replace(/token=[^\s]+/g,'token=[redacted]').slice(-4000)},null,2));console.error('Probe failed; details saved without bootstrap token');process.exitCode=1;}

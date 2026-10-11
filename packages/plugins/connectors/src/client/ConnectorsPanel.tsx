@@ -34,17 +34,18 @@ export function ConnectorsPanel({ toggleNavigation, management, openCapability, 
   const detail = rows.find(row => row.id === expanded);
   const capabilityTabs = [['experts', '专家'], ['skills', '技能'], ['connectors', '连接器']] as const;
   const capabilityKey: Record<string, string> = { experts: 'easywork-experts', skills: 'easywork-skills', connectors: 'easywork-connectors' };
-  return <section className="wd-connectors" data-testid="easywork-connectors"><style>{connectorCss}</style>
-    <header className="cap-header"><button className="nav-toggle" onClick={toggleNavigation} aria-label="切换导航">导航</button>
+  return <section className="easywork-page wd-connectors" data-testid="easywork-connectors"><style>{connectorCss}</style><div className="easywork-page-content">
+    <header className="easywork-page-header"><div><p className="easywork-page-eyebrow">连接器</p><h1 className="easywork-page-title">连接你的工作。</h1><p className="easywork-page-description">按需接入工具，让资料和行动顺畅衔接。</p></div><Button variant="primary" className="primary" onClick={() => setDraft(blank())}>＋ 添加 MCP</Button></header>
+    <div className="easywork-toolbar cap-header"><button className="nav-toggle" onClick={toggleNavigation} aria-label="切换导航">导航</button>
       {capabilityTabs.map(([key, label]) => { const active = key === 'connectors'; const target = capabilityKey[key]; const enabled = active || Boolean(target && hasCapability(target)); return <button key={key} className={`cap-tab ${active ? 'active' : ''}`} disabled={!enabled} aria-current={active ? 'page' : undefined} onClick={() => { if (!active && target) openCapability(target); }}><Icon name={key} />{label}</button>; })}
       <Input className="search" aria-label="搜索 MCP" placeholder="搜索 MCP" value={query} onChange={event => setQuery(event.currentTarget.value)} />
-    </header>
-    <div className="connector-head"><span className="title-icon"><Icon name="connectors" /></span><div><h1>MCP 服务管理</h1><p>每个连接器都是独立 MCP 实例，由 DSH 官方客户端建立连接</p></div>
-      <div className="head-actions"><Button className="secondary" onClick={() => void refresh()} disabled={busy}>刷新状态</Button><Button variant="primary" className="primary" onClick={() => setDraft(blank())}>＋ 添加 MCP</Button></div></div>
+    </div>
+    <div className="connector-head"><div><h2>MCP 服务管理</h2><p>管理连接状态与可用工具</p></div>
+      <div className="head-actions"><Button className="secondary" onClick={() => void refresh()} disabled={busy}>刷新状态</Button></div></div>
     <div className="list-meta"><strong>我的 MCP <span className="count">{rows.length}</span></strong><span className="muted">{rows.filter(row => row.enabled && row.state === 'ready').length} 已连接</span></div>
     {error ? <p className="error" role="alert">{error}</p> : null}
-    {!busy && !filtered.length ? <div className="empty">{rows.length ? '没有匹配的 MCP 服务。' : '尚未配置 MCP 服务，点击“添加 MCP”创建第一个连接。'}</div> : null}
-    {filtered.length ? <div className="connector-grid">{filtered.map(row => <article key={row.id} className={`connector-card ${!row.enabled ? 'disabled' : ''}`}>
+    {!busy && !filtered.length ? <div className="easywork-empty empty">{rows.length ? '没有匹配的 MCP 服务。' : '尚未配置 MCP 服务，点击“添加 MCP”创建第一个连接。'}</div> : null}
+    {filtered.length ? <div className="connector-grid">{filtered.map(row => <article key={row.id} className={`easywork-card connector-card ${!row.enabled ? 'disabled' : ''}`}>
       <div className="card-top"><button className="card-open" aria-label={`查看连接器 ${row.title}`} onClick={() => setExpanded(row.id)}><span className="connector-mark" aria-hidden>{row.title.charAt(0).toUpperCase()}</span><span className="card-title"><strong title={row.title}>{row.title}</strong><small>{row.transport} · {row.serverName}</small></span></button><button className="switch" role="switch" aria-label={`${row.enabled ? '停用' : '启用'} ${row.title}`} aria-checked={row.enabled} disabled={busy} onClick={() => void toggle(row, !row.enabled)} /></div>
       <button className="card-body" onClick={() => setExpanded(row.id)}>{row.description || 'MCP 服务'}</button><div className="card-foot"><span className="status-line"><i className={`status-dot ${row.state}`} />{labels[row.state]}</span><span>{row.toolNames.length} 个工具</span></div>
     </article>)}</div> : null}
@@ -57,5 +58,5 @@ export function ConnectorsPanel({ toggleNavigation, management, openCapability, 
         <div className="form-note wide">访问令牌写入 DSH 官方凭据服务；连接器只保存引用，列表、详情和诊断不会返回令牌。</div><div className="form-actions wide"><Button className="secondary" onClick={() => setDraft(undefined)}>取消</Button><Button variant="primary" className="primary" disabled={busy || !draft.title.trim() || !draft.serverName.trim()} onClick={() => void save()}>保存并连接</Button></div></div> : null}
     </Modal>
     <Modal open={Boolean(removeTarget)} label="删除 MCP" className="connector-config-dialog small" onClose={() => setRemoveTarget(undefined)}><h1>删除“{removeTarget?.title}”?</h1><p>删除后会立即断开该服务，并从 AI 工具目录移除它的工具和资源。</p><div className="form-actions"><Button className="secondary" onClick={() => setRemoveTarget(undefined)}>取消</Button><Button tone="danger" className="danger-button" onClick={() => void remove()}>删除</Button></div></Modal>
-  </section>;
+  </div></section>;
 }

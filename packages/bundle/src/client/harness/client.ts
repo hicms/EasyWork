@@ -1,4 +1,4 @@
-import { ShellAppearance } from '../components/ShellAppearance.js';
+import { installAppearance } from './appearance.js';
 import { installFreshSessionNavigation } from './fresh-session.js';
 import { communityMarketView, type MarketHost } from '../components/CommunityMarket.js';
 import type { Context } from '@deepseek-ai/cordis';
@@ -29,10 +29,11 @@ export const inject = ['slots', 'layout', 'remote', 'remote.pluginInventory', 's
 
 const productViews: Readonly<Record<string, string>> = {
   experts: 'easywork-experts', skills: 'easywork-skills', assistant: 'easywork-assistant', projects: 'easywork-projects', 'project-detail': 'easywork-project-detail',
-  library: 'easywork-library', automation: 'easywork-automation', more: 'easywork-more',
+  library: 'easywork-library', connectors: 'easywork-connectors', automation: 'easywork-automation', more: 'easywork-more',
 };
 
 export function apply(ctx: Context): void {
+  installAppearance(ctx);
   installFreshSessionNavigation(ctx);
   ctx.inject(['market'], scope => {
     if (scope.market.version !== 1) return;
@@ -86,7 +87,6 @@ export function apply(ctx: Context): void {
     const timer = window.setInterval(() => { void poll(); }, 900);
     return () => window.clearInterval(timer);
   }, 'easywork.agent-browser.auto-open');
-  ctx.slots.inject('shell.overlay', () => ctx.slots.register({ name: 'shell.overlay', id: 'easywork-shell-appearance' }, ShellAppearance));
   const diagnostics = new URL(window.location.href).searchParams.get('diagnostics') === '1';
   const viewToPanel = diagnostics ? { ...productViews, diagnostics: 'easywork-probe' } : productViews;
   const panelToView = Object.fromEntries(Object.entries(viewToPanel).map(([view, panel]) => [panel, view]));

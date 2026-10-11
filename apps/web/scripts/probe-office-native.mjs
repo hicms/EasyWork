@@ -215,8 +215,7 @@ try {
   // rejected; the canary records the real error instead of aborting and flips
   // back to the strict PASS (binding verified) by itself once upstream fixes
   // the defect. The Office acceptance above already ran on the bound Session.
-  await page.getByRole('button', { name: '专家 · 技能 · 连接器', exact: true }).click();
-  await page.getByRole('button', { name: '专家', exact: true }).click();
+  await page.getByRole('navigation', { name: /^(全局面板|Global panels)$/ }).getByRole('button', { name: '专家', exact: true }).click();
   await expect(page.getByTestId('easywork-experts')).toBeVisible({ timeout: 15_000 });
   const detailButton = page.getByRole('button', { name: `查看专家 ${listed.items[0].name}`, exact: true });
   await detailButton.waitFor({ timeout: 15_000 });

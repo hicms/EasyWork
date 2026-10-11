@@ -66,7 +66,8 @@
     "easywork-ui": "workspace:*",
     "zod": "^4.3.6",
     "@deepseek-ai/dsh-client-ui-primitives": "0.2.0-rc.2",
-    "easywork-contracts": "workspace:*"
+    "easywork-contracts": "workspace:*",
+    "@deepseek-ai/dsh-client-ui-sidebar": "0.2.0-rc.2"
   },
   "dsh": {
     "bundle": {
@@ -80,7 +81,8 @@
         "@deepseek-ai/dsh-client-ui-renderer",
         "@deepseek-ai/dsh-client-ui-layout",
         "@deepseek-ai/dsh-api-remotes",
-        "@deepseek-ai/dsh-client-ui-primitives"
+        "@deepseek-ai/dsh-client-ui-primitives",
+        "@deepseek-ai/dsh-client-ui-sidebar"
       ]
     }
   }

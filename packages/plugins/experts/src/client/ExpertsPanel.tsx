@@ -193,9 +193,10 @@ export function ExpertsPanel({ toggleNavigation, management, openCapability, has
     finally { setActing(false); }
   };
 
-  return <section className="wd-experts" data-testid="easywork-experts">
-    <style>{expertsCss}</style>
-    <header className="cap-header">
+  return <section className="easywork-page wd-experts" data-testid="easywork-experts">
+    <style>{expertsCss}</style><div className="easywork-page-content">
+    <header className="easywork-page-header"><div><p className="easywork-page-eyebrow">专家</p><h1 className="easywork-page-title">为想法，找个好搭档。</h1><p className="easywork-page-description">选择一位专家，带着合适的经验开始工作。</p></div></header>
+    <div className="easywork-toolbar cap-header">
       <button className="nav-toggle" onClick={toggleNavigation} aria-label="切换导航">导航</button>
       {capabilityTabs.map(([key, label]) => {
         const active = key === 'experts';
@@ -213,7 +214,7 @@ export function ExpertsPanel({ toggleNavigation, management, openCapability, has
         <button role="menuitem" disabled={acting} onClick={event => { event.currentTarget.closest('details')?.removeAttribute('open'); void createExpert('agent'); }}>创建专家</button>
         <button role="menuitem" disabled={acting} onClick={event => { event.currentTarget.closest('details')?.removeAttribute('open'); void createExpert('team'); }}>创建专家团</button>
       </div></details>
-    </header>
+    </div>
 
     {view === 'mine' && <Button variant="ghost" size="sm" className="back-center" onClick={() => { setView('center'); setQuery(''); setStateFilter('all'); }}>‹ 全部专家</Button>}
     <div className="section-head">
@@ -244,7 +245,7 @@ export function ExpertsPanel({ toggleNavigation, management, openCapability, has
     {busy
       ? <div className="grid" aria-hidden>{Array.from({ length: 8 }, (_, index) => <div className="skeleton" key={index} />)}</div>
       : !error && !visible.length
-        ? <div className="empty">
+        ? <div className="easywork-empty empty">
           <strong>{debounced ? `没有匹配的${kindLabel}` : view === 'mine' ? `还没有自己的${kind === 'team' ? '专家团' : '专家'}` : `暂无可用${kindLabel}`}</strong>
           <span className="muted">{debounced ? '保留搜索词，可清除后重试。' : view === 'mine' ? '从默认模板复制，或直接制作一个属于你的专家。' : '默认模板尚未就绪，请稍后重试或制作专家。'}</span>
           <div className="empty-actions">
@@ -257,7 +258,7 @@ export function ExpertsPanel({ toggleNavigation, management, openCapability, has
           const readiness = READINESS[summary.readiness] ?? READINESS.unknown;
           const draft = isDraft(summary);
           const usable = summary.canUse && !draft && summary.availability === 'enabled' && summary.readiness === 'ready';
-          return <article className={`card ${draft ? 'draft' : ''} ${summary.availability !== 'enabled' ? 'unavailable' : ''} ${actionMenu === summary.id ? 'menu-open' : ''}`} key={summary.id}>
+          return <article className={`easywork-card card ${draft ? 'draft' : ''} ${summary.availability !== 'enabled' ? 'unavailable' : ''} ${actionMenu === summary.id ? 'menu-open' : ''}`} key={summary.id}>
             <div className="card-top">
               <button className="card-open" aria-label={`查看专家 ${summary.name}`} onClick={() => setDetailId(summary.id)}>
                 <Avatar summary={summary} />
@@ -292,7 +293,7 @@ export function ExpertsPanel({ toggleNavigation, management, openCapability, has
                 onClick={() => void setPreference(summary, !summary.pinned)}>★</button>
             </div>
           </article>;
-        })}{view === 'mine' && <button className="card create-card" disabled={acting} onClick={() => void createExpert()}><span aria-hidden>＋</span>创建{kind === 'team' ? '专家团' : '专家'}</button>}</div>}
+        })}{view === 'mine' && <button className="easywork-card card create-card" disabled={acting} onClick={() => void createExpert()}><span aria-hidden>＋</span>创建{kind === 'team' ? '专家团' : '专家'}</button>}</div>}
 
     {nextCursor && !busy && <div className="empty-actions" style={{ justifyContent: 'center', marginTop: 18 }}>
       <Button disabled={loadingMore} onClick={() => void load(nextCursor)}>{loadingMore ? '正在加载…' : '加载更多'}</Button>
@@ -332,5 +333,5 @@ export function ExpertsPanel({ toggleNavigation, management, openCapability, has
       {importOpen && <ImportExpertModal management={management} onClose={() => setImportOpen(false)}
         onImported={id => { setImportOpen(false); refresh(); setEditorId(id); }} />}
     </Modal>
-  </section>;
+  </div></section>;
 }

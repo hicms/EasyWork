@@ -112,13 +112,13 @@ try {
   assert.equal(await personal.getByRole('heading', { name: '预览版说明', exact: true }).count(), 0)
   await skipKey.click()
   await skipKey.waitFor({ state: 'hidden', timeout: 10_000 })
-  await personal.getByText('专家 · 技能 · 连接器', { exact: true }).first().click()
+  const navigation = personal.getByRole('navigation', { name: /^(全局面板|Global panels)$/u })
   for (const [label, search] of [['专家', '搜索专家'], ['技能', '搜索技能'], ['连接器', '搜索 MCP']]) {
-    await personal.getByRole('button', { name: label, exact: true }).click()
+    await navigation.getByRole('button', { name: label, exact: true }).click()
     await personal.getByRole('textbox', { name: search, exact: true }).waitFor({ state: 'visible', timeout: 10_000 })
   }
   await personal.getByText('资料库', { exact: true }).first().click()
-  await personal.getByRole('heading', { name: '资料库', exact: true }).waitFor({ timeout: 10_000 })
+  await personal.getByRole('heading', { name: '让知识，随时可用。', exact: true }).waitFor({ timeout: 10_000 })
   await personal.getByText('项目', { exact: true }).first().click()
   await personal.waitForFunction(() => new URL(location.href).searchParams.get('easywork-view') === 'projects')
   const projectOperation = await personal.evaluate(async () => {
