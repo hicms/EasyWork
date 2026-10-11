@@ -3,6 +3,7 @@ import { app, BrowserWindow, dialog, ipcMain, Menu, protocol, session, shell, Tr
 import { spawn, type ChildProcess } from 'node:child_process'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join } from 'node:path'
+import { uptime } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { startupErrorHtml } from './startup-surface.ts'
 import { CarrierWeb, officialFrontendDirectory } from './carrier-web.ts'
@@ -278,7 +279,8 @@ function startRuntime(home: string): void {
   if (!existsSync(executable)) throw new Error(`Bundled Node.js runtime is missing: ${executable}`)
   const basePatch = join(bundledProfileDirectory(), 'cordis.patch.yml')
   const layers = existsSync(basePatch) ? [basePatch] : []
-  const launcher = officialHostLauncher(bundledProfileDirectory(), home, executable, join(bundledPrimaryRuntime(), 'dependencies', 'pnpm', 'bin', 'pnpm.cjs'), layers)
+  const traceDirectory = existsSync(join(app.getPath('userData'), 'logs', 'startup-trace.enabled')) ? join(app.getPath('userData'), 'logs') : undefined
+  const launcher = officialHostLauncher(bundledProfileDirectory(), home, executable, join(bundledPrimaryRuntime(), 'dependencies', 'pnpm', 'bin', 'pnpm.cjs'), layers, traceDirectory)
   const child = spawn(executable, [...windowsJobArguments(bundledProfileDirectory(), home), launcher, '--no-open'], {
     env: runtimeEnvironment(home), cwd: home, detached: process.platform !== 'win32',
     stdio: ['ignore', 'pipe', 'pipe', 'ipc'], windowsHide: true,
@@ -304,10 +306,16 @@ function startRuntime(home: string): void {
   child.on('message', (message: unknown) => {
     if (ready || runtimeStopping || quitting || quitRequested || runtime !== child) return
     if (message && typeof message === 'object' && 'type' in message && message.type === 'easywork-startup-phase') {
-      if ('stage' in message && typeof message.stage === 'string' && ['runtime.import', 'profile.resolve', 'plugins.activate'].includes(message.stage)
+      if ('stage' in message && typeof message.stage === 'string' && ['files.prefetch', 'runtime.import', 'profile.resolve', 'plugins.activate'].includes(message.stage)
         && 'state' in message && typeof message.state === 'string' && ['begin', 'end'].includes(message.state) && 'durationMs' in message
         && typeof message.durationMs === 'number' && Number.isFinite(message.durationMs) && message.durationMs >= 0 && message.durationMs <= 240_000) {
-        log!.write('host.' + message.stage + '.' + message.state, { durationMs: message.durationMs })
+        const fields: Record<string, number | boolean> = { durationMs: message.durationMs }
+        for (const name of ['files', 'bytes', 'failed'] as const) {
+          const value = (message as Record<string, unknown>)[name]
+          if (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) fields[name] = value
+        }
+        if ('timedOut' in message && typeof message.timedOut === 'boolean') fields.timedOut = message.timedOut
+        log!.write('host.' + message.stage + '.' + message.state, fields)
       }
       return
     }
@@ -456,7 +464,7 @@ if (worker !== undefined) {
     app.quit()
   } else {
     log = new StartupLog(desktopUserData)
-    log.write('app.start', { version: app.getVersion(), packaged: app.isPackaged })
+    log.write('app.start', { version: app.getVersion(), packaged: app.isPackaged, osUptimeSeconds: Math.floor(uptime()) })
     process.on('uncaughtExceptionMonitor', error => { log!.crash(error) })
     app.on('quit', () => { if (heartbeat) clearInterval(heartbeat) })
     protocol.registerSchemesAsPrivileged([{ scheme: APP_SCHEME,

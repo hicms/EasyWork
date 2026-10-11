@@ -34,6 +34,8 @@ export async function afterPack(context: PackContext): Promise<void> {
   const entries = listPackage(archive, { isPack: false }).map(normalizeAsarEntry)
   if (!entries.includes('lib/easywork-main.js')) throw new Error('Electron carrier has no EasyWork entry point')
   if (!entries.includes('lib/startup-preload.cjs')) throw new Error('Electron carrier has no official Web boot bridge')
+  if (!entries.includes('lib/startup-prefetch.mjs')) throw new Error('Electron carrier has no startup resource prefetch helper')
+  if (!entries.includes('lib/startup-trace.mjs')) throw new Error('Electron carrier has no optional startup trace helper')
   if (entries.includes('lib/connection-preload.cjs')) throw new Error('Personal Desktop must not carry enterprise login preload')
   if (entries.some(entry => entry.startsWith('node_modules/'))) {
     throw new Error('Electron carrier contains duplicate node_modules; Harness must come only from the bundled Profile')
@@ -153,7 +155,7 @@ export async function afterPack(context: PackContext): Promise<void> {
   }
   process.stdout.write(inventory.stdout)
   const registryCheck = fileURLToPath(new URL('./verify-runtime-product-names.mjs', import.meta.url))
-  const registries = spawnSync(process.execPath, [registryCheck, runtime], { encoding: 'utf8', timeout: 120_000 })
+  const registries = spawnSync(process.execPath, [registryCheck, runtime, '--record-startup-files'], { encoding: 'utf8', timeout: 120_000 })
   if (registries.error || registries.status !== 0) throw new Error('Packaged Skill/MCP names failed: ' + String(registries.error ?? registries.stderr))
   process.stdout.write(registries.stdout)
   console.log(`Verified thin Electron carrier and ${names.length} root / ${instances} total Harness ${DSH_VERSION} package instances`)

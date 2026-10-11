@@ -16,6 +16,8 @@ Desktop 不提供企业登录、账号认证桥接、成员空间或公司专用
 
 启动诊断保存在 Desktop 用户数据目录下的 `logs/startup.log`（Windows 默认为 `%APPDATA%\EasyWork`）。日志记录 Host、插件加载阶段、耗时、资源状态和加载进度；启动仍在等待时，每五秒记录一次。单文件达到 2 MiB 时轮转，保留三份备份。运行时输出只保留元数据摘要，不记录请求正文、认证头或会话文本。致命异常会在用户数据目录留下一个小型 `startup-fatal.log` 元数据文件。
 
+Windows 启动会有界并发预读安装包中的启动资源，随后仍由官方 Loader 正常解析与加载。预读清单由打包时的隔离运行生成并绑定该版 Profile，缺失或失效时回退到正常读取。`host.files.prefetch` 单独记录预读耗时，`app.start.osUptimeSeconds` 记录系统开机后的秒数；热启动结果不能代替电脑重启后的首次启动验收。需要逐插件分析时，在上述 `logs` 目录创建空文件 `startup-trace.enabled`，下次启动会额外生成 `host-startup-*.json` 和 `.cpuprofile`。诊断结束后删除该标记即可停止采样。
+
 使用 Node.js `^22.19.0` 或 `>=24`，以及通过 Corepack 启动的 Yarn 4.18.0。在仓库根目录执行：
 
 ```sh

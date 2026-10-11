@@ -16,6 +16,8 @@ Desktop provides no enterprise login, account authority bridge, member spaces, o
 
 Startup diagnostics are written locally to `logs/startup.log` under the Desktop user-data directory (`%APPDATA%\EasyWork` on Windows). They record Host and plugin-loading stages, elapsed time, resource status and loading progress; while startup is pending, a waiting record is added every five seconds. Files rotate at 2 MiB with three backups. Runtime output is stored as metadata summaries; request bodies, authentication headers and conversation text are not recorded. Fatal exceptions retain a small `startup-fatal.log` metadata record in the user-data directory.
 
+Windows startup uses bounded concurrent reads to prefetch packaged startup resources, then leaves resolution and loading to the official Loader. The isolated packaging check generates a file list tied to that Profile release; missing or stale hints fall back to normal reads. `host.files.prefetch` reports this time separately, and `app.start.osUptimeSeconds` records seconds since system boot. Warm launches do not replace acceptance of the first launch after restarting the computer. For per-plugin diagnostics, create an empty `startup-trace.enabled` file in the same `logs` directory. The next launch also writes `host-startup-*.json` and `.cpuprofile`; remove the marker after diagnosis to stop sampling.
+
 Use Node.js `^22.19.0` or `>=24` and Corepack Yarn 4.18.0. At the repository root:
 
 ```sh
