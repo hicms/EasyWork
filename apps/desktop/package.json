@@ -65,6 +65,7 @@
   "build": {
     "appId": "io.techflag.dsh.ssh",
     "productName": "EasyWork",
+    "executableName": "EasyWork",
     "asar": {
       "smartUnpack": true
     },

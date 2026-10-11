@@ -45,6 +45,7 @@ test('archive preserves published bytes, exposes native resources and ships one 
   await mkdir(join(runtime, 'profiles', 'easywork'), { recursive: true })
   assert.throws(() => runtimeProfileDirectory(runtime), /both archived and loose/)
   assert.equal(packagedHostExecutable(join(root, 'resources/easywork-runtime'), 'win32'), join(root, 'EasyWork.exe'))
+  assert.equal(packagedHostExecutable(join(root, 'resources/easywork-runtime'), 'linux'), join(root, config.build.executableName))
   assert.equal(packagedHostExecutable(join(root, 'Contents/Resources/easywork-runtime'), 'darwin'), join(root, 'Contents/MacOS/EasyWork'))
 })
 

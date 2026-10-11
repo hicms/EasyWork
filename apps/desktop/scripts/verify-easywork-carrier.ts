@@ -2,6 +2,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import { join } from 'node:path'
+import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { extractFile, listPackage } from '@electron/asar'
 import { DSH_VERSION } from './runtime-version.mjs'
@@ -14,7 +15,7 @@ import { verifyDefaultComposition, verifyDefaultProfile, verifyInstalledDshVersi
 interface PackContext {
   appOutDir: string
   electronPlatformName: string
-  packager: { appInfo: { productFilename: string } }
+  packager: { executableName?: string; appInfo: { productFilename: string } }
 }
 
 export function normalizeAsarEntry(entry: string): string {
@@ -24,7 +25,8 @@ export function normalizeAsarEntry(entry: string): string {
 export async function afterPack(context: PackContext): Promise<void> {
   if (!process.versions.electron) {
     const inspection = { appOutDir: context.appOutDir, electronPlatformName: context.electronPlatformName,
-      packager: { appInfo: { productFilename: context.packager.appInfo.productFilename } } }
+      packager: { executableName: context.packager.executableName,
+        appInfo: { productFilename: context.packager.appInfo.productFilename } } }
     const result = spawnSync(resolvePackagedExecutablePath(context), ['--expose-internals', fileURLToPath(import.meta.url), JSON.stringify(inspection)], {
       env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }, encoding: 'utf8', windowsHide: true, timeout: 180_000,
     })
@@ -159,7 +161,8 @@ export async function afterPack(context: PackContext): Promise<void> {
   process.stdout.write(native.stdout)
   const pnpm = join(runtime, 'primary-runtime', 'dependencies', 'pnpm', 'bin', 'pnpm.cjs')
   if (primary.pnpm !== '11.7.0' || !existsSync(pnpm)) throw new Error('Packaged official pnpm CLI is missing or has another version')
-  const packageManager = spawnSync(node, [pnpm, '--version'], { encoding: 'utf8', timeout: 30_000 })
+  // Probe the bundled CLI outside the caller's Yarn/pnpm project configuration.
+  const packageManager = spawnSync(node, [pnpm, '--version'], { cwd: tmpdir(), encoding: 'utf8', timeout: 30_000 })
   if (packageManager.error || packageManager.status !== 0 || packageManager.stdout.trim() !== primary.pnpm) {
     throw new Error('Packaged official pnpm JavaScript CLI cannot run with its bundled Node')
   }
