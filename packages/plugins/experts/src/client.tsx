@@ -6,6 +6,9 @@ import { installExpertPresetMenu } from './client/PresetMenu.js';
 import { ConversationExperts } from './client/ConversationExperts.js';
 import { parseDocument } from 'yaml';
 import type { Context } from '@deepseek-ai/cordis';
+import * as React from 'react';
+import { Icon } from 'easywork-ui';
+import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client';
 import type {} from '@deepseek-ai/dsh-client-connection/client';
 import type {} from '@deepseek-ai/dsh-api-session-controller/client';
 import type { ISessions } from '@deepseek-ai/dsh-api-session-controller/client';
@@ -28,12 +31,8 @@ type SessionId = Awaited<ReturnType<ISessions['create']>>;
 /**
  * Expert Client assembly (D04 / P1-02).
  *
- * Contributes exactly one `main` panel (`easywork-experts`) and one native-input draft
- * overlay. It deliberately does NOT register a `sidebar.panellist` entry: the shared
- * capability center ("专家 · 技能 · 连接器") stays a single navigation item owned by the
- * Skill plugin, and the two panels switch through the in-panel capability tabs via
- * `layout.selectPanel`. This keeps AT-20 (no duplicate navigation) and lets the Skill
- * panel keep working when experts is removed.
+ * Owns its `main` panel, one official sidebar entry and the native-input draft
+ * overlay. Capability tabs keep their existing panel keys and deep links.
  *
  * Summon creates the bound native Session on the Host (so the expert's compiled preset
  * is attached at creation), then opens it here and seeds a one-shot draft hand-off; the
@@ -43,6 +42,9 @@ type SessionId = Awaited<ReturnType<ISessions['create']>>;
 export function apply(ctx: Context): void {
   const lifetime = new AbortController();
   ctx.effect(() => () => lifetime.abort(), 'easywork.experts.client');
+  ctx.slots.inject('sidebar.panellist', () => ctx.slots.register({
+    name: 'sidebar.panellist', id: 'easywork-experts', label: '专家', order: 30,
+  }, ExpertNavigationIcon));
   const waitForInput = (milliseconds: number) => new Promise<void>((resolve, reject) => {
     lifetime.signal.throwIfAborted();
     const abort = () => { window.clearTimeout(timer); reject(lifetime.signal.reason); };
@@ -192,3 +194,5 @@ export function apply(ctx: Context): void {
   ctx.slots.inject('conversation.input.overlay', () => ctx.slots.register({ name: 'conversation.input.overlay', id: 'easywork-expert-draft' }, PendingExpertDraft));
   ctx.slots.inject('conversation.input.left', () => ctx.slots.register({ name: 'conversation.input.left', id: 'easywork-summon-expert', order: 25, inject: () => ({ management, summon, openManagement: () => openCapability('easywork-experts') }) }, ConversationExperts));
 }
+
+function ExpertNavigationIcon() { return <Icon name="experts" />; }

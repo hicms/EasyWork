@@ -6,14 +6,14 @@ const browser=await chromium.launch();
 try {
  const page=await browser.newPage({viewport:{width:1440,height:1000}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(login);await page.getByRole('button',{name:'项目',exact:true}).click();
- await expect(page.getByRole('heading',{name:'我的项目',exact:true})).toBeVisible();
- const card=page.locator('.wd-p-card-open').filter({hasText:'Host持久化验证'});
- await card.click();await expect(page.locator('.wd-p-tabs')).toBeVisible();
- await page.getByRole('button',{name:'项目',exact:true}).click();await expect(page.getByRole('heading',{name:'我的项目',exact:true})).toBeVisible();
- await card.click();await page.locator('.wd-p-task-row').first().click();await page.locator('[contenteditable="true"]').waitFor();
- await page.getByRole('button',{name:'项目',exact:true}).click();await expect(page.getByRole('heading',{name:'我的项目',exact:true})).toBeVisible();
- await card.click();await page.locator('.wd-p-task-row').first().click();await page.getByRole('button',{name:'打开项目 Host持久化验证',exact:true}).click();await expect(page.locator('.wd-p-tabs')).toBeVisible();await page.reload();await expect(page.locator('.wd-p-tabs')).toBeVisible();
- await page.getByRole('button',{name:'项目',exact:true}).click();await expect(page.getByRole('heading',{name:'我的项目',exact:true})).toBeVisible();
+ await expect(page.getByRole('heading',{name:'让想法，有处安放。',exact:true})).toBeVisible();
+ const openProject=page.getByRole('table').getByRole('button',{name:'打开Host持久化验证',exact:true});
+ await openProject.click();await expect(page.locator('.wd-p-tabs')).toBeVisible();
+ await page.getByRole('button',{name:'项目',exact:true}).click();await expect(page.getByRole('heading',{name:'让想法，有处安放。',exact:true})).toBeVisible();
+ await openProject.click();await page.locator('.wd-p-task-row').first().click();await page.locator('[contenteditable="true"]').waitFor();
+ await page.getByRole('button',{name:'项目',exact:true}).click();await expect(page.getByRole('heading',{name:'让想法，有处安放。',exact:true})).toBeVisible();
+ await openProject.click();await page.locator('.wd-p-task-row').first().click();await page.getByRole('button',{name:'打开项目 Host持久化验证',exact:true}).click();await expect(page.locator('.wd-p-tabs')).toBeVisible();await page.reload();await expect(page.locator('.wd-p-tabs')).toBeVisible();
+ await page.getByRole('button',{name:'项目',exact:true}).click();await expect(page.getByRole('heading',{name:'让想法，有处安放。',exact:true})).toBeVisible();
  await mkdir('.artifacts/project-navigation',{recursive:true});await page.screenshot({path:'.artifacts/project-navigation/home.png'});
  expect(errors).toEqual([]);console.log('PASS project navigation: detail/home, conversation/home, detail refresh');
 } finally {await browser.close()}

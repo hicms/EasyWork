@@ -134,7 +134,7 @@ try {
   assert.equal((await api(host, 'install-catalog', { name: 'catalog-unknown' })).error.code, 'skill/catalog-entry-unknown');
   assert.equal((await api(host, 'install-catalog', { name: 'catalog-over-limit' })).error.code, 'skill/catalog-entry-over-limit');
   pass('Catalog status, metadata, icon route and install eligibility read real Host facts');
-  const nav = page.getByRole('button', { name: '专家 · 技能 · 连接器', exact: true });
+  const nav = page.getByRole('navigation', { name: /^(全局面板|Global panels)$/ }).getByRole('button', { name: '技能', exact: true });
   await expect(nav).toHaveCount(1);
   await nav.click();
   await expect(page.getByRole('button', { name: `查看技能 ${fixture}`, exact: true })).toBeVisible();
@@ -237,7 +237,8 @@ try {
   await cli('plugin', '--profile', 'skills', 'remove', manifest.name);
   assert.ok(!(await cli('--profile', 'skills', '--dump-config')).includes('id: easywork-skills'));
   host = await start(); page = await pageFor(host);
-  await expect(page.getByRole('button', { name: '专家 · 技能 · 连接器', exact: true })).toHaveCount(0);
+  // Page tabs can also be named 技能; only the official sidebar entry proves disposal.
+  await expect(page.getByRole('navigation', { name: /^(全局面板|Global panels)$/ }).getByRole('button', { name: '技能', exact: true })).toHaveCount(0);
   await expect(page.getByText(/新会话|New Session/, { exact: true }).first()).toBeVisible();
   assert.ok(!(await page.evaluate(() => window.__DSH_BOOT__.entries.map(row => row.id))).includes(manifest.name));
   assert.equal((await fetch(`${host.address}/api/easywork-skills`, { method: 'POST', headers: { cookie: host.cookie }, body: '{}' })).status, 404);
@@ -249,7 +250,7 @@ try {
   await cli('plugin', '--profile', 'skills', 'add', tarball, '--offline');
   assert.equal((await cli('--profile', 'skills', '--dump-config')).split('id: easywork-skills').length - 1, 1);
   host = await start(); page = await pageFor(host);
-  await page.getByRole('button', { name: '专家 · 技能 · 连接器', exact: true }).click();
+  await page.getByRole('navigation', { name: /^(全局面板|Global panels)$/ }).getByRole('button', { name: '技能', exact: true }).click();
   await expect(page.getByRole('button', { name: `查看技能 ${fixture}`, exact: true })).toHaveCount(1);
   assert.equal((await api(host, 'detail', { name: fixture })).value.document, modified);
   pass('Reinstall and repeat install activate once and recover edited skill data');

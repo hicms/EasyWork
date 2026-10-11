@@ -108,8 +108,7 @@ try {
   await page.context().addCookies(host.cookie.split('; ').map(pair => { const at = pair.indexOf('='); return { name: pair.slice(0, at), value: pair.slice(at + 1), url: host.address }; }));
   await page.goto(host.address);
   for (const name of ['Continue', 'Configure later']) await page.getByRole('button', { name, exact: true }).click({ timeout: 4000 }).catch(() => {});
-  await page.getByRole('button', { name: '专家 · 技能 · 连接器', exact: true }).click();
-  await page.getByRole('button', { name: '专家', exact: true }).click();
+  await page.getByRole('navigation', { name: /^(全局面板|Global panels)$/ }).getByRole('button', { name: '专家', exact: true }).click();
   await expect(page.getByTestId('easywork-experts')).toBeVisible();
   await expect(page.getByText(listed.items[0].name, { exact: true }).first()).toBeVisible();
   await page.screenshot({ path: join(artifacts, 'experts-1440.png'), fullPage: true });
@@ -142,8 +141,7 @@ try {
   assert.notEqual(await page.evaluate(() => sessionStorage.getItem('easywork.pending-expert-task-draft')), null);
   await page.evaluate(() => sessionStorage.removeItem('easywork.pending-expert-task-draft'));
   pass('Addressed draft handoff preserves existing user text and ignores other Sessions');
-  await page.getByRole('button', { name: '专家 · 技能 · 连接器', exact: true }).click();
-  await page.getByRole('button', { name: '专家', exact: true }).click();
+  await page.getByRole('navigation', { name: /^(全局面板|Global panels)$/ }).getByRole('button', { name: '专家', exact: true }).click();
   await page.locator('summary.create-expert').click();
   await page.getByRole('menuitem', { name: '创建专家', exact: true }).click();
   await expect(page.locator('[contenteditable="true"]').first()).toContainText('帮我创建一个 XXX 专家');

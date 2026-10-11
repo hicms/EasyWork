@@ -77,7 +77,7 @@ export function SkillHubPanel({ query, onInstalled, onOpenInstalled }: { query: 
     {installedName && <div className="skillhub-success" role="status"><span>已安装「{installedName}」。</span><Button onClick={onOpenInstalled}>查看已安装</Button><button className="skillhub-dismiss" aria-label="关闭安装提示" onClick={() => setInstalledName('')}>×</button></div>}
     {error && <p className="catalog-note" role="alert">{error}</p>}
     {busy ? <p className="muted" role="status">正在读取 SkillHub…</p> : cards.length ? <div className="grid">{cards.map(card =>
-      <article className="card market-card" key={card.slug}>
+      <article className="easywork-card card market-card" key={card.slug}>
         <div className="card-top"><a className="card-open" href={card.pageUrl?.startsWith('https://skillhub.cn/skills/') ? card.pageUrl : `https://skillhub.cn/skills/${encodeURIComponent(card.slug)}`} target="_blank" rel="noopener noreferrer" aria-label={`查看 ${card.name} 的来源页`}><SkillHubIcon card={card} /><span className="card-title"><strong title={card.name}>{card.name}</strong><small>{card.categoryLabel || card.owner || card.slug}</small></span></a>
           <Button className={`install${card.installed || installing === card.slug ? ' is-status' : ''}${card.installed ? ' is-installed' : ''}`} disabled={card.installed || Boolean(installing)} aria-label={card.installed ? `已安装 ${card.name}` : `安装 ${card.name}`} onClick={() => void install(card)}>{card.installed ? '已安装' : installing === card.slug ? '安装中…' : '＋'}</Button></div>
         <p className="muted">{card.description}</p>

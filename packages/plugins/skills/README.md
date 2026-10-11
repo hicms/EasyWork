@@ -68,7 +68,7 @@ export function apply(ctx: Context) {
 
 内置 `easywork-skill-creator` 使用官方 `defineTool` 调用同一个 Host 服务，经过私有草稿、校验、精确 revision 和确认发布。默认共享目标为 `$DSH_AGENTS_HOME/skills`，未配置时为 `~/.agents/skills`；只有明确选择 Harness Profile 范围时使用 `$DSH_HOME/skills`。不得覆盖无关技能。
 
-本包独立贡献能力中心侧栏入口和 Skill 页面，移除后这些贡献随插件消失；官方工作区、会话、原生 `/`、`@`、附件、模型和权限仍由 Harness 拥有。显式选择的本地目录只提供数据，不成为默认市场或技能执行器。SkillHub 和第三方市场独立提供目录内容，不代表内置或审核全部技能；[ADR-0015](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/CONTRACTS.md) 的后期组织资产设想不构成当前交付承诺。
+本包通过官方 sidebar.panellist 独立贡献“技能”侧栏入口和 Skill 页面，移除后这些贡献随插件消失；官方工作区、会话、原生 `/`、`@`、附件、模型和权限仍由 Harness 拥有。显式选择的本地目录只提供数据，不成为默认市场或技能执行器。SkillHub 和第三方市场独立提供目录内容，不代表内置或审核全部技能；[ADR-0015](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/CONTRACTS.md) 的后期组织资产设想不构成当前交付承诺。
 
 开发前阅读[规则](https://github.com/hicms/EasyWork/blob/main/apps/web/AGENTS.md)、[验收要求](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/ACCEPTANCE.md)、[契约](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/CONTRACTS.md)、[团队设计](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/CONTRACTS.md)和[ADR-0018](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/CONTRACTS.md)。
 
