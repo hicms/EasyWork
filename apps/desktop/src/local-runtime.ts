@@ -133,8 +133,6 @@ export function officialHostLauncher(source: string, home: string, executable: s
   const anchor = join(source, 'profile-installation.json'), profile = join(home, 'profiles', 'easywork')
   if (!existsSync(anchor)) throw new Error('安装包缺少完整官方与 EasyWork 安装清单')
   const launcher = join(home, '.easywork-host.mjs')
-  const prefetch = join(home, '.easywork-startup-prefetch.mjs')
-  writeFileSync(prefetch, readFileSync(new URL('./startup-prefetch.mjs', import.meta.url)), { mode: 0o600 })
   const trace = join(home, '.easywork-startup-trace.mjs')
   if (traceDirectory) writeFileSync(trace, readFileSync(new URL('./startup-trace.mjs', import.meta.url)), { mode: 0o600 })
   packageManager = cachedPackageManager(home, packageManager)
@@ -145,13 +143,6 @@ export function officialHostLauncher(source: string, home: string, executable: s
 }
 let finishTrace;
 ${traceDirectory ? `try { const { startStartupTrace } = await import(${JSON.stringify(pathToFileURL(trace).href)}); finishTrace = await startStartupTrace(${JSON.stringify(source)}, ${JSON.stringify(traceDirectory)}); } catch { /* Optional diagnostics must not block startup. */ }` : ''}
-if (process.platform === 'win32' && process.env.EASYWORK_DISABLE_STARTUP_PREFETCH !== '1') {
-  const prefetchAt = performance.now();
-  startupPhase('files.prefetch', 'begin', prefetchAt);
-  const { prefetchStartupFiles } = await import(${JSON.stringify(pathToFileURL(prefetch).href)});
-  const result = await prefetchStartupFiles(${JSON.stringify(source)});
-  startupPhase('files.prefetch', 'end', prefetchAt, result);
-}
 const importAt = performance.now();
 startupPhase('runtime.import', 'begin', importAt);
 const { runProfile } = await import(${JSON.stringify(pathToFileURL(boot).href)});

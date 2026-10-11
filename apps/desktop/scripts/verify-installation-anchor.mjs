@@ -9,11 +9,14 @@ import { materializeRuntimeProfile, officialHostLauncher } from '../src/local-ru
 import { DSH_VERSION } from './runtime-version.mjs'
 import { PRODUCT_PACKAGES } from './easywork-package-boundary.mjs'
 import { verifyOfficialWebPackages } from './verify-profile-release.mjs'
+import { ensureRuntimeAuditProcess } from './runtime-audit-process.mjs'
+import { archivedRuntimeProfile } from '../src/runtime-layout.ts'
 
 const runtime = resolve(process.argv[2] ?? fileURLToPath(new URL('../build/easywork-runtime', import.meta.url)))
-const source = join(runtime, 'profiles/easywork')
+const source = ensureRuntimeAuditProcess(runtime)
 const primary = join(runtime, 'primary-runtime')
 const executable = join(primary, 'dependencies/node/bin', process.platform === 'win32' ? 'node.exe' : 'node')
+const hostExecutable = archivedRuntimeProfile(source) ? process.execPath : executable
 const pnpm = join(primary, 'dependencies/pnpm/bin/pnpm.cjs')
 const release = JSON.parse(readFileSync(join(runtime, 'package-cache/release-manifest.json'), 'utf8'))
 const actual = JSON.parse(readFileSync(join(source, 'node_modules/@deepseek-ai/dsh/package.json'), 'utf8')).version
@@ -27,7 +30,7 @@ const scrub = value => value.replace(/\?token=[^\s]+/gu, '?token=[redacted]')
 try {
   const { profile } = materializeRuntimeProfile(source, home)
   if (existsSync(join(profile, 'node_modules'))) throw new Error('Fresh Profile unexpectedly has its own dependency tree')
-  const inventory = spawnSync(executable, [fileURLToPath(new URL('./verify-product-plugin-inventory.mjs', import.meta.url)), runtime, profile], { encoding: 'utf8', timeout: 30_000 })
+  const inventory = spawnSync(hostExecutable, ['--expose-internals', fileURLToPath(new URL('./verify-product-plugin-inventory.mjs', import.meta.url)), runtime, profile], { encoding: 'utf8', windowsHide: true, timeout: 30_000 })
   if (inventory.error || inventory.status !== 0) throw new Error('Writable Profile product inventory failed: ' + (inventory.error?.message ?? scrub(inventory.stdout + inventory.stderr)))
   const patch = join(home, '.headless-port.patch.yml')
   writeFileSync(patch, '- id: webserver\n  config:\n    host: 127.0.0.1\n    port: 0\n', { mode: 0o600 })
@@ -35,7 +38,7 @@ try {
   const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/(?:KEY|SECRET|TOKEN|PASSWORD|DSH_|EASYWORK_)/iu.test(key)))
   Object.assign(env, { HOME: home, USERPROFILE: home, DSH_HOME: home, DSH_AGENTS_HOME: join(home, 'agents'), DSH_BUNDLED_PRIMARY_RUNTIME: primary, DSH_TELEMETRY_DISABLED: '1' })
   const ready = new Promise((resolveReady, reject) => {
-    child = spawn(executable, [launcher, '--no-open'], { env, cwd: home, stdio: ['ignore', 'pipe', 'pipe'] })
+    child = spawn(hostExecutable, ['--expose-internals', launcher, '--no-open'], { env, cwd: home, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
     const timer = setTimeout(() => reject(new Error('Official anchored runtime did not become ready: ' + scrub(output).slice(-5000))), 90_000)
     finished = new Promise(resolveExit => child.once('close', resolveExit))
     const read = chunk => {

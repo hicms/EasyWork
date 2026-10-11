@@ -11,6 +11,7 @@ import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { DSH_VERSION } from './runtime-version.mjs'
+import { runtimeProfileDirectory } from '../src/runtime-layout.ts'
 
 export interface PackagedRuntimeContext {
   readonly appOutDir: string
@@ -37,19 +38,19 @@ export function resolvePackagedExecutablePath(context: PackagedRuntimeContext): 
   throw new Error(`Unsupported Electron platform: ${context.electronPlatformName}`)
 }
 
-/** The CLI lives in the single bundled Profile, outside app.asar. */
+/** Exercise the single archived Profile with the same Electron Node mode as the Host. */
 export function smokeBundledEasyWorkProfile(context: PackagedRuntimeContext): void {
   const resources = context.electronPlatformName === 'darwin'
     ? join(context.appOutDir, `${context.packager.appInfo.productFilename}.app`, 'Contents', 'Resources')
     : join(context.appOutDir, 'resources')
   const runtime = join(resources, 'easywork-runtime')
-  const node = join(runtime, 'primary-runtime', 'dependencies', 'node', 'bin', context.electronPlatformName === 'win32' ? 'node.exe' : 'node')
-  const cli = join(runtime, 'profiles', 'easywork', 'node_modules', '@deepseek-ai', 'dsh', 'lib', 'bin.js')
+  const cli = join(runtimeProfileDirectory(runtime), 'node_modules', '@deepseek-ai', 'dsh', 'lib', 'bin.js')
   // An Intel macOS artifact is smoke-tested under Rosetta on arm64 CI runners.
   // Loading its bundled dependency graph can exceed the native 30-second limit.
   const emulatedMac = context.electronPlatformName === 'darwin'
     && context.arch === Arch.x64 && process.arch === 'arm64'
-  const result = spawnSync(node, [cli, '--version'], {
+  const result = spawnSync(resolvePackagedExecutablePath(context), ['--expose-internals', cli, '--version'], {
+    env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }, windowsHide: true,
     encoding: 'utf8',
     timeout: emulatedMac ? 120_000 : 30_000,
   })

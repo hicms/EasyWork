@@ -16,5 +16,5 @@ export default defineConfig([{
 }, {
   entry: { 'startup-preload': 'src/startup-preload.ts' }, outDir: 'lib', format: 'cjs', platform: 'node', target: 'es2024', fixedExtension: false, dts: false, clean: false,
 }, {
-  entry: { 'startup-prefetch': 'src/startup-prefetch.mjs', 'startup-trace': 'src/startup-trace.mjs' }, outDir: 'lib', format: 'esm', platform: 'node', target: 'es2024', fixedExtension: true, dts: false, clean: false,
+  entry: { 'startup-trace': 'src/startup-trace.mjs' }, outDir: 'lib', format: 'esm', platform: 'node', target: 'es2024', fixedExtension: true, dts: false, clean: false,
 }])

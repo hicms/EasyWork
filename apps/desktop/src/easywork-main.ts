@@ -14,6 +14,7 @@ import { cleanOwnedProcessTree, stopOwnedProcess, markWindowsJobProcess } from '
 import { windowsJobArguments } from './windows-process-job.ts'
 import { watchRuntimeShutdown, stopRuntimeProcess } from './runtime-shutdown.ts'
 import { StartupLog, startupErrorFields } from './startup-log.ts'
+import { runtimeProfileDirectory } from './runtime-layout.ts'
 
 const PROFILE_NAME = 'easywork'
 
@@ -40,7 +41,7 @@ const errorNavigations = new WeakMap<BrowserWindow, Promise<void>>()
 function bundledProfileDirectory(): string {
   const overridden = process.env.EASYWORK_BUNDLED_PROFILE
   if (overridden !== undefined && overridden.length > 0) return overridden
-  return join(process.resourcesPath, 'easywork-runtime', 'profiles', PROFILE_NAME)
+  return runtimeProfileDirectory(join(process.resourcesPath, 'easywork-runtime'))
 }
 
 function runtimeHome(): string {
@@ -220,7 +221,7 @@ function runtimeEnvironment(home: string): NodeJS.ProcessEnv {
     DSH_BUNDLED_PRIMARY_RUNTIME: bundledPrimaryRuntime(),
     DSH_ELECTRON_EXECUTABLE: process.execPath,
     EASYWORK_ELECTRON_APP_PATH: app.isPackaged ? undefined : app.getAppPath(),
-    ELECTRON_RUN_AS_NODE: undefined,
+    ELECTRON_RUN_AS_NODE: '1',
   }
 }
 
@@ -229,7 +230,7 @@ async function officialCommand(home: string, args: string[], timeoutMs = 240_000
   const executable = bundledNodeExecutable()
   const launcher = officialLauncher(bundledProfileDirectory(), home, executable, join(bundledPrimaryRuntime(), 'dependencies', 'pnpm', 'bin', 'pnpm.cjs'))
   await new Promise<void>((resolve, reject) => {
-    const child = spawn(executable, [...windowsJobArguments(bundledProfileDirectory(), home), launcher, ...args], { env: runtimeEnvironment(home), cwd: home, detached: process.platform !== 'win32', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
+    const child = spawn(process.execPath, ['--expose-internals', ...windowsJobArguments(bundledProfileDirectory(), home), launcher, ...args], { env: runtimeEnvironment(home), cwd: home, detached: process.platform !== 'win32', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] })
     markWindowsJobProcess(child)
     installer = child
     let settled = false
@@ -281,7 +282,7 @@ function startRuntime(home: string): void {
   const layers = existsSync(basePatch) ? [basePatch] : []
   const traceDirectory = existsSync(join(app.getPath('userData'), 'logs', 'startup-trace.enabled')) ? join(app.getPath('userData'), 'logs') : undefined
   const launcher = officialHostLauncher(bundledProfileDirectory(), home, executable, join(bundledPrimaryRuntime(), 'dependencies', 'pnpm', 'bin', 'pnpm.cjs'), layers, traceDirectory)
-  const child = spawn(executable, [...windowsJobArguments(bundledProfileDirectory(), home), launcher, '--no-open'], {
+  const child = spawn(process.execPath, ['--expose-internals', ...windowsJobArguments(bundledProfileDirectory(), home), launcher, '--no-open'], {
     env: runtimeEnvironment(home), cwd: home, detached: process.platform !== 'win32',
     stdio: ['ignore', 'pipe', 'pipe', 'ipc'], windowsHide: true,
   })
@@ -306,16 +307,10 @@ function startRuntime(home: string): void {
   child.on('message', (message: unknown) => {
     if (ready || runtimeStopping || quitting || quitRequested || runtime !== child) return
     if (message && typeof message === 'object' && 'type' in message && message.type === 'easywork-startup-phase') {
-      if ('stage' in message && typeof message.stage === 'string' && ['files.prefetch', 'runtime.import', 'profile.resolve', 'plugins.activate'].includes(message.stage)
+      if ('stage' in message && typeof message.stage === 'string' && ['runtime.import', 'profile.resolve', 'plugins.activate'].includes(message.stage)
         && 'state' in message && typeof message.state === 'string' && ['begin', 'end'].includes(message.state) && 'durationMs' in message
         && typeof message.durationMs === 'number' && Number.isFinite(message.durationMs) && message.durationMs >= 0 && message.durationMs <= 240_000) {
-        const fields: Record<string, number | boolean> = { durationMs: message.durationMs }
-        for (const name of ['files', 'bytes', 'failed'] as const) {
-          const value = (message as Record<string, unknown>)[name]
-          if (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) fields[name] = value
-        }
-        if ('timedOut' in message && typeof message.timedOut === 'boolean') fields.timedOut = message.timedOut
-        log!.write('host.' + message.stage + '.' + message.state, fields)
+        log!.write('host.' + message.stage + '.' + message.state, { durationMs: message.durationMs })
       }
       return
     }

@@ -1,15 +1,18 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { isAbsolute, join, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { CATALOG_PACKAGES, UNSUPPORTED_ENTERPRISE_PACKAGES, PRODUCT_PACKAGES } from './easywork-package-boundary.mjs'
+import { ensureRuntimeAuditProcess } from './runtime-audit-process.mjs'
 
 const runtime = resolve(process.argv[2] ?? fileURLToPath(new URL('../build/easywork-runtime', import.meta.url)))
-const source = join(runtime, 'profiles', 'easywork')
+const source = ensureRuntimeAuditProcess(runtime)
 const profile = resolve(process.argv[3] ?? source)
 const installedInProfile = profile === source
-const config = join(profile, '.easywork-plugin-inventory-probe.yml')
+const probe = mkdtempSync(join(tmpdir(), 'easywork-inventory-'))
+const config = join(probe, 'cordis.yml')
 const expected = PRODUCT_PACKAGES
 const anchor = join(source, 'profile-installation.json')
 if (!existsSync(anchor)) throw new Error(`Missing bundled DSH installation: ${anchor}`)
@@ -56,6 +59,8 @@ try {
   try {
     await ctx?.fiber.dispose()
   } finally {
-    rmSync(config, { force: true })
+    const part = relative(tmpdir(), probe)
+    if (isAbsolute(part) || part.startsWith('..') || !part.startsWith('easywork-inventory-')) throw new Error('Unsafe inventory probe cleanup')
+    rmSync(probe, { recursive: true, force: true })
   }
 }

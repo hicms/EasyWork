@@ -16,7 +16,7 @@ export function connectorProcess(definition: Pick<ConnectorDefinition, 'id' | 's
   const bundledExample = definition.id === 'easywork-example' && definition.serverName === 'easywork-example'
     && definition.transport === 'stdio' && !definition.authorizationCredentialRef
     && definition.args?.length === 1 && /(?:^|[\\/])example-server\.mjs$/.test(definition.args[0]!)
-    && /(?:^|[\\/])node(?:\.exe)?$/.test(definition.command ?? '');
+    && /(?:^|[\\/])(?:node|electron|EasyWork)(?:\.exe)?$/.test(definition.command ?? '');
   return bundledExample ? { command: process.execPath, args: [serverPath] }
     : { command: definition.command!, args: [...(definition.args ?? [])] };
 }
