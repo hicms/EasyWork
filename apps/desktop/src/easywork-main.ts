@@ -15,11 +15,15 @@ import { windowsJobArguments } from './windows-process-job.ts'
 import { watchRuntimeShutdown, stopRuntimeProcess } from './runtime-shutdown.ts'
 import { StartupLog, startupErrorFields } from './startup-log.ts'
 import { runtimeProfileDirectory } from './runtime-layout.ts'
+import { syncWindowChrome, windowChromeOptions } from './window-chrome.ts'
+import { installWindowMenu } from './window-menu.ts'
+import { installKeyboard } from './keyboard.ts'
 
 const PROFILE_NAME = 'easywork'
 
 let runtime: ChildProcess | undefined
 let window: BrowserWindow | undefined
+let keyboard: Awaited<ReturnType<typeof installKeyboard>> | undefined
 let windowHidden = false
 let starting = false
 let stopping = false
@@ -134,11 +138,14 @@ async function openWindow(): Promise<void> {
     title: PRODUCT_NAME,
     icon: fileURLToPath(new URL('../build/app-icon.png', import.meta.url)),
     backgroundColor: '#111113',
+    ...windowChromeOptions(),
     show: false,
     webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true,
       preload: fileURLToPath(new URL('./startup-preload.cjs', import.meta.url)) },
   })
   window = page
+  syncWindowChrome(page)
+  keyboard!.attach(page)
   windowHidden = false
   log!.write('window.created')
   page.on('show', () => { log!.write('window.shown') })
@@ -171,7 +178,10 @@ async function openWindow(): Promise<void> {
     if (quitting) return
     event.preventDefault()
     windowHidden = true
-    page.hide()
+    if (process.platform === 'darwin' && page.isFullScreen()) {
+      page.once('leave-full-screen', () => { if (!page.isDestroyed()) page.hide() })
+      page.setFullScreen(false)
+    } else page.hide()
   })
   page.on('session-end', () => { app.quit() })
   page.on('closed', () => { if (window === page) { window = undefined; if (heartbeat) clearInterval(heartbeat) } })
@@ -368,15 +378,9 @@ async function startPersonalWorkspace(): Promise<void> {
 }
 
 function installMenu(): void {
-  Menu.setApplicationMenu(Menu.buildFromTemplate([
-    ...(process.platform === 'darwin' ? [{ role: 'appMenu' as const }] : []),
-    { label: '应用程序', submenu: [
-      { label: `打开 ${PRODUCT_NAME}`, click: restoreWindow },
-      { label: `退出 ${PRODUCT_NAME}`, accelerator: 'CmdOrCtrl+Q', click: () => { app.quit() } },
-    ] },
-    { label: '工具', submenu: [{ label: '终端命令 dsh（可选）…', click: () => { void manageCommand(join(process.resourcesPath, 'easywork-runtime'), '个人工作区') } }] },
-    { role: 'editMenu' }, { role: 'viewMenu' }, { role: 'windowMenu' },
-  ]))
+  installWindowMenu({ currentWindow: () => window, restore: restoreWindow, assertSender: assertStartupSender,
+    edit: (keyCode, modifiers) => { keyboard!.sendEditingKey(keyCode, modifiers) },
+    command: () => { void manageCommand(join(process.resourcesPath, 'easywork-runtime'), '个人工作区') } })
   installTray()
 }
 
@@ -499,7 +503,12 @@ if (worker !== undefined) {
     app.on('activate', () => {
       restoreWindow()
     })
-    void app.whenReady().then(async () => { log!.write('app.ready'); installMenu(); await startPersonalWorkspace() }).catch(cause => {
+    app.on('will-quit', () => { keyboard?.dispose() })
+    void app.whenReady().then(async () => {
+      log!.write('app.ready')
+      keyboard = await installKeyboard(bundledProfileDirectory(), app.getPath('userData'), () => window, assertStartupSender)
+      installMenu(); await startPersonalWorkspace()
+    }).catch(cause => {
       log!.write('app.start-failed', startupErrorFields(cause))
       process.stderr.write(`EasyWork failed to start: ${cause instanceof Error ? cause.stack ?? cause.message : String(cause)}\n`)
       app.quit()

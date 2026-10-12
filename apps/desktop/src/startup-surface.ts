@@ -12,5 +12,5 @@ function document(title: string, content: string): string {
 }
 
 export function startupErrorHtml(message: string): string {
-  return document('工作区启动失败', `<p>${escapeHtml(message)}</p><p>请通过“应用程序 → 退出 ${PRODUCT_NAME}”停止后台，检查本地运行环境后重新打开。</p>`)
+  return document('工作区启动失败', `<style>body::before{content:'';position:fixed;inset:0 0 auto;height:40px;-webkit-app-region:drag}</style><p>${escapeHtml(message)}</p><p>请通过托盘菜单或应用程序菜单中的“退出 ${PRODUCT_NAME}”停止后台，检查本地运行环境后重新打开。</p>`)
 }

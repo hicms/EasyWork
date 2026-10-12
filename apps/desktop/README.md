@@ -10,7 +10,11 @@ Opening the app prepares and starts the existing personal Home/Profile automatic
 
 The main window loads the packaged official page before the local Host is ready and continues in that same document. Closing the window hides it while preserving background tasks, sessions, drafts and page state. Reopen through the Windows/Linux tray, the macOS Dock or another app launch. Application → Quit EasyWork, or Quit EasyWork in the tray, stops the Host and exits.
 
-Desktop provides no enterprise login, account authority bridge, member spaces, or company packaging configuration. Existing historical enterprise data is neither migrated nor deleted at startup. The terminal command always uses the personal space; its optional installation, repair, and removal remain in the Tools menu.
+Window decoration follows official Desktop: Windows hides the system title bar and traditional menu bar, retaining native window buttons and Application / Edit menus in a 40px caption whose colors follow the page theme. macOS uses inset traffic lights and sidebar vibrancy. Empty caption space drags the window; fullscreen releases the caption clearance and reloads retain the current fullscreen state. On Windows, F11 toggles fullscreen and Esc returns to the normal window. Linux retains the official native window decoration.
+
+The carrier bridges desktop shortcuts to the official client. The official shortcut protocol in the same published Profile manages preferences in `keybindings.json` under the Desktop user-data directory. The carrier contains no second DSH dependency tree.
+
+Desktop provides no enterprise login, account authority bridge, member spaces, or company packaging configuration. Existing historical enterprise data is neither migrated nor deleted at startup. The terminal command always uses the personal space; its optional installation, repair, and removal are in the Application menu.
 
 ## Development and validation
 

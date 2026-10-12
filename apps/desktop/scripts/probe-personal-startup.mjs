@@ -1,6 +1,6 @@
 /** Explicit real Electron probe: direct personal startup, retained data and restart. */
 import assert from 'node:assert/strict'
-import { mkdtemp, writeFile, readFile, mkdir, rm, copyFile, symlink, access } from 'node:fs/promises'
+import { mkdtemp, writeFile, readFile, mkdir, rm, copyFile, symlink, access, realpath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -8,6 +8,7 @@ import { createRequire } from 'node:module'
 import { execFileSync } from 'node:child_process'
 import { runtimeProfileDirectory } from '../src/runtime-layout.ts'
 import { DSH_VERSION } from './runtime-version.mjs'
+import { verifyWindowChrome } from '../tests/window-chrome-probe.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const runtime = resolve(process.argv[2]), built = resolve(process.argv[3]), output = resolve(process.argv[4])
@@ -112,21 +113,31 @@ try {
   const startupMs = Date.now() - started
   if (packaged) {
     const node = join(runtime, 'primary-runtime/dependencies/node/bin', process.platform === 'win32' ? 'node.exe' : 'node')
-    const version = execFileSync(node, [join(runtime, 'runtime/cli/command-cli.js'), '--version'], {
+    const version = execFileSync(node, [await realpath(join(runtime, 'runtime/cli/command-cli.js')), '--version'], {
       env: options.env, windowsHide: true, encoding: 'utf8', timeout: 30_000,
     })
     assert.ok(version.includes(DSH_VERSION), 'The installed command must load the archived official CLI')
   }
   const skipKey = personal.getByRole('button', { name: '稍后配置', exact: true })
-  await skipKey.waitFor({ state: 'visible', timeout: 10_000 })
   assert.equal(await personal.getByRole('heading', { name: '预览版说明', exact: true }).count(), 0)
-  await skipKey.click()
-  await skipKey.waitFor({ state: 'hidden', timeout: 10_000 })
+  // Official Desktop uses its native shortcut/settings path rather than Web onboarding.
+  const nativeDesktop = await personal.evaluate(() => document.documentElement.dataset.platform !== undefined)
+  if (nativeDesktop) {
+    assert.equal(await personal.evaluate(() => typeof window.dshDesktop?.keyboard?.subscribe), 'function')
+    await personal.getByRole('button', { name: '账号菜单', exact: true }).click()
+    await personal.getByRole('menuitem', { name: '设置', exact: true }).waitFor()
+    await personal.keyboard.press('Escape')
+  } else {
+    await skipKey.waitFor({ state: 'visible', timeout: 10_000 })
+    await skipKey.click()
+    await skipKey.waitFor({ state: 'hidden', timeout: 10_000 })
+  }
   const navigation = personal.getByRole('navigation', { name: /^(全局面板|Global panels)$/u })
   for (const [label, search] of [['专家', '搜索专家'], ['技能', '搜索技能'], ['连接器', '搜索 MCP']]) {
     await navigation.getByRole('button', { name: label, exact: true }).click()
     await personal.getByRole('textbox', { name: search, exact: true }).waitFor({ state: 'visible', timeout: 10_000 })
   }
+  const chrome = await verifyWindowChrome(app, personal, personal.getByRole('textbox', { name: '搜索 MCP', exact: true }), output)
   await personal.getByText('资料库', { exact: true }).first().click()
   await personal.getByRole('heading', { name: '让知识，随时可用。', exact: true }).waitFor({ timeout: 10_000 })
   await personal.getByText('项目', { exact: true }).first().click()
@@ -169,7 +180,8 @@ try {
   await captureDiagnostics(app)
   const restarted = await personalPage(app)
   await restarted.getByText('项目', { exact: true }).first().waitFor({ timeout: 30_000 })
-  await restarted.getByRole('button', { name: '稍后配置', exact: true }).waitFor({ state: 'visible', timeout: 10_000 })
+  if (nativeDesktop) assert.equal(await restarted.evaluate(() => typeof window.dshDesktop?.keyboard?.subscribe), 'function')
+  else await restarted.getByRole('button', { name: '稍后配置', exact: true }).waitFor({ state: 'visible', timeout: 10_000 })
   assert.equal(await restarted.getByRole('heading', { name: '预览版说明', exact: true }).count(), 0)
   assert.equal(await readFile(join(home, 'retention-probe.txt'), 'utf8'), 'owned-test-data')
   await quitApplication(app); app = undefined
@@ -194,10 +206,10 @@ try {
   await recovered.getByText('项目', { exact: true }).first().waitFor({ timeout: 30_000 })
   assert.equal(await readFile(join(home, 'retention-probe.txt'), 'utf8'), 'owned-test-data')
   await quitApplication(app); app = undefined
-  proof = { actualElectron: true, directPersonalStartup: true, noModePickerOrEnterprise: true,
+  proof = { ...chrome, actualElectron: true, directPersonalStartup: true, noModePickerOrEnterprise: true,
     fiveFeatureManifestPresent: true, fiveFeatureUiOpened: true, personalHostStoppedOnQuit: true, ownedHomeDataPreserved: true,
     personalRestart: true, failedHostQuitAndRestart: true, previewNoticeSuppressed: true, projectCreateReadArchive: true, sameDocumentReopen: true, closeKeepsHost: true,
-    firstDocumentMs, firstVisibleMs, bootReadyMs, reopenMs,
+    nativeKeyboardBridgeVerified: nativeDesktop, firstDocumentMs, firstVisibleMs, bootReadyMs, reopenMs,
     startupMs, modelCallsRequested: 0, packagedRuntimeVerified: packaged, packagedCommandVerified: packaged }
 } catch (error) {
   failed = true
