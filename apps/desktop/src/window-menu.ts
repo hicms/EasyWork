@@ -40,7 +40,7 @@ export function installWindowMenu(operations: {
     }
     const labels = chromeLabels(language)
     const edit = (label: string, keyCode: string, modifiers: Array<'control'>, accelerator?: string): MenuItemConstructorOptions => ({
-      // Editing keys already belong to the client; registering these again re-enters the native callback.
+      // The client owns editing shortcuts; the native menu only displays their labels.
       label, ...(accelerator === undefined ? {} : { accelerator, registerAccelerator: false }),
       click: () => { operations.edit(keyCode, modifiers) },
     })

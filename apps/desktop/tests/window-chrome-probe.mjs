@@ -24,13 +24,22 @@ export async function verifyWindowChrome(app, page, editor, output) {
   // Observe real native calls while preserving their behavior, then restore the methods.
   await app.evaluate(({ BrowserWindow, Menu }) => {
     const window = BrowserWindow.getAllWindows()[0]
-    const probe = { window, popup: Menu.prototype.popup, overlay: window.setTitleBarOverlay, colors: [], active: undefined }
+    const probe = { window, popup: Menu.prototype.popup, overlay: window.setTitleBarOverlay,
+      colors: [], active: undefined, closed: true, selected: undefined }
     globalThis.__easyworkChromeProbe = probe
     window.setTitleBarOverlay = function (value) { probe.colors.push(value); return probe.overlay.call(this, value) }
-    Menu.prototype.popup = function (options) { probe.active = this; return probe.popup.call(this, options) }
+    Menu.prototype.popup = function (options) {
+      probe.active = this; probe.closed = false
+      return probe.popup.call(this, { ...options, callback: () => {
+        probe.closed = true; probe.active = undefined
+        options.callback?.()
+      } })
+    }
   })
+  let menuStage = 'Application popup'
   try {
     const popup = async (name, choose) => {
+      menuStage = `${name} popup${choose ? ': ' + choose : ''}`
       await page.getByRole('menuitem', { name, exact: true }).click()
       const until = Date.now() + 5000
       let labels
@@ -42,11 +51,19 @@ export async function verifyWindowChrome(app, page, editor, output) {
       } while (true)
       await app.evaluate((_electron, label) => {
         const probe = globalThis.__easyworkChromeProbe, menu = probe.active
-        menu.closePopup(probe.window); probe.active = undefined
-        if (label) { const item = menu.items.find(item => item.label === label); item.click(item, probe.window, {}) }
+        probe.selected = label ? menu.items.find(item => item.label === label) : undefined
+        menu.closePopup(probe.window)
       }, choose)
       await page.getByRole('menuitem', { name, exact: true }).waitFor({ state: 'visible' })
       await page.waitForFunction(() => !document.querySelector('[data-windows-menu]').shadowRoot.querySelector('[aria-expanded=true]'))
+      assert.equal(await app.evaluate(() => globalThis.__easyworkChromeProbe.closed), true, 'Native popup callback must finish before an edit command')
+      if (choose) await app.evaluate(() => {
+        const probe = globalThis.__easyworkChromeProbe, item = probe.selected
+        assertItem(item)
+        item.click(item, probe.window, {})
+        probe.selected = undefined
+        function assertItem(value) { if (!value) throw new Error('Native menu choice was not found') }
+      })
       return labels
     }
     const application = await popup('应用程序')
@@ -83,13 +100,16 @@ export async function verifyWindowChrome(app, page, editor, output) {
         if (value.style === null) document.body.removeAttribute('style'); else document.body.setAttribute('style', value.style)
       }, original)
     }
+  } catch (error) {
+    console.error(`Caption probe failed during ${menuStage}: ${error.message}`)
+    throw error
   } finally {
     await app.evaluate(({ Menu }) => {
       const probe = globalThis.__easyworkChromeProbe
       probe.active?.closePopup(probe.window)
       Menu.prototype.popup = probe.popup; probe.window.setTitleBarOverlay = probe.overlay
       delete globalThis.__easyworkChromeProbe
-    })
+    }).catch(error => { console.error(`Caption probe cleanup: ${error.message}`) })
   }
   const settingsKey = async () => app.evaluate(({ BrowserWindow }) => {
     const window = BrowserWindow.getAllWindows()[0]
