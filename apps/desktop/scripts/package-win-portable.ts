@@ -1,4 +1,4 @@
-/** Build an unsigned Windows x64 portable ZIP archive on a native Windows host. */
+/** Build an unsigned Windows x64 single-file portable executable on Windows. */
 
 import { fileURLToPath } from 'node:url'
 import {
@@ -11,8 +11,8 @@ if (invokedPath !== undefined && invokedPath === fileURLToPath(import.meta.url))
   try {
     packageWindowsArtifact(
       createWindowsPackageOptions('./verify-win-portable.ts'),
-      'zip',
-      'portable archive',
+      'portable',
+      'portable executable',
     )
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error))

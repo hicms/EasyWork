@@ -1,10 +1,9 @@
-/** Verify the unsigned Windows x64 portable ZIP archive. */
+/** Verify the unsigned Windows x64 single-file portable executable. */
 
-import { readFileSync, statSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import AdmZip from 'adm-zip'
-import { assertPortableExecutableBuffer } from './verify-win-installer.ts'
+import { assertPortableExecutable, verifyWindowsApplication } from './verify-win-installer.ts'
 
 export interface WindowsPortableVerificationOptions {
   /** Desktop package root containing package.json and dist. */
@@ -28,33 +27,17 @@ function defaultOptions(): WindowsPortableVerificationOptions {
   return { desktopRoot, version: readVersion(desktopRoot) }
 }
 
-/** Verify the exact versioned portable archive and its application entry. */
+/** Verify the exact versioned portable executable and its packaged application. */
 export function verifyWindowsPortable(
   options: WindowsPortableVerificationOptions = defaultOptions(),
 ): string {
   const portablePath = join(
     options.desktopRoot,
     'dist',
-    `EasyWork-${options.version}-x64-Portable.zip`,
+    `EasyWork-${options.version}-x64-Portable.exe`,
   )
-  const stat = statSync(portablePath)
-  if (!stat.isFile() || stat.size === 0) {
-    throw new Error(`Windows portable archive is not a non-empty regular file: ${portablePath}`)
-  }
-  const archive = new AdmZip(portablePath)
-  const entries = archive.getEntries().filter(entry => !entry.isDirectory)
-  const executable = entries.find(entry => entry.entryName.replaceAll('\\', '/') === 'EasyWork.exe')
-  if (executable === undefined) {
-    throw new Error(`Windows portable archive is missing EasyWork.exe: ${portablePath}`)
-  }
-  if (!entries.some(entry => entry.entryName.replaceAll('\\', '/') === 'resources/app.asar')) {
-    throw new Error(`Windows portable archive is missing resources/app.asar: ${portablePath}`)
-  }
-  assertPortableExecutableBuffer(
-    executable.getData(),
-    'Windows portable application',
-    `${portablePath}:EasyWork.exe`,
-  )
+  assertPortableExecutable(portablePath, 'Windows portable executable')
+  verifyWindowsApplication(options)
   return portablePath
 }
 

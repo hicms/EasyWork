@@ -111,9 +111,9 @@ function assertWindowsPackageHost(options: WindowsPackageOptions, artifact: stri
   const versionMatch = /^(\d+)\.(\d+)\./u.exec(options.nodeVersion)
   const major = Number(versionMatch?.[1])
   const minor = Number(versionMatch?.[2])
-  if (!((major === 22 && minor >= 19) || major === 24)) {
+  if (!((major === 22 && minor >= 19) || major >= 24)) {
     throw new Error(
-      `Windows ${artifact} requires Node 22.19+ or Node 24.x with bundled Corepack; received ${options.nodeVersion}`,
+      `Windows ${artifact} requires Node ^22.19.0 or >=24.0.0 and Corepack; received ${options.nodeVersion}`,
     )
   }
 }
@@ -121,8 +121,8 @@ function assertWindowsPackageHost(options: WindowsPackageOptions, artifact: stri
 /** Run the gates and package one unsigned x64 Windows artifact. */
 export function packageWindowsArtifact(
   options: WindowsPackageOptions,
-  target: 'nsis' | 'zip',
-  artifact: 'installer' | 'portable archive',
+  target: 'nsis' | 'portable',
+  artifact: 'installer' | 'portable executable',
 ): void {
   assertWindowsPackageHost(options, artifact)
 

@@ -28,6 +28,7 @@ apps/desktop/build/official-release-cache/
 apps/desktop/build/dev-user-data/
 apps/desktop/build/*-runtime/
 apps/desktop/build/*-profile-release*/
+apps/desktop/build/*-profile-local*/
 apps/desktop/build/*-profile-preview-*/
 
 /apps/desktop/lib/

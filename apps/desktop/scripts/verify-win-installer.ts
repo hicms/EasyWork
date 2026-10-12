@@ -96,6 +96,16 @@ export function verifyWindowsInstaller(
   const applicationPath = join(distDir, 'win-unpacked', 'EasyWork.exe')
 
   assertPortableExecutable(installerPath, 'Windows NSIS installer')
+  verifyWindowsApplication(options)
+  return { installerPath, applicationPath }
+}
+
+/** Verify the unpacked application and its bundled primary runtime for either target. */
+export function verifyWindowsApplication(
+  options: WindowsInstallerVerificationOptions = defaultOptions(),
+): string {
+  const distDir = join(options.desktopRoot, 'dist')
+  const applicationPath = join(distDir, 'win-unpacked', 'EasyWork.exe')
   assertPortableExecutable(applicationPath, 'unpacked Windows application')
   const runtimeRoot = join(distDir, 'win-unpacked', 'resources', 'easywork-runtime', 'primary-runtime')
   const runtime = JSON.parse(readFileSync(join(runtimeRoot, 'runtime.json'), 'utf8')) as {
@@ -111,7 +121,7 @@ export function verifyWindowsInstaller(
   }
   assertPortableExecutable(join(runtimeRoot, 'dependencies', 'python', 'python.exe'), 'bundled Python')
   assertPortableExecutable(join(runtimeRoot, 'dependencies', 'node', 'bin', 'node.exe'), 'bundled Node')
-  return { installerPath, applicationPath }
+  return applicationPath
 }
 
 const invokedPath = process.argv[1]
