@@ -39,13 +39,14 @@ export function installWindowMenu(operations: {
       throw new Error('无效的窗口菜单请求')
     }
     const labels = chromeLabels(language)
-    const edit = (label: string, keyCode: string, modifiers: Array<'control'>): MenuItemConstructorOptions => ({
-      label, click: () => { operations.edit(keyCode, modifiers) },
+    const edit = (label: string, keyCode: string, modifiers: Array<'control'>, accelerator?: string): MenuItemConstructorOptions => ({
+      label, ...(accelerator === undefined ? {} : { accelerator }),
+      click: () => { operations.edit(keyCode, modifiers) },
     })
     const items: MenuItemConstructorOptions[] = name === 'application' ? applicationItems() : [
-      edit(labels.undo, 'Z', ['control']), edit(labels.redo, 'Y', ['control']), { type: 'separator' },
-      edit(labels.cut, 'X', ['control']), edit(labels.copy, 'C', ['control']), edit(labels.paste, 'V', ['control']),
-      edit(labels.delete, 'Delete', []), { type: 'separator' }, edit(labels.selectAll, 'A', ['control']),
+      edit(labels.undo, 'Z', ['control'], 'Ctrl+Z'), edit(labels.redo, 'Y', ['control'], 'Ctrl+Y'), { type: 'separator' },
+      edit(labels.cut, 'X', ['control'], 'Ctrl+X'), edit(labels.copy, 'C', ['control'], 'Ctrl+C'), edit(labels.paste, 'V', ['control'], 'Ctrl+V'),
+      edit(labels.delete, 'Delete', []), { type: 'separator' }, edit(labels.selectAll, 'A', ['control'], 'Ctrl+A'),
     ]
     const zoom = page.webContents.getZoomFactor()
     return new Promise<void>(resolve => {
