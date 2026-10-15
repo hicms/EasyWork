@@ -27,6 +27,7 @@
   "scripts": {
     "build": "node ../../../apps/web/scripts/build-workspace.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test tests/*.test.mjs",
     "build:local": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json && node ../../../apps/web/scripts/build-experts.mjs"
   },
   "peerDependencies": {

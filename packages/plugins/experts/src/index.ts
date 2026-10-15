@@ -10,6 +10,7 @@ import { ExpertsManager, type ExpertsManagerOptions } from './services/experts-m
 import { registerExpertsConnection } from './services/connection-api.js';
 import { registerExpertManagementTools } from './tools/management-tools.js';
 import { registerExpertExecutionGuard } from './runtime/execution-guard.js';
+import { registerExpertPresetPolicy } from './runtime/preset-policy.js';
 
 export * from './services/experts-manager.js';
 export * from './services/connection-api.js';
@@ -65,6 +66,7 @@ export function registerExpertManagerSkill(ctx: Context): () => void {
 
 /** Independent Host apply: own service, transport, tools and bundled skill. */
 export async function applyExpertsHost(ctx: Context, options: ExpertsManagerOptions = {}): Promise<void> {
+  registerExpertPresetPolicy(ctx);
   await ctx.plugin(ExpertsManager, options);
   await ctx.plugin({ name: 'easywork-experts-integration', inject: [...inject, 'easyworkExperts'], apply: (host: Context) => applyIntegration(host, options) });
 }

@@ -17,6 +17,9 @@ export function registerExpertExecutionGuard(ctx: Context, options: { agentsHome
     const membership = ctx.agentTeams.tryMembership(agent);
     const root = membership?.root ?? agent;
     const header = agent.session.header;
+    // Selecting a different preset in a blank Session appends an event; its
+    // immutable creation header still names the old preset.
+    const preset = ctx.agentPresets.composedPreset(agent.ctx) ?? header.agentPreset;
     const actor = await ctx.easyworkIdentity.resolve({ sessionId: String(root.id) }, signal);
     let role;
     try {
@@ -30,10 +33,10 @@ export function registerExpertExecutionGuard(ctx: Context, options: { agentsHome
       // this creation edge; agent/pre-step below still requires the recovered
       // root binding and rejects a genuinely unbound expert child.
       if (unbound && creating && !membership && header.parentSession) return;
-      if (unbound && (!header.agentPreset?.startsWith('wd-exp-') || creating && root === agent && !header.parentSession)) return;
+      if (unbound && (!preset?.startsWith('wd-exp-') || creating && root === agent && !header.parentSession)) return;
       throw error;
     }
-    if (role.binding.presetRevisionRef !== header.agentPreset) throw new ExpertsError('experts/conflict', '原生任务 preset 与固定专家组合不一致。');
+    if (role.binding.presetRevisionRef !== preset) throw new ExpertsError('experts/conflict', '原生任务 preset 与固定专家组合不一致。');
     if (membership?.role === 'teammate') {
       if (header.parentSession !== root.id || header.cwd !== root.session.header.cwd) throw new ExpertsError('experts/conflict', '官方成员与主任务的父关系或工作区不一致。');
       const childActor = await ctx.easyworkIdentity.resolve({ sessionId: String(agent.id) }, signal);
