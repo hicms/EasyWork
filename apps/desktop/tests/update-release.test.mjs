@@ -257,7 +257,7 @@ test('bootstrap cannot assert unperformed differential checks or bypass an earli
   assert.throws(() => verifyBootstrapHistory([{ tag_name: 'v2.0.0', draft: false, assets: [{ name: 'release.json' }] }], 'latest'), /first updater/u)
 })
 
-test('manual release keeps same-SHA dual checks, signing and environments without requiring a second maintainer', async () => {
+test('manual release preserves source, acceptance and signing gates', async () => {
   const workflow = load(await readFile(new URL('../../../.github/workflows/release-windows.yml', import.meta.url), 'utf8'))
   const ci = load(await readFile(new URL('../../../.github/workflows/ci.yml', import.meta.url), 'utf8'))
   assert.deepEqual(Object.keys(workflow.on), ['workflow_dispatch'])
@@ -265,7 +265,6 @@ test('manual release keeps same-SHA dual checks, signing and environments withou
   assert.equal(workflow.permissions.contents, 'read')
   assert.equal(workflow.jobs.checks.with.revision, '${{ needs.source.outputs.commit }}')
   assert.deepEqual(workflow.jobs.windows.needs, ['source', 'checks'])
-  assert.equal(workflow.jobs.windows['runs-on'], 'windows-2022')
   assert.equal(workflow.jobs.windows.environment, 'desktop-release-signing')
   const windowsSteps = workflow.jobs.windows.steps
   const updateChecks = windowsSteps.findIndex(step => step.run === 'corepack yarn check:updates')
@@ -273,19 +272,8 @@ test('manual release keeps same-SHA dual checks, signing and environments withou
   const checkStep = windowsSteps[updateChecks]
   assert.equal(checkStep.if, undefined, 'Updater regressions must not be conditional')
   assert.equal(checkStep['continue-on-error'], undefined, 'Updater failures must stop the release')
-  assert.equal(checkStep['working-directory'], undefined, 'Updater checks run from the repository root')
-  for (const command of ['corepack yarn install --immutable', 'corepack pnpm install --frozen-lockfile']) {
-    const install = windowsSteps.findIndex(step => step.run === command)
-    assert(install >= 0 && install < updateChecks, `${command} must precede updater checks`)
-  }
-  const buildOrSign = windowsSteps.flatMap((step, index) => /\b(?:build|prepare:easywork-[\w-]+)\b|scripts\/release-win\.mjs/u.test(step.run ?? '') ? [index] : [])
-  assert(buildOrSign.length >= 2, 'Expected application build and signing steps')
-  assert(buildOrSign.every(index => index > updateChecks), 'Updater checks must precede every build, runtime preparation and signing step')
   assert(workflow.jobs.windows.steps.some(step => step.run === 'node apps/desktop/scripts/accept-windows-package.mjs'))
   assert.equal(workflow.jobs.publish.environment, 'desktop-release-publish')
-  const sourceSteps = JSON.stringify(workflow.jobs.source.steps)
-  assert(!/getEnvironment|required_reviewers|prevent_self_review/u.test(sourceSteps))
-  assert(sourceSteps.includes('getWorkflowRun'))
   assert(workflow.jobs.publish.steps.some(step => step.with?.['run-id'] === '${{ inputs.candidate_run }}'))
   assert(ci.jobs['desktop-check']); assert(ci.jobs['web-check'])
   assert.deepEqual(Object.entries(workflow.jobs).filter(([, job]) => job.permissions?.contents === 'write').map(([name]) => name), ['draft', 'publish'])

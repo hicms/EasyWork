@@ -44,7 +44,7 @@ node apps/desktop/scripts/accept-windows-update.mjs --confirm-isolated-vm --app=
 
 没有 Windows 签名证书时，可明确执行 `corepack yarn build:win --target=installer --acceptance-updates --skip-install` 构建启用更新的验收安装包，要求干净的默认分支源码和 alpha 版本。不需要 Windows TESTSIGNING；Windows 可能将未签名应用标为未知发布者。此模式只接受 `acceptance-vVERSION` 预发布版，使用 HTTPS GitHub 元数据、精确大小和 SHA-512 校验，不验证 Authenticode 发布者身份。签名发行通道仍强制验签。两个模式使用相同的安全退出与 NSIS 安装器；普通未签名打包仍禁用更新。
 
-构建后，明确执行 `node apps/desktop/scripts/accept-windows-package.mjs --local --unsigned-updates`，再执行 `node apps/desktop/scripts/stage-unsigned-windows-release.mjs`。`dist/acceptance/VERSION` 中的制品包括 Setup、blockmap、`alpha.yml`、`release.json` 和绑定源码/包身份的 UI 证据。先发布基线 A，保持 B 为草稿，再用两个标签手动触发 **Windows update acceptance**。它在可丢弃的 Windows runner 中核对制品与源码，安装 A，点击真实更新提示，静默安装 B，观察自动重新打开并检查项目、文件及浏览器偏好保留。四个场景覆盖差量下载、缓存缺失、损坏 blockmap 和断网重试；同一手动工作流同时运行 Desktop 与 Web 检查。全部场景通过后，才公开已验收的 B 字节，不重建替换。此结果不代表已验证签名发布者、真实账号凭据或任意外部插件保留。禁用更新器的旧版（包括 alpha.5）需要先手动安装一次 A；之后请保留历史 Setup/blockmap，供差量更新使用。
+构建后，明确执行 `node apps/desktop/scripts/accept-windows-package.mjs --local --unsigned-updates`，再执行 `node apps/desktop/scripts/stage-unsigned-windows-release.mjs`。`dist/acceptance/VERSION` 中的制品包括 Setup、blockmap、`alpha.yml`、`release.json` 和绑定源码/包身份的 UI 证据。基线 A 和候选 B 均保持为 Release 草稿，用两个标签和 `scenario=all` 手动触发 **Windows update acceptance**。它在可丢弃的 Windows runner 中核对制品与源码，安装 A，点击真实更新提示，静默安装 B，观察自动重新打开并检查项目、文件及浏览器偏好保留。差量场景先安装已发布且禁用更新器的 alpha.5，在其中创建数据，再覆盖安装 A；同一批数据必须一直保留到 B。四个场景覆盖差量下载、缓存缺失、损坏 blockmap 和断网重试；同一手动工作流同时运行 Desktop 与 Web 检查。全部场景通过后，才公开已验收的字节，不重建替换。此结果不代表已验证签名发布者、真实账号凭据或任意外部插件保留。禁用更新器的旧版（包括 alpha.5）需要先手动安装一次 A；之后请保留历史 Setup/blockmap，供差量更新使用。
 
 ## 开发与验证
 

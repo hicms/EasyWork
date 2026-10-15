@@ -25,13 +25,29 @@ if (!api.assignProcessToJobObject(job, api.current())) throwLastError(api, 'Assi
 // Keep the sole handle open until Node exits. Windows then terminates every descendant.
 // Updating requires the children to leave naturally BEFORE closing this handle.
 globalThis[Symbol.for('easywork.waitForOwnedProcesses')] = async () => {
-  const deadline = Date.now() + 2000;
+  // Official disposal can finish before its native helpers release their Jobs.
+  // Wait for that finite cleanup without terminating them or accepting a live child.
+  const deadline = Date.now() + 8000;
   for (;;) {
     if (globalThis[Symbol.for('easywork.ownedProcessShutdownFailed')]) throw new Error('Owned process shutdown failed; update installation refused');
     const accounting = Buffer.alloc(48);
     if (!api.queryInformationJobObject(job, 1, accounting, accounting.length, null)) throwLastError(api, 'QueryInformationJobObject');
     if (accounting.readUInt32LE(40) === 1) return;
-    if (Date.now() >= deadline) throw new Error('Owned processes are still running; update installation refused');
+    if (Date.now() >= deadline) {
+      let detail = 'process list unavailable';
+      for (let capacity = 64; capacity <= 65536; capacity *= 2) {
+        const list = Buffer.alloc(8 + capacity * 8);
+        if (!api.queryInformationJobObject(job, 3, list, list.length, null)) {
+          if (api.getLastError() === 234) continue;
+          break;
+        }
+        const assigned = list.readUInt32LE(0), count = list.readUInt32LE(4);
+        if (assigned > count || count > capacity) continue;
+        detail = 'PIDs ' + Array.from({ length: count }, (_, index) => String(list.readBigUInt64LE(8 + index * 8))).join(',');
+        break;
+      }
+      throw new Error('Owned processes are still running; update installation refused (' + detail + ')');
+    }
     await new Promise(resolve => setTimeout(resolve, 50));
   }
 };

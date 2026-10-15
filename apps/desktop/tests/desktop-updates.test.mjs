@@ -135,7 +135,13 @@ test('exit zero without acknowledgement is unsafe; timeout does not kill the pro
   const running = childFixture(); let killed = false; running.kill = () => { killed = true }
   watchRuntimeShutdown(running)
   const timeout = stopRuntimeProcess(running, true)
+    let settled = false
+    void timeout.then(() => { settled = true }, () => { settled = true })
   t.mock.timers.tick(8001)
+    await Promise.resolve()
+    assert.equal(settled, false)
+  assert.equal(killed, false)
+  t.mock.timers.tick(12000)
   await assert.rejects(timeout, /暂缓安装/u)
   assert.equal(killed, false)
   assert.equal(await stopRuntimeProcess(child), 'forced')

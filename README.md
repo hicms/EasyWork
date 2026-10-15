@@ -4,7 +4,7 @@ EasyWork 是基于官方 DeepSeek Harness 的个人 AI 工作台，包含 Web �
 
 Desktop 和 Web 共用 EasyWork 账号与模型服务。在“账号与模型”中登录 [模型服务](https://ask.vigoai.cn) 后，使用服务下发的模型目录；会话内可搜索、切换模型和调整思考参数。账号 JWT 保存在 Host 凭据记录中，退出账号保留本地会话、文件和已安装插件。接入说明见[账号与模型插件](packages/plugins/models/README.md)。
 
-此仓库是 EasyWork 的源码起点，尚未发布 EasyWork 安装包。官方运行时版本由 [upstream.json](upstream.json) 锁定；桌面端只承载已发布的官方运行时。
+Windows x64 安装包通过 [GitHub Releases](https://github.com/hicms/EasyWork/releases) 提供。官方运行时版本由 [upstream.json](upstream.json) 锁定；桌面端只承载已发布的官方运行时。
 
 需要 Node.js `^22.19.0` 或 `>=24.0.0`，并启用 Corepack。
 
@@ -41,7 +41,7 @@ Windows x64 本地打包在 Windows PowerShell 中执行：
 
 GitHub Actions CI 仅支持手动运行，不会因 push 或 Pull Request 自动触发。需要云端验证时，在仓库的 Actions → CI → Run workflow 中手动启动；一次运行会检查 Desktop 和 Web。日常修改可按需使用本地检查。
 
-Windows x64 NSIS 的签名差量更新使用独立的 **Windows release** 手动工作流，先生成完整 Release 草稿，实际验收通过后再手动公开。客户端由用户选择下载，完成后通过“应用程序 → 重启并更新”安装；普通退出不安装。旧版需先正常安装一次带更新器的版本。签名配置、渠道隔离、审批和验收要求见 [Desktop 更新与发布](apps/desktop/README.zh.md#windows-更新与手动发布)。当前实现尚未完成真实 A→B 安装验收。
+Windows x64 NSIS 安装版会自动检查本渠道更新并在后台下载，准备好后在右下角显示“新版本就绪”。点击“重启升级”即可静默安装并重新打开；普通退出不安装。验收完整升级流程时，先手动安装 Release 说明指定的基线版，再通过提示升级到下一版本。旧版 alpha.5 没有更新器，需要这一次手动安装。验收包未签名，首次安装可能提示未知发布者，不需要开启 Windows 测试模式。签名发行使用独立的 **Windows release** 手动工作流；渠道、构建与验收要求见 [Desktop 更新与发布](apps/desktop/README.zh.md#windows-更新与手动发布)。
 
 Logo 原稿和配色位于 `assets/brand/`。运行 `node scripts/generate-brand-assets.mjs` 同步矢量资源，桌面构建会自动生成各平台图标。
 

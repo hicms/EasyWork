@@ -40,7 +40,7 @@ export function watchRuntimeShutdown(child: ChildProcess): void {
         // No acknowledgement is not proof of disposal, even with exit code zero.
         void stopOwnedProcess(child).then(() => finish('forced'), error => { finished = true; reject(error) })
       }
-      const timer = setTimeout(force, 8000)
+      const timer = setTimeout(force, strict ? 20_000 : 8000)
       onClose = () => { if (!forcing && acknowledged && code === 0 && signal === null) finish('graceful'); else force() }
       if (closed || !child.connected) { force(); return }
       try { child.send({ type: 'easywork-shutdown', requireDrainedProcesses: strict }, error => { if (error) force() }) }
