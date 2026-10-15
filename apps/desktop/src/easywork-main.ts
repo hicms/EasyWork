@@ -113,6 +113,17 @@ function browserWorkerRequest(): { port: number, profile: string } | undefined {
 }
 
 function startBrowserWorker(request: { port: number, profile: string }): void {
+  let closing = false
+  const close = (): void => {
+    if (closing) return
+    closing = true
+    void app.whenReady().then(() => app.quit())
+  }
+  process.on('message', message => {
+    if (message && typeof message === 'object' && 'type' in message && message.type === 'easywork-browser-close') close()
+  })
+  process.once('disconnect', close)
+  if (!process.connected) close()
   // Set this before Electron becomes ready: hiding the Dock afterwards briefly
   // registers every task's browser worker as another foreground application.
   // Accessory permits the hidden browser window without a Dock icon or menu bar.
@@ -121,6 +132,7 @@ function startBrowserWorker(request: { port: number, profile: string }): void {
   app.commandLine.appendSwitch('remote-debugging-address', '127.0.0.1')
   app.commandLine.appendSwitch('remote-debugging-port', String(request.port))
   void app.whenReady().then(async () => {
+    if (closing) return
     const page = new BrowserWindow({
       show: false,
       width: 1280,
@@ -135,9 +147,11 @@ function startBrowserWorker(request: { port: number, profile: string }): void {
       },
     })
     page.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
+    page.webContents.on('will-prevent-unload', event => { if (closing) event.preventDefault() })
     await page.loadURL('about:blank')
     process.stdout.write('EASYWORK_BROWSER_WORKER_READY\n')
   }).catch(error => {
+    if (closing) return
     process.stderr.write(`EasyWork browser worker failed: ${String(error)}\n`)
     app.exit(1)
   })

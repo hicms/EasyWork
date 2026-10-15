@@ -164,10 +164,18 @@ while ([DateTime]::UtcNow -lt $until) {
   Start-Sleep -Milliseconds 200
 }
 `], { windowsHide: true, env: { ...env, EASYWORK_ACCEPTANCE_DIRECTORY: appDirectory + '\\', EASYWORK_ACCEPTANCE_PROCESS_LOG: join(output, 'shutdown-processes.jsonl') }, stdio: 'ignore' })
-  const observed = new Promise((resolve, reject) => { observer.once('error', reject); observer.once('close', resolve) })
-  await waitFor(() => existsSync(join(output, 'shutdown-processes.jsonl')), 'first owned-process snapshot', 10_000)
+  let observationFailure
+  const observed = new Promise(resolve => {
+    observer.once('error', error => { observationFailure = error; resolve() })
+    observer.once('close', code => { if (code !== 0) observationFailure ??= new Error(`Process observer exited ${code}`); resolve() })
+  })
+  await waitFor(() => {
+    if (observationFailure) throw observationFailure
+    return existsSync(join(output, 'shutdown-processes.jsonl'))
+  }, 'first owned-process snapshot', 10_000)
   await page.getByRole('button', { name: '重启升级', exact: true }).click()
   await closed; running = undefined; await observed
+  if (observationFailure) throw observationFailure
   assert(logs().some(row => row.pid === pid && row.event === 'host.stopped' && row.result === 'graceful'))
   await waitFor(() => installedVersion() === candidate.version, 'B installed')
   const restart = await waitFor(() => logs().find(row => row.pid !== pid && Date.parse(row.time) >= installingAt && row.event === 'startup.complete'), 'B automatically relaunched and rendered')
@@ -211,10 +219,16 @@ Start-Sleep -Milliseconds 500
   proof.failure = error.stack ?? String(error)
   throw error
 } finally {
-  if (running) await running.close().catch(() => {})
+  // Preserve the original failure even if Electron's error window cannot quit.
+  let cleanupTimedOut = false
+  if (running) await Promise.race([
+    running.close().catch(() => {}),
+    delay(15_000).then(() => { cleanupTimedOut = true }),
+  ])
   proof.requests = server?.requests ?? []
   await server?.close()
   if (existsSync(join(home,'logs/startup.log'))) copyFileSync(join(home,'logs/startup.log'),join(output,'startup.log'))
   writeFileSync(join(output,'acceptance.json'),JSON.stringify(proof,null,2)+'\n')
   console.log(JSON.stringify(proof))
+  if (cleanupTimedOut) process.exit(1) // Disposable runner only; never a passing acceptance.
 }

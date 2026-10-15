@@ -27,6 +27,7 @@ if (!api.assignProcessToJobObject(job, api.current())) throwLastError(api, 'Assi
 globalThis[Symbol.for('easywork.waitForOwnedProcesses')] = async () => {
   const deadline = Date.now() + 2000;
   for (;;) {
+    if (globalThis[Symbol.for('easywork.ownedProcessShutdownFailed')]) throw new Error('Owned process shutdown failed; update installation refused');
     const accounting = Buffer.alloc(48);
     if (!api.queryInformationJobObject(job, 1, accounting, accounting.length, null)) throwLastError(api, 'QueryInformationJobObject');
     if (accounting.readUInt32LE(40) === 1) return;

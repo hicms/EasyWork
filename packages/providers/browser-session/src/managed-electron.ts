@@ -22,15 +22,31 @@ async function vacantPort(): Promise<number> {
 }
 
 async function stopWorker(child: ChildProcess): Promise<void> {
-  if (child.exitCode !== null || child.signalCode !== null) return;
-  const exited = new Promise<void>(resolve => child.once('exit', () => resolve()));
-  child.kill('SIGTERM');
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  try { await Promise.race([exited, new Promise<void>(resolve => { timer = setTimeout(resolve, 3_000); })]); }
-  finally { clearTimeout(timer); }
-  if (child.exitCode === null && child.signalCode === null) {
-    child.kill('SIGKILL');
-    await exited;
+  if (child.pid === undefined) return;
+  try {
+    if (child.exitCode !== null || child.signalCode !== null) {
+      if (child.exitCode !== 0 || child.signalCode !== null) throw new Error('Electron browser worker exited abnormally');
+      return;
+    }
+    await new Promise<void>((resolve, reject) => {
+      const finish = (error?: Error): void => {
+        clearTimeout(timer); child.removeListener('close', onClose); child.removeListener('error', finish);
+        error ? reject(error) : resolve();
+      };
+      const onClose = (code: number | null, signal: NodeJS.Signals | null): void => {
+        finish(code === 0 && signal === null ? undefined : new Error('Electron browser worker did not close naturally'));
+      };
+      const timer = setTimeout(() => finish(new Error('Electron browser worker shutdown timed out')), 3_000);
+      child.once('close', onClose); child.once('error', finish);
+      if (!child.connected) { finish(new Error('Electron browser worker shutdown channel is unavailable')); return; }
+      try { child.send({ type: 'easywork-browser-close' }, error => { if (error) finish(error); }); }
+      catch (error) { finish(error instanceof Error ? error : new Error(String(error))); }
+    });
+  } catch (error) {
+    // SessionResources may swallow failed acquisition. Keep the failed-close verdict
+    // until the Host's update drain checks it, even if the process later disappears.
+    Reflect.set(globalThis, Symbol.for('easywork.ownedProcessShutdownFailed'), true);
+    throw error;
   }
 }
 
@@ -64,6 +80,9 @@ export async function launchManagedElectron(executable: string, signal?: AbortSi
   const profileDir = await mkdtemp(join(tmpdir(), 'easywork-electron-browser-'));
   let child: ChildProcess | undefined;
   let browser: Browser | undefined;
+  let workerClosing: Promise<void> | undefined;
+  const closeWorker = (): Promise<void> => workerClosing ??= child ? stopWorker(child) : Promise.resolve();
+  const abortStartup = (): void => { void closeWorker().catch(() => {}); };
   try {
     const port = await vacantPort();
     const env = { ...process.env };
@@ -72,14 +91,15 @@ export async function launchManagedElectron(executable: string, signal?: AbortSi
       ...(appPath ? [appPath] : []),
       `--easywork-browser-worker-port=${port}`,
       `--easywork-browser-worker-profile=${profileDir}`,
-    ], { env, stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true });
+    ], { env, stdio: ['ignore', 'ignore', 'pipe', 'ipc'], windowsHide: true });
     child.stderr?.resume();
+    signal?.addEventListener('abort', abortStartup, { once: true });
+    if (signal?.aborted) abortStartup();
     const endpoint = await readyEndpoint(port, child, signal);
     browser = await chromium.connectOverCDP(endpoint);
     signal?.throwIfAborted();
     const context: BrowserContext | undefined = browser.contexts()[0];
     if (!context || context.pages().length === 0) throw new Error('Electron browser worker has no page');
-    const ownedWorker = child;
     const ownedBrowser = browser;
     let closing: Promise<void> | undefined;
     return {
@@ -87,17 +107,19 @@ export async function launchManagedElectron(executable: string, signal?: AbortSi
       close: () => closing ??= (async () => {
         try { await ownedBrowser.close(); }
         finally {
-          try { await stopWorker(ownedWorker); }
-          finally { await rm(profileDir, { recursive: true, force: true }); }
+          await closeWorker();
+          await rm(profileDir, { recursive: true, force: true });
         }
       })(),
     };
   } catch (error) {
     try { await browser?.close(); }
     finally {
-      try { if (child) await stopWorker(child); }
-      finally { await rm(profileDir, { recursive: true, force: true }); }
+      await closeWorker();
+      await rm(profileDir, { recursive: true, force: true });
     }
     throw error;
+  } finally {
+    signal?.removeEventListener('abort', abortStartup);
   }
 }
