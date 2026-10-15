@@ -182,20 +182,17 @@ try {
   ;({ page, pid } = await launch(baseline.version))
   await page.getByText('新版本就绪', { exact: true }).waitFor({ timeout: 120_000 })
   const installingAt = Date.now()
-  const appProcess = running.process()
-  assert.equal(appProcess.pid, pid, 'Exit observation must belong to the actual Electron main process')
-  const exited = new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => reject(new Error('A process did not exit for installation')), 40_000)
-    appProcess.once('exit', (code, signal) => {
-      clearTimeout(timeout)
-      code === 0 && signal === null ? resolve() : reject(new Error(`A exited ${code}/${signal}`))
-    })
-  })
-  void exited.catch(() => {})
-  // Observe only this runner-owned installation, from outside the Host's Windows Job.
+  // Playwright launches a cmd.exe wrapper on Windows. Hold the actual main
+  // process handle before clicking, so wrapper lifetime and PID reuse cannot pass.
   const observer = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', `
-$until = [DateTime]::UtcNow.AddSeconds(12)
-while ([DateTime]::UtcNow -lt $until) {
+$ErrorActionPreference = 'Stop'
+$application = Get-Process -Id ${pid}
+try {
+$handle = $application.Handle
+if ($handle -eq 0) { throw 'Cannot hold the main process handle' }
+if ($application.Path -ine $env:EASYWORK_ACCEPTANCE_EXECUTABLE) { throw 'Unexpected main process path' }
+$deadline = [DateTime]::UtcNow.AddSeconds(40)
+do {
   $all = @(Get-CimInstance Win32_Process)
   $ids = [Collections.Generic.HashSet[uint32]]::new()
   foreach ($item in $all) { if ($item.ExecutablePath -and $item.ExecutablePath.StartsWith($env:EASYWORK_ACCEPTANCE_DIRECTORY, [StringComparison]::OrdinalIgnoreCase)) { [void]$ids.Add($item.ProcessId) } }
@@ -205,9 +202,13 @@ while ([DateTime]::UtcNow -lt $until) {
   } while ($added)
   $owned = @($all | Where-Object { $ids.Contains($_.ProcessId) } | Select-Object ProcessId, ParentProcessId, ExecutablePath, @{Name='Role'; Expression={ if ($_.CommandLine -match '--easywork-browser-worker-port=') { 'browser-worker' } elseif ($_.CommandLine -match '--type=([a-z-]+)') { $Matches[1] } else { 'main-or-tool' } }})
   @{ time = [DateTime]::UtcNow.ToString('o'); processes = $owned } | ConvertTo-Json -Depth 4 -Compress | Add-Content -LiteralPath $env:EASYWORK_ACCEPTANCE_PROCESS_LOG
-  Start-Sleep -Milliseconds 200
-}
-`], { windowsHide: true, env: { ...env, EASYWORK_ACCEPTANCE_DIRECTORY: appDirectory + '\\', EASYWORK_ACCEPTANCE_PROCESS_LOG: join(output, 'shutdown-processes.jsonl') }, stdio: 'ignore' })
+  $exited = $application.WaitForExit(200)
+} while (-not $exited -and [DateTime]::UtcNow -lt $deadline)
+if (-not $exited) { throw 'Main process did not exit for installation' }
+@{ time = [DateTime]::UtcNow.ToString('o'); pid = $application.Id; exitCode = $application.ExitCode } | ConvertTo-Json -Compress | Set-Content -LiteralPath $env:EASYWORK_ACCEPTANCE_EXIT_LOG -Encoding UTF8
+} finally { $application.Dispose() }
+`], { windowsHide: true, env: { ...env, EASYWORK_ACCEPTANCE_DIRECTORY: appDirectory + '\\', EASYWORK_ACCEPTANCE_EXECUTABLE: appExecutable,
+    EASYWORK_ACCEPTANCE_PROCESS_LOG: join(output, 'shutdown-processes.jsonl'), EASYWORK_ACCEPTANCE_EXIT_LOG: join(output, 'main-exit.json') }, stdio: 'inherit' })
   let observationFailure
   const observed = new Promise(resolve => {
     observer.once('error', error => { observationFailure = error; resolve() })
@@ -219,9 +220,12 @@ while ([DateTime]::UtcNow -lt $until) {
   }, 'first owned-process snapshot', 10_000)
   checkpoint('Click restart and await natural process exit')
   await page.getByRole('button', { name: '重启升级', exact: true }).click({ noWaitAfter: true, timeout: 10_000 })
-  await exited; running = undefined; await observed
+  await observed
   if (observationFailure) throw observationFailure
-  assert(logs().some(row => row.pid === pid && row.event === 'host.stopped' && row.result === 'graceful'))
+  const mainExit = JSON.parse(readFileSync(join(output, 'main-exit.json'), 'utf8').replace(/^\uFEFF/u, ''))
+  assert.equal(mainExit.pid, pid); assert.equal(mainExit.exitCode, 0)
+  running = undefined
+  assert(logs().some(row => row.pid === pid && Date.parse(row.time) >= installingAt && row.event === 'host.stopped' && row.result === 'graceful'))
   await waitFor(() => installedVersion() === candidate.version, 'B installed')
   const restart = await waitFor(() => logs().find(row => row.pid !== pid && Date.parse(row.time) >= installingAt && row.event === 'startup.complete'), 'B automatically relaunched and rendered')
   proof.checks.aToB = true; proof.checks.automaticRelaunch = true
