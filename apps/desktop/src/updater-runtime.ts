@@ -5,7 +5,7 @@ import { stat } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import { dirname } from 'node:path'
 import { load } from 'js-yaml'
-import { UPDATE_REPOSITORY } from './update-policy.ts'
+import { UPDATE_REPOSITORY, type UpdateMode } from './update-policy.ts'
 import { verifyWindowsUpdateSignature } from './windows-update-signature.ts'
 import { launchWindowsInstaller } from './windows-update-launch.ts'
 
@@ -18,12 +18,14 @@ class CoordinatedNsisUpdater extends NsisUpdater {
   private candidate: Candidate | undefined
   private checkedFile: FileIdentity | undefined
   private readonly installerStarted: () => void
-  constructor(publishers: string[], canQuit: () => boolean, installerStarted: () => void) {
+  constructor(publishers: string[], mode: UpdateMode, canQuit: () => boolean, installerStarted: () => void) {
     // Passing an AppAdapter to v26's constructor disables its HTTP executor.
     super()
     this.installerStarted = installerStarted
     this.trustedPublishers = publishers
-    this.verifyUpdateCodeSignature = (_names, path) => verifyWindowsUpdateSignature(this.trustedPublishers, path)
+    this.verifyUpdateCodeSignature = mode === 'unsigned-acceptance'
+      ? async () => null
+      : (_names, path) => verifyWindowsUpdateSignature(this.trustedPublishers, path)
     const quit = this.app.quit.bind(this.app)
     // Only the controller's explicit install state may authorize our final quit.
     this.app.quit = () => { if (canQuit()) quit() }
@@ -35,7 +37,7 @@ class CoordinatedNsisUpdater extends NsisUpdater {
     const files = await super.downloadUpdate(cancellationToken)
     // Upstream returns a SHA-checked cache hit without invoking its signature hook.
     // The controller only exposes Restart after this promise succeeds.
-    if (files.length !== 1 || !files[0]) throw new Error('Expected one signed NSIS installer')
+    if (files.length !== 1 || !files[0]) throw new Error('Expected one NSIS installer')
     const info = this.updateInfoAndProvider?.info
     const asset = info?.files[0]
     if (!info || info.files.length !== 1 || !asset || typeof asset.size !== 'number' || !Number.isSafeInteger(asset.size)
@@ -80,16 +82,18 @@ class CoordinatedNsisUpdater extends NsisUpdater {
   }
 }
 
-export function createUpdater(configPath: string, canQuit: () => boolean, installerStarted: () => void): CoordinatedNsisUpdater {
+export function createUpdater(configPath: string, canQuit: () => boolean, installerStarted: () => void, mode: UpdateMode = 'signed'): CoordinatedNsisUpdater {
   const config = load(readFileSync(configPath, 'utf8')) as Record<string, unknown>
   const [owner, repo] = UPDATE_REPOSITORY.split('/')
   const publishers = typeof config.publisherName === 'string' ? [config.publisherName] : config.publisherName
+  const validPublishers = Array.isArray(publishers) && publishers.length > 0 && publishers.every(name => typeof name === 'string' && name.trim())
   if (config.provider !== 'github' || config.owner !== owner || config.repo !== repo
-    || !Array.isArray(publishers) || !publishers.length || publishers.some(name => typeof name !== 'string' || !name.trim())
+    || (mode !== 'unsigned-acceptance' && !validPublishers)
+    || (mode === 'unsigned-acceptance' && publishers !== undefined)
     || typeof config.updaterCacheDirName !== 'string' || !config.updaterCacheDirName) {
     throw new Error('更新配置缺少受信任的签名发布者或缓存目录')
   }
-  const updater = new CoordinatedNsisUpdater(publishers as string[], canQuit, installerStarted)
+  const updater = new CoordinatedNsisUpdater(validPublishers ? publishers as string[] : [], mode, canQuit, installerStarted)
   updater.updateConfigPath = configPath
   updater.autoDownload = false
   updater.autoInstallOnAppQuit = false

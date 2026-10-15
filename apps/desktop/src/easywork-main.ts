@@ -524,7 +524,7 @@ if (worker !== undefined) {
       log!.write('app.ready')
       keyboard = await installKeyboard(bundledProfileDirectory(), app.getPath('userData'), () => window, assertStartupSender)
       if (quitRequested || quitting) return
-      updates = installDesktopUpdates({ currentWindow: () => window,
+      updates = installDesktopUpdates({ currentWindow: () => window, assertSender: assertStartupSender,
         prepareInstall: async () => {
           if (shutdownReason === 'quit') throw new Error('应用正在退出，请重新启动后更新')
           await shutdown.request('update')

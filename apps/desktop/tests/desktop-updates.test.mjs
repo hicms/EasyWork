@@ -7,7 +7,7 @@ import { stopRuntimeProcess, watchRuntimeShutdown } from '../src/runtime-shutdow
 import { releaseDownloadUrl, selectRelease, updateChannel } from '../src/update-policy.ts'
 
 const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no }); return { promise, resolve, reject } }
-function fixture(prepareInstall = async () => {}) {
+function fixture(prepareInstall = async () => {}, mode = 'signed') {
   const errors = [], calls = []
   const updater = Object.assign(new EventEmitter(), {
     setFeedURL: feed => calls.push(feed),
@@ -17,7 +17,7 @@ function fixture(prepareInstall = async () => {}) {
     launchAndQuit: async () => { calls.push(['install']) },
   })
   const controller = new DesktopUpdateController(updater, {
-    currentVersion: '2.1.0-alpha.1', discover: async () => '2.1.0-alpha.2', changed: () => {},
+    currentVersion: '2.1.0-alpha.1', mode, discover: async () => '2.1.0-alpha.2', changed: () => {},
     error: error => errors.push(error), prepareInstall, installFailed: () => calls.push('install-failed'),
   })
   return { updater, controller, errors, calls }
@@ -32,15 +32,19 @@ test('streams reject drafts, beta, stable promotion, noncanonical versions and d
   assert.equal(selectRelease(list, '3.0.0'), undefined)
   assert.throws(() => updateChannel('2.1.0-beta.1'))
   assert.throws(() => selectRelease({}, '2.1.0'))
+  list.push(release('acceptance-v2.1.0-alpha.11', true), release('acceptance-v2.1.0-alpha.12', true, true), release('acceptance-v3.0.0', false))
+  assert.equal(selectRelease(list, '2.1.0-alpha.1'), '2.1.0-alpha.10')
+  assert.equal(selectRelease(list, '2.1.0-alpha.1', 'unsigned-acceptance'), '2.1.0-alpha.11')
+  assert.throws(() => selectRelease(list, '2.1.0', 'unsigned-acceptance'))
 })
 
-test('check does not download; user download does not install; safe close precedes single install', async () => {
+test('check automatically downloads once; explicit restart waits for safe close before single install', async () => {
   const stop = deferred(), f = fixture(() => { f.calls.push('stop'); return stop.promise })
   const first = f.controller.check(), second = f.controller.check()
   assert.equal(first, second)
   await first
-  assert.equal(f.controller.state, 'available')
-  assert.equal(f.calls.length, 1)
+  assert.equal(f.controller.state, 'downloaded')
+  assert.equal(f.calls.filter(call => call === 'download').length, 1)
   assert.equal(f.calls[0].useMultipleRangeRequest, false)
   assert.equal(f.updater.previousBlockmapBaseUrlOverride, releaseDownloadUrl('2.1.0-alpha.1'))
   assert.equal(f.updater.allowDowngrade, false)
@@ -54,6 +58,10 @@ test('check does not download; user download does not install; safe close preced
   assert.deepEqual(f.calls.at(-1), ['install'])
   await f.controller.install()
   assert.equal(f.calls.filter(call => Array.isArray(call) && call[0] === 'install').length, 1)
+  const acceptance = fixture(undefined, 'unsigned-acceptance')
+  await acceptance.controller.check()
+  assert.equal(acceptance.calls[0].url, releaseDownloadUrl('2.1.0-alpha.2', 'unsigned-acceptance'))
+  assert.equal(acceptance.updater.previousBlockmapBaseUrlOverride, releaseDownloadUrl('2.1.0-alpha.1', 'unsigned-acceptance'))
 })
 
 test('unsafe shutdown blocks installation and preserves an explicit failure', async () => {
@@ -80,18 +88,17 @@ test('offline check, mismatched manifest and failed download never offer install
   f.updater.checkForUpdates = async () => ({ updateInfo: { version: '3.0.0' } })
   await f.controller.check(); assert.equal(f.controller.state, 'error')
   f.updater.checkForUpdates = async () => ({ updateInfo: { version: '2.1.0-alpha.2' } })
-  await f.controller.check()
   f.updater.downloadUpdate = async () => { f.updater.emit('error', new Error('network')); throw new Error('network') }
-  await f.controller.download(); await f.controller.install()
+  await f.controller.check(); await f.controller.install()
   assert.equal(f.controller.state, 'error'); assert.equal(f.calls.some(call => Array.isArray(call) && call[0] === 'install'), false)
   assert.equal(f.errors.length, 3)
 })
 
 test('ordinary quit suppresses in-flight check and download completion', async () => {
   const f = fixture(), download = deferred()
-  await f.controller.check()
   f.updater.downloadUpdate = () => download.promise
-  const pending = f.controller.download()
+  const pending = f.controller.check()
+  await new Promise(resolve => setImmediate(resolve))
   f.updater.emit('download-progress', { percent: 42 })
   assert.equal(f.controller.percent, 42)
   f.controller.suspend(); download.resolve([]); await pending; await f.controller.install()

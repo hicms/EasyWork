@@ -2,9 +2,11 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { APP_SCHEME, BOOT_IPC, type DesktopBootInfo } from './startup-contract.ts'
 import { installWindowChrome } from './preload-window-chrome.ts'
 import { exposeKeyboard } from './preload-keyboard.ts'
+import { exposeUpdates } from './preload-updates.ts'
 
 if (process.isMainFrame && location.protocol === `${APP_SCHEME}:` && location.hostname === 'app') {
   exposeKeyboard()
+  exposeUpdates()
   installWindowChrome()
   const preloads = new Set<HTMLLinkElement>()
   const urls = new Set<string>()

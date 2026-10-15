@@ -3,11 +3,12 @@ import assert from 'node:assert/strict'
 import { createRequire } from 'node:module'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { hashFile } from './verify-update-artifacts.mjs'
 
-const local = process.argv.length === 3 && process.argv[2] === '--local'
+const local = process.argv.includes('--local')
 if (process.platform !== 'win32' || (process.env.CI !== 'true' && !local)) throw new Error('Use explicitly dispatched Windows CI or --local for GUI acceptance')
 const root = resolve(import.meta.dirname, '..')
-const output = join(root, 'dist', 'release')
+const output = join(root, 'dist', process.argv.includes('--unsigned-updates') ? 'acceptance-ui' : 'release')
 const userData = join(root, 'build', 'release-acceptance-home')
 mkdirSync(output, { recursive: true })
 const require = createRequire(new URL('../../web/package.json', import.meta.url))
@@ -18,6 +19,8 @@ const startedAt = Date.now()
 const candidate = await _electron.launch({ executablePath: join(root, 'dist/win-unpacked/EasyWork.exe'), args: ['--lang=zh-CN'], env, timeout: 120_000 })
 const mainPid = await candidate.evaluate(() => process.pid)
 const checks = {}
+const asarSha512 = await hashFile(join(root, 'dist/win-unpacked/resources/app.asar'))
+const version = await candidate.evaluate(({ app }) => app.getVersion())
 try {
   assert.equal(await candidate.evaluate(({ app }) => app.getPath('userData')), userData)
   const page = await candidate.firstWindow({ timeout: 120_000 })
@@ -55,5 +58,5 @@ try {
   assert.equal(stops.length, 1, 'Current candidate must record its own Host shutdown')
   assert.equal(stops[0].result, 'graceful')
   checks.gracefulQuit = true
-  writeFileSync(join(output, 'ui-acceptance.json'), JSON.stringify({ checks, userDataIsolated: true, ok: true }, null, 2) + '\n')
+  writeFileSync(join(output, 'ui-acceptance.json'), JSON.stringify({ checks, version, asarSha512, testedAt: new Date().toISOString(), userDataIsolated: true, ok: true }, null, 2) + '\n')
 } finally { await candidate.close().catch(() => {}) }

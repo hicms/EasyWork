@@ -3,12 +3,13 @@ import { createReadStream } from 'node:fs'
 import { readFile, stat } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { join } from 'node:path'
+import { releaseTag } from '../src/update-policy.ts'
 
 export async function startUpdateAcceptanceServer({ candidate, candidateDirectory, baseline, baselineDirectory, scenario }) {
   if (!['delta', 'missing-blockmap', 'corrupt-blockmap', 'offline'].includes(scenario)) throw new Error('Unknown acceptance scenario')
   const allowed = new Map()
   for (const [manifest, directory] of [[candidate, candidateDirectory], [baseline, baselineDirectory]]) {
-    for (const asset of manifest.assets) allowed.set(`/hicms/EasyWork/releases/download/v${manifest.version}/${asset.name}`, join(directory, asset.name))
+    for (const asset of manifest.assets) allowed.set(`/hicms/EasyWork/releases/download/${releaseTag(manifest.version, manifest.updateMode)}/${asset.name}`, join(directory, asset.name))
   }
   const requests = []
   const server = createServer((request, response) => {
@@ -18,7 +19,7 @@ export async function startUpdateAcceptanceServer({ candidate, candidateDirector
       if (path === '/repos/hicms/EasyWork/releases') {
         response.setHeader('Content-Type', 'application/json')
         response.end(JSON.stringify([candidate, baseline].map(manifest => ({
-          tag_name: `v${manifest.version}`, draft: false, prerelease: manifest.channel === 'alpha',
+          tag_name: releaseTag(manifest.version, manifest.updateMode), draft: false, prerelease: manifest.channel === 'alpha',
         }))))
         return
       }

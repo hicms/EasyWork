@@ -8,7 +8,7 @@ import { createLocalProfileStage } from './local-profile-stage.mjs'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const webRoot = join(root, 'apps/web')
 const usage = `Usage:
-  node scripts/local-workflow.mjs build-win [--target=dir|installer] [--skip-install]
+  node scripts/local-workflow.mjs build-win [--target=dir|installer] [--skip-install] [--acceptance-updates]
   node scripts/local-workflow.mjs web [--port=18989] [--skip-setup]
 
 build-win: Default: build an unpacked Windows x64 application in apps/desktop/dist/win-unpacked.
@@ -31,6 +31,7 @@ export function parseOptions(args) {
     if (seen.has(key)) throw new Error(`Duplicate option: ${key}`)
     seen.add(key)
     if (command === 'build-win' && flag === '--skip-install') options.skipInstall = true
+    else if (command === 'build-win' && flag === '--acceptance-updates') options.acceptanceUpdates = true
     else if (command === 'build-win' && /^--target=(dir|installer)$/u.test(flag)) {
       options.target = flag.slice('--target='.length)
     } else if (command === 'web' && flag === '--skip-setup') options.skipSetup = true
@@ -39,6 +40,7 @@ export function parseOptions(args) {
       if (options.port < 1 || options.port > 65535) throw new Error('Port must be 1..65535')
     } else throw new Error(`Unsupported option: ${flag}\n${usage}`)
   }
+  if (options.acceptanceUpdates && options.target !== 'installer') throw new Error('--acceptance-updates requires --target=installer')
   return options
 }
 
@@ -90,8 +92,9 @@ export async function runWorkflow(options, run, {
     for (const task of ['prepare:easywork-runtime', 'prepare:easywork-primary-runtime', 'prepare:easywork-command']) {
       await yarn(['workspace', 'dsh-plugin-desktop', task], runtimeEnv)
     }
-    const script = options.target === 'dir' ? 'package-dir.mjs' : 'package-win.ts'
-    await run(process.execPath, [join(root, 'apps/desktop/scripts', script)], root, runtimeEnv)
+    const script = options.acceptanceUpdates ? 'windows-installer.mjs' : options.target === 'dir' ? 'package-dir.mjs' : 'package-win.ts'
+    await run(process.execPath, [join(root, 'apps/desktop/scripts', script), ...(options.acceptanceUpdates ? ['--updates'] : [])],
+      options.acceptanceUpdates ? join(root, 'apps/desktop') : root, runtimeEnv)
     if (options.target === 'dir') {
       await run(process.execPath, [join(root, 'apps/desktop/scripts/verify-win-directory.ts')], root, runtimeEnv)
     }

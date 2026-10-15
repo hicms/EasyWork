@@ -104,6 +104,7 @@ jobs:
           corepack pnpm --filter easywork-plugin-models test
           corepack pnpm exec playwright install chromium --with-deps
           corepack pnpm --filter easywork-plugin-models test:ui
+          node tests/desktop-update-notice.browser.mjs
           corepack pnpm --filter easywork-provider-identity-enterprise build
           corepack pnpm --filter easywork-plugin-enterprise-collaboration build
           corepack pnpm typecheck

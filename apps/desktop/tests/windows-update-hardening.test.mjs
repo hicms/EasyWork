@@ -30,7 +30,7 @@ test('actual Windows command line leaves NSIS /D last and unquoted even with spa
     child.stdout.on('data', bytes => { stdout += bytes }); child.stderr.on('data', bytes => { stderr += bytes })
     child.once('error', reject); child.once('close', code => code === 0 && !stderr ? resolve(stdout) : reject(new Error(stderr || `exit ${code}`)))
   })
-  assert(output.endsWith(` --updated --force-run /D=${target}`), output)
+  assert(output.endsWith(` /S --updated --force-run /D=${target}`), output)
   assert(!output.includes('"/D='), output)
   assert.equal(command.options.env.EASYWORK_UPDATE_INSTALL_DIRECTORY, target)
 })

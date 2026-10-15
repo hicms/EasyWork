@@ -1,11 +1,12 @@
 import type { createUpdater } from './updater-runtime.ts'
-import { releaseDownloadUrl, updateChannel } from './update-policy.ts'
+import { releaseDownloadUrl, updateChannel, type UpdateMode } from './update-policy.ts'
 
 export type UpdateState = 'idle' | 'checking' | 'available' | 'downloading' | 'downloaded' | 'verifying' | 'stopping' | 'installing' | 'error'
 type Updater = Pick<ReturnType<typeof createUpdater>, 'on' | 'setFeedURL' | 'checkForUpdates' | 'downloadUpdate' | 'validateCandidate' | 'launchAndQuit'
   | 'channel' | 'allowDowngrade' | 'allowPrerelease' | 'previousBlockmapBaseUrlOverride'>
 interface Operations {
   currentVersion: string
+  mode?: UpdateMode
   discover(): Promise<string | undefined>
   changed(): void
   error(error: unknown): void
@@ -59,13 +60,14 @@ export class DesktopUpdateController {
     this.updater.channel = channel
     this.updater.allowDowngrade = false // channel setter enables downgrades by default
     this.updater.allowPrerelease = channel === 'alpha'
-    this.updater.previousBlockmapBaseUrlOverride = releaseDownloadUrl(this.operations.currentVersion)
-    this.updater.setFeedURL({ provider: 'generic', url: releaseDownloadUrl(version), channel, useMultipleRangeRequest: false })
+    this.updater.previousBlockmapBaseUrlOverride = releaseDownloadUrl(this.operations.currentVersion, this.operations.mode)
+    this.updater.setFeedURL({ provider: 'generic', url: releaseDownloadUrl(version, this.operations.mode), channel, useMultipleRangeRequest: false })
     const result = await this.updater.checkForUpdates()
     if (this.suspended) return
     if (!result || result.updateInfo.version !== version) throw new Error('更新清单与所选发行版本不匹配')
     this.version = version
     this.setState('available')
+    await this.download()
   }
 
   download(): Promise<void> {

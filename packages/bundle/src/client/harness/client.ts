@@ -15,6 +15,7 @@ import * as workbench from 'easywork-plugin-workbench';
 import { BrandMark, BrandName, DiagnosticsMark } from '../components/Brand.js';
 import { DiagnosticsPanel, type Inventory } from '../components/DiagnosticsPanel.js';
 import { NavigationLocation } from '../components/NavigationLocation.js';
+import { DesktopUpdateNotice } from '../components/DesktopUpdateNotice.js';
 import { AgentBrowserPage, agentBrowserKind, readAgentBrowserFrame } from '../components/AgentBrowserPage.js';
 
 declare module '@deepseek-ai/cordis' {
@@ -106,6 +107,9 @@ export function apply(ctx: Context): void {
   ctx.plugin(workbench);
   ctx.slots.inject('sidebar.brand.name', () => ctx.slots.register({ name: 'sidebar.brand.name', priority: -10 }, BrandName));
   ctx.slots.inject('sidebar.brand.mark', () => ctx.slots.register({ name: 'sidebar.brand.mark', priority: -10 }, BrandMark));
+  ctx.slots.inject('shell.overlay', () => ctx.slots.register({
+    name: 'shell.overlay', id: 'easywork-desktop-update',
+  }, DesktopUpdateNotice));
   ctx.slots.inject('shell.overlay', () => ctx.slots.register({
     name: 'shell.overlay', id: 'easywork-location', inject: () => ({ panelToView, selectView }),
   }, NavigationLocation));

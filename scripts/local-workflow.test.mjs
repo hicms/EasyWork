@@ -49,6 +49,14 @@ test('an installer is built only when selected and packaging failures still clea
   }), /package failed/u)
   assert.ok(cleaned)
   assert.ok(!calls.some(args => args[0].endsWith('package-dir.mjs') || args[0].endsWith('package-win-portable.ts')))
+  const enabled = recorder()
+  await runWorkflow(parseOptions(['build-win', '--target=installer', '--skip-install', '--acceptance-updates']), enabled.run, {
+    platform: 'win32', arch: 'x64', nodeVersion: '24.14.0',
+    createProfileStage: () => ({ releaseDirectory: 'temporary-local-archives', cleanup() {} }),
+  })
+  const build = enabled.calls.at(-1)
+  assert(build.args[0].endsWith('windows-installer.mjs')); assert.equal(build.args[1], '--updates')
+  assert.match(build.cwd, /apps[\\/]desktop$/u)
 })
 
 test('Windows builds reject a non-Windows host before installing or building', async () => {
@@ -86,5 +94,6 @@ test('invalid flags and ports fail instead of silently building another target',
   for (const args of [
     ['build-win', '--target=zip'], ['build-win', '--target=portable'], ['build-win', '--target=all'], ['web', '--port=0'], ['web', '--port=65536'],
     ['web', '--skip-install'], ['web', '--port=18989', '--port=19000'],
+    ['build-win', '--acceptance-updates'], ['web', '--acceptance-updates'],
   ]) assert.throws(() => parseOptions(args))
 })

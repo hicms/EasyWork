@@ -18,9 +18,9 @@ Desktop 不提供企业登录、账号认证桥接、成员空间或公司专用
 
 ## Windows 更新与手动发布
 
-已签名的 Windows x64 NSIS 安装版会在启动完成后检查本渠道更新，不阻塞离线工作。也可使用**应用程序 → 检查更新**。下载由用户选择，期间可以继续工作；菜单和任务栏显示进度。下载完成后，请保存草稿并结束运行中的任务，再选择**重启并更新**。普通退出不会安装。重启操作在停止 Host 前重新校验候选版本、大小、SHA-512 和发布者签名；缓存缺失或变化会在关闭后台前报错，并允许重新下载。外壳只有在安装器进程成功启动后才退出；创建进程不代表安装成功。更新提示在首次检查前同步启动页面语言，并跟随之后的外观设置变化，无需先打开菜单。安装前必须收到 Host 关闭完成确认、等待正常退出，并确认 Windows Job 中没有剩余子进程。无法确认时暂缓安装，提示重新启动后重试。官方 Host 自身的关闭流程可能终止超时任务；失败或强制结束都不能成为安装依据。开发态、浏览器 worker、免安装目录、portable 和未签名本地包不启用更新器。
+启用更新器的 Windows x64 NSIS 安装版会在启动完成后及之后每六小时检查本渠道更新，不阻塞离线工作。也可使用**应用程序 → 检查更新**。更新在后台自动下载，期间可以继续工作；菜单和任务栏显示进度。下载并校验完成后，右下角显示**新版本就绪**，提供**更新日志**、**重启升级**和关闭按钮。请先保存草稿并结束运行中的任务；点击“重启升级”即确认静默安装并自动重新打开，不再显示第二次安装向导。关闭提示后，仍可通过应用程序菜单重启升级。普通退出不会安装。重启操作在停止 Host 前重新校验候选版本、大小和 SHA-512；签名发行还须校验发布者签名；缓存缺失或变化会在关闭后台前报错，并允许重新下载。外壳只有在安装器进程成功启动后才退出；创建进程不代表安装成功。更新提示在首次检查前同步启动页面语言，并跟随之后的外观设置变化，无需先打开菜单。安装前必须收到 Host 关闭完成确认、等待正常退出，并确认 Windows Job 中没有剩余子进程。无法确认时暂缓安装，提示重新启动后重试。官方 Host 自身的关闭流程可能终止超时任务；失败或强制结束都不能成为安装依据。开发态、浏览器 worker、免安装目录、portable 和普通未签名本地包不启用更新器；下述明确启用的未签名验收包例外。
 
-`electron-updater` 精确锁定 **6.8.10**，设置 `autoDownload=false`、`autoInstallOnAppQuit=false`。下载结果（包括缓存命中）必须通过带时间戳的 Authenticode 发布者签名校验；校验工具不可用时阻止更新。其完整依赖打入 `lib/desktop-updater.cjs`；外壳仍只有一套官方 DSH Profile，不增加根级运行时依赖安装。渠道严格隔离：`x.y.z-alpha.n` 只接收 alpha，`x.y.z` 只接收稳定版（`latest`）。GitHub Releases 使用规范的 `vVERSION` 标签，沿用应用和更新缓存标识。请保留历史 Setup 与 blockmap：差量下载依赖旧安装包缓存和旧版 blockmap。缓存缺失、blockmap 不可用或差量校验失败时，更新器回退全量下载。差量仅优化下载流量；EXE、ASAR、unpacked 文件和运行时仍完整配套安装。旧版没有更新器，必须先正常安装一次带更新器的版本，之后才具备 A→B 更新能力。
+`electron-updater` 精确锁定 **6.8.10**，设置 `autoDownload=false`、`autoInstallOnAppQuit=false`。控制器在发现新版本后自动下载，上游自动下载开关保持关闭以保证此顺序。签名模式的下载结果（包括缓存命中）必须通过带时间戳的 Authenticode 发布者签名校验；校验工具不可用时阻止更新。其完整依赖打入 `lib/desktop-updater.cjs`；外壳仍只有一套官方 DSH Profile，不增加根级运行时依赖安装。渠道严格隔离：`x.y.z-alpha.n` 只接收 alpha，`x.y.z` 只接收稳定版（`latest`）。签名 GitHub Releases 使用规范的 `vVERSION` 标签，沿用应用和更新缓存标识。请保留历史 Setup 与 blockmap：差量下载依赖旧安装包缓存和旧版 blockmap。缓存缺失、blockmap 不可用或差量校验失败时，更新器回退全量下载。差量仅优化下载流量；EXE、ASAR、unpacked 文件和运行时仍完整配套安装。旧版没有更新器，必须先正常安装一次带更新器的版本，之后才具备 A→B 更新能力。
 
 **Windows release** 工作流仅手动触发。请从默认分支发起，填写完整源提交 SHA、该提交中已写入的 Desktop 版本和对应渠道。`draft` 验证提交可从默认分支到达，并在同一 SHA 运行 Desktop 与 Web CI。原生 Windows x64 构建只准备一次 Profile/运行时，只生成 NSIS，签名应用、卸载器和 Setup，再验证带时间戳的发布者签名、最终 SHA-512 和重新计算的 blockmap。现有外壳、归档依赖闭包、原生命令注册、fuse 和 packaged-runtime 门禁继续保留。另在隔离 Home 中启动免安装目录的实际 Windows 界面，检查个人启动、项目操作并截图。完整且校验通过的制品才上传到 Release 草稿；客户端不能发现草稿。
 
@@ -38,11 +38,13 @@ Desktop 不提供企业登录、账号认证桥接、成员空间或公司专用
 node apps/desktop/scripts/accept-windows-update.mjs --confirm-isolated-vm --app="C:\Users\tester\AppData\Local\Programs\EasyWork\EasyWork.exe" --home="C:\tests\fresh-home" --output="C:\tests\results" --baseline="C:\tests\A" --candidate="C:\tests\B" --scenario=delta
 ```
 
-该工具使用全新的测试 Home 打开已安装 A，只把当前受检进程中的 GitHub 发现请求和 updater 会话重定向到本机测试服务。应用版本、签名制品和签名校验保持原样，产品更新源不变。请先在测试 Home 中创建有代表性的本地数据，结束任务，再通过真实菜单下载和重启。工具记录完成的载荷字节与 Range 请求。请关闭安装器自动重新打开的 B：Windows Shell 重启应用时可能不会继承 A 进程中的测试 Home 设置。然后保持 `--app`、`--home` 等全部参数不变，在原命令末尾追加 `--verify-installed` 再运行。该模式复用原测试 Home，断言 B 的实际版本和用户数据路径，记录 `installed-observation.json`，并打开 B 供人工检查数据与 UI。只在这个已核实的 Home 中比较数据；截图、数据保留和进程退出仍须实际核对。每个场景前恢复虚拟机快照。分别使用 `missing-blockmap`、`corrupt-blockmap`、`offline`；离线场景中输入 `online` 并回车恢复服务，再重试检查。测试缓存缺失时，只在可丢弃虚拟机中移除 A 的缓存（`release.json` 指定的 `%LOCALAPPDATA%\<updaterCacheDirName>`），再运行 delta 场景；真正差量测试必须保留缓存。该工具不代表场景已通过，不自动审批证据；只有选择真实的重启操作才安装。
+该工具使用全新的测试 Home 打开已安装 A，只把当前受检进程中的 GitHub 发现请求和 updater 会话重定向到本机测试服务。应用版本、签名制品和签名校验保持原样，产品更新源不变。请先在测试 Home 中创建有代表性的本地数据，结束任务，再点击真实更新提示或菜单中的重启操作。工具记录完成的载荷字节与 Range 请求。请关闭安装器自动重新打开的 B：Windows Shell 重启应用时可能不会继承 A 进程中的测试 Home 设置。然后保持 `--app`、`--home` 等全部参数不变，在原命令末尾追加 `--verify-installed` 再运行。该模式复用原测试 Home，断言 B 的实际版本和用户数据路径，记录 `installed-observation.json`，并打开 B 供人工检查数据与 UI。只在这个已核实的 Home 中比较数据；截图、数据保留和进程退出仍须实际核对。每个场景前恢复虚拟机快照。分别使用 `missing-blockmap`、`corrupt-blockmap`、`offline`；离线场景中输入 `online` 并回车恢复服务，再重试检查。测试缓存缺失时，只在可丢弃虚拟机中移除 A 的缓存（`release.json` 指定的 `%LOCALAPPDATA%\<updaterCacheDirName>`），再运行 delta 场景；真正差量测试必须保留缓存。该工具不代表场景已通过，不自动审批证据；只有选择真实的重启操作才安装。
 
-非构建实现检查为 `corepack yarn typecheck`、`corepack yarn check:updates`。小型合成字节夹具运行实际锁定的差量下载器，验证 Range 复用、重建后的 SHA-512，以及缓存缺失、blockmap 损坏和缓存字节损坏时的全量回退。无界面检查还覆盖候选复验、启动顺序、PowerShell 进度/错误处理和语言同步。这些检查不执行 NSIS，不能证明真实应用 A→B、节省率、断网恢复、数据保留或 UI 验收。构建、运行时准备、签名、打包、触发 CI 和安装仍须明确执行；本实现尚未完成这些真实发行验收场景。
+非构建实现检查为 `corepack yarn typecheck`、`corepack yarn check:updates`。小型合成字节夹具运行实际锁定的差量下载器，验证 Range 复用、重建后的 SHA-512，以及缓存缺失、blockmap 损坏和缓存字节损坏时的全量回退。无界面检查还覆盖候选复验、启动顺序、PowerShell 进度/错误处理和语言同步。这些检查不执行 NSIS，不能证明真实应用 A→B、节省率、断网恢复、数据保留或 UI 验收。构建、运行时准备、签名、打包、触发 CI 和安装仍须明确执行；真实安装结果及未验证场景请以该发行版本对应的 Windows 验收制品为准。
 
-明确请求的未签名验收安装包复用相同的 NSIS 安全检查，关闭签名和更新器。仅以 `acceptance-vVERSION` 标签发布预发布版，不上传更新渠道元数据。要在本机隔离测试 Home 中执行安装包界面验收，请明确运行 `node apps/desktop/scripts/accept-windows-package.mjs --local`；这不代表签名更新验收通过。
+没有 Windows 签名证书时，可明确执行 `corepack yarn build:win --target=installer --acceptance-updates --skip-install` 构建启用更新的验收安装包，要求干净的默认分支源码和 alpha 版本。不需要 Windows TESTSIGNING；Windows 可能将未签名应用标为未知发布者。此模式只接受 `acceptance-vVERSION` 预发布版，使用 HTTPS GitHub 元数据、精确大小和 SHA-512 校验，不验证 Authenticode 发布者身份。签名发行通道仍强制验签。两个模式使用相同的安全退出与 NSIS 安装器；普通未签名打包仍禁用更新。
+
+构建后，明确执行 `node apps/desktop/scripts/accept-windows-package.mjs --local --unsigned-updates`，再执行 `node apps/desktop/scripts/stage-unsigned-windows-release.mjs`。`dist/acceptance/VERSION` 中的制品包括 Setup、blockmap、`alpha.yml`、`release.json` 和绑定源码/包身份的 UI 证据。先发布基线 A，保持 B 为草稿，再用两个标签手动触发 **Windows update acceptance**。它在可丢弃的 Windows runner 中核对制品与源码，安装 A，点击真实更新提示，静默安装 B，观察自动重新打开并检查项目、文件及浏览器偏好保留。四个场景覆盖差量下载、缓存缺失、损坏 blockmap 和断网重试；同一手动工作流同时运行 Desktop 与 Web 检查。全部场景通过后，才公开已验收的 B 字节，不重建替换。此结果不代表已验证签名发布者、真实账号凭据或任意外部插件保留。禁用更新器的旧版（包括 alpha.5）需要先手动安装一次 A；之后请保留历史 Setup/blockmap，供差量更新使用。
 
 ## 开发与验证
 

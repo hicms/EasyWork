@@ -1,0 +1,69 @@
+name: Windows update acceptance
+
+on:
+  workflow_dispatch:
+    inputs:
+      baseline:
+        description: Existing acceptance-vVERSION baseline tag
+        type: string
+        required: true
+      candidate:
+        description: Draft acceptance-vVERSION candidate tag
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+    with:
+      revision: ${{ github.sha }}
+  installed-update:
+    needs: checks
+    runs-on: windows-2022
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        scenario: [delta, missing-cache, corrupt-blockmap, offline]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - run: corepack enable
+      - run: corepack yarn install --immutable
+      - working-directory: apps/web
+        run: corepack pnpm install --frozen-lockfile
+      - name: Download exact release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASELINE_TAG: ${{ inputs.baseline }}
+          CANDIDATE_TAG: ${{ inputs.candidate }}
+        run: |
+          foreach ($tag in @($env:BASELINE_TAG, $env:CANDIDATE_TAG)) {
+            if ($tag -notmatch '^acceptance-v\d+\.\d+\.\d+-alpha\.\d+$') { throw 'Invalid acceptance tag' }
+          }
+          gh release download $env:BASELINE_TAG --repo hicms/EasyWork --dir "$env:RUNNER_TEMP/easywork-update/A"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          gh release download $env:CANDIDATE_TAG --repo hicms/EasyWork --dir "$env:RUNNER_TEMP/easywork-update/B"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Install A and exercise actual automatic update to B
+        env:
+          DSH_TELEMETRY_DISABLED: '1'
+          UPDATE_SCENARIO: ${{ matrix.scenario }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: node apps/desktop/scripts/accept-installed-windows-update.mjs
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: windows-update-${{ matrix.scenario }}
+          path: ${{ runner.temp }}/easywork-update/evidence
+          if-no-files-found: warn
+          retention-days: 30

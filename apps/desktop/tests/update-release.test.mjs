@@ -11,6 +11,7 @@ import { DesktopUpdateController } from '../src/desktop-update-controller.ts'
 import { dump, load } from 'js-yaml'
 import { buildBlockMap } from 'app-builder-lib/out/targets/blockmap/blockmap.js'
 import { signedWindowsConfig } from '../scripts/release-win.mjs'
+import { unsignedWindowsConfig } from '../scripts/windows-installer.mjs'
 import { hashFile, verifyUpdateArtifacts } from '../scripts/verify-update-artifacts.mjs'
 import { ACCEPTANCE_CHECKS, BOOTSTRAP_CHECKS, findRelease, listReleases, verifyAcceptance, verifyBootstrapHistory, verifyReleaseSource } from '../../../scripts/desktop-release-policy.mjs'
 import { startUpdateAcceptanceServer } from '../scripts/update-acceptance-server.mjs'
@@ -119,6 +120,24 @@ test('actual pinned updater checks cached identities before Host shutdown', asyn
   }
   await writeFile(config, dump({ provider: 'github', owner: 'hicms', repo: 'EasyWork', updaterCacheDirName: 'cache' }))
   assert.throws(() => createUpdater(config, () => true, () => {}), /签名发布者/u)
+  const acceptance = createUpdater(config, () => true, () => {}, 'unsigned-acceptance')
+  assert.equal(await acceptance.verifyUpdateCodeSignature([], installer), null)
+  await writeFile(installer, bytes)
+  acceptance.updateInfoAndProvider = { info }
+  const originalDownload = parent.downloadUpdate
+  parent.downloadUpdate = async function () { this.downloadedUpdateHelper = { file: installer, clear: async () => {} }; return [installer] }
+  try {
+    await acceptance.downloadUpdate()
+    await writeFile(installer, Buffer.alloc(bytes.length, 1))
+    await assert.rejects(acceptance.validateCandidate(info.version), /SHA-512/u)
+  } finally { parent.downloadUpdate = originalDownload }
+  await writeFile(config, dump({ provider: 'github', owner: 'other', repo: 'EasyWork', updaterCacheDirName: 'cache' }))
+  assert.throws(() => createUpdater(config, () => true, () => {}, 'unsigned-acceptance'))
+  const build = unsignedWindowsConfig('2.1.0-alpha.1', true)
+  assert.equal(build.extraMetadata.easyworkUpdateTarget, 'nsis-acceptance')
+  assert.equal(build.nsis.differentialPackage, true)
+  assert.equal(unsignedWindowsConfig('2.1.0-alpha.1').publish, null)
+  assert.throws(() => unsignedWindowsConfig('2.1.0', true))
 })
 
 test('signing rejects a stale linked builder before accessing templates or building', async t => {

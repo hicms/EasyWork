@@ -7,7 +7,7 @@ export function windowsInstallerCommand(installer: string, directory: string) {
   }
   return {
     // NSIS consumes the entire unquoted remainder after its final /D= argument.
-    args: ['--updated', '--force-run', `/D=${directory}`],
+    args: ['/S', '--updated', '--force-run', `/D=${directory}`],
     options: {
       argv0: `"${installer}"`, windowsVerbatimArguments: true, windowsHide: true,
       detached: true, stdio: 'ignore' as const,

@@ -66,10 +66,13 @@ export function verifyAcceptance(evidence, release) {
   return evidence.evidenceUrl
 }
 
-export function readReleaseManifest(path) {
+export function readReleaseManifest(path, mode = 'signed') {
   const release = JSON.parse(readFileSync(path, 'utf8'))
+  const trustValid = mode === 'unsigned-acceptance'
+    ? release.updateMode === mode && release.channel === 'alpha' && release.publisher === undefined
+    : release.updateMode !== 'unsigned-acceptance' && typeof release.publisher === 'string' && !!release.publisher.trim()
   if (!/^[a-f0-9]{40}$/u.test(release.sourceCommit ?? '') || updateChannel(release.version) !== release.channel
-    || typeof release.publisher !== 'string' || !release.publisher.trim() || !Array.isArray(release.assets)
+    || !trustValid || !Array.isArray(release.assets)
     || !/^[A-Za-z\d+/]{86}==$/u.test(release.installerSha512 ?? '')) throw new Error('Invalid release manifest')
   const installer = `EasyWork-${release.version}-x64-Setup.exe`
   const expected = [installer, `${installer}.blockmap`, `${release.channel}.yml`, 'ui-acceptance.json', 'personal.png']
