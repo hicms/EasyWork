@@ -26,6 +26,7 @@ dsh-community-market/lib/
 # Verified official binary release cache (generated, never source).
 apps/desktop/build/official-release-cache/
 apps/desktop/build/dev-user-data/
+apps/desktop/build/release-acceptance-home/
 apps/desktop/build/*-runtime/
 apps/desktop/build/*-profile-release*/
 apps/desktop/build/*-profile-local*/

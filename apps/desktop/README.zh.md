@@ -16,6 +16,34 @@
 
 Desktop 不提供企业登录、账号认证桥接、成员空间或公司专用打包配置。启动时不迁移或删除既有历史企业数据。终端命令始终使用个人空间；应用程序菜单可按需安装、修复或移除 dsh 命令。
 
+## Windows 更新与手动发布
+
+已签名的 Windows x64 NSIS 安装版会在启动完成后检查本渠道更新，不阻塞离线工作。也可使用**应用程序 → 检查更新**。下载由用户选择，期间可以继续工作；菜单和任务栏显示进度。下载完成后，请保存草稿并结束运行中的任务，再选择**重启并更新**。普通退出不会安装。重启操作在停止 Host 前重新校验候选版本、大小、SHA-512 和发布者签名；缓存缺失或变化会在关闭后台前报错，并允许重新下载。外壳只有在安装器进程成功启动后才退出；创建进程不代表安装成功。更新提示在首次检查前同步启动页面语言，并跟随之后的外观设置变化，无需先打开菜单。安装前必须收到 Host 关闭完成确认、等待正常退出，并确认 Windows Job 中没有剩余子进程。无法确认时暂缓安装，提示重新启动后重试。官方 Host 自身的关闭流程可能终止超时任务；失败或强制结束都不能成为安装依据。开发态、浏览器 worker、免安装目录、portable 和未签名本地包不启用更新器。
+
+`electron-updater` 精确锁定 **6.8.10**，设置 `autoDownload=false`、`autoInstallOnAppQuit=false`。下载结果（包括缓存命中）必须通过带时间戳的 Authenticode 发布者签名校验；校验工具不可用时阻止更新。其完整依赖打入 `lib/desktop-updater.cjs`；外壳仍只有一套官方 DSH Profile，不增加根级运行时依赖安装。渠道严格隔离：`x.y.z-alpha.n` 只接收 alpha，`x.y.z` 只接收稳定版（`latest`）。GitHub Releases 使用规范的 `vVERSION` 标签，沿用应用和更新缓存标识。请保留历史 Setup 与 blockmap：差量下载依赖旧安装包缓存和旧版 blockmap。缓存缺失、blockmap 不可用或差量校验失败时，更新器回退全量下载。差量仅优化下载流量；EXE、ASAR、unpacked 文件和运行时仍完整配套安装。旧版没有更新器，必须先正常安装一次带更新器的版本，之后才具备 A→B 更新能力。
+
+**Windows release** 工作流仅手动触发。请从默认分支发起，填写完整源提交 SHA、该提交中已写入的 Desktop 版本和对应渠道。`draft` 验证提交可从默认分支到达，并在同一 SHA 运行 Desktop 与 Web CI。原生 Windows x64 构建只准备一次 Profile/运行时，只生成 NSIS，签名应用、卸载器和 Setup，再验证带时间戳的发布者签名、最终 SHA-512 和重新计算的 blockmap。现有外壳、归档依赖闭包、原生命令注册、fuse 和 packaged-runtime 门禁继续保留。另在隔离 Home 中启动免安装目录的实际 Windows 界面，检查个人启动、项目操作并截图。完整且校验通过的制品才上传到 Release 草稿；客户端不能发现草稿。
+
+保留 GitHub environments `desktop-release-signing`、`desktop-release-publish` 及其已配置的部署保护。工作流不要求第二位维护者，也不额外强制审批人或禁止自行审批设置。签名环境需要 secrets `WIN_CSC_LINK`（electron-builder 接受的 PKCS#12 证书）、`WIN_CSC_KEY_PASSWORD`，以及与证书发布者名称精确一致的变量 `EASYWORK_WIN_PUBLISHER`。缺少签名配置会阻止正式发行，本地未签名 `package-win.ts` 路径独立保留。两个安装包入口都会在构建前检查实际链接的 builder 补丁与 `yarn.lock` 一致，并包含所需 NSIS 保护；依赖树过期时，须在获准发行构建前明确执行 `corepack yarn install --immutable` 同步。Builder 在签名之后生成更新元数据；之后不得修改或再次签名 Setup。
+
+正式安装包把更新目标绑定到当前可执行文件所在的安装目录，短暂等待该目录的进程自然退出；无法确定进程归属或查询失败时停止安装，不会终止其他 EasyWork 安装的进程。移除旧文件使用本次签名的新卸载器，执行相同的目录和进程检查，不运行已安装的旧卸载器。启动、移除文件和校验锁定的 7za 解压器出错都会停止安装。安装原地替换，**不支持自动回滚**。若安装失败，请关闭 EasyWork，重新运行完整的已签名 Setup 修复。个人 Home、会话、凭据、文件和显式安装的插件不属于安装包替换内容。
+
+公开发布需要**第二次手动触发**：设置 `operation=publish`，填写相同源提交、版本、渠道，以及成功草稿运行的 `candidate_run`。`acceptance_json` 必须包含从 `release.json` 复制的 `sourceCommit`、`version`、`channel`、`installerSha512`，仓库 issue/discussion 的 `evidenceUrl`，以及包含 [`ACCEPTANCE_CHECKS`](../../scripts/desktop-release-policy.mjs) 全部键的 `checks`。每项只有在**实际验收通过后**才能设为 `true`。证据需记录必需插件实际 UI、安装运行时、A→B 及下载字节量、缓存缺失回退、断网重试、损坏差量回退、数据保留、普通退出、忙碌任务退出、进程清理和安装失败修复，附截图与日志。发布操作者及环境中已配置的审批人须核对这些证据。工作流再次比对所有远端制品摘要，再一次性公开完整草稿；不会覆盖公开制品，也不会为发布重新构建候选。保留历史安装包和 blockmap，启用 GitHub 不可变 Releases 并保护发行标签。CI 制品保留 30 天，请在期限内完成发布。
+
+验收明确区分 `mode: "bootstrap"` 和 `mode: "upgrade"`。每个渠道第一个带更新器的版本可以使用 bootstrap：实际完成 `BOOTSTRAP_CHECKS` 的全部项目，包括覆盖旧应用的正常安装和数据保留。其余 `ACCEPTANCE_CHECKS` 键必须列入 `unperformed`，不得标为通过。经过认证并完整分页的发行历史必须确认该渠道尚无带更新器的公开版本；查询失败就阻止发布。Bootstrap 不代表 A→B 或差量验收通过。之后所有发行均要求 upgrade 模式和全部升级检查。
+
+公开前验证 A→B 时，请使用可丢弃的 Windows 虚拟机，先正常安装已签名的基线 A，再将精确的签名草稿 B 和基线 A 制品集（各含 `release.json`）下载到不同目录。已有 Web Playwright 依赖后，明确运行：
+
+```powershell
+node apps/desktop/scripts/accept-windows-update.mjs --confirm-isolated-vm --app="C:\Users\tester\AppData\Local\Programs\EasyWork\EasyWork.exe" --home="C:\tests\fresh-home" --output="C:\tests\results" --baseline="C:\tests\A" --candidate="C:\tests\B" --scenario=delta
+```
+
+该工具使用全新的测试 Home 打开已安装 A，只把当前受检进程中的 GitHub 发现请求和 updater 会话重定向到本机测试服务。应用版本、签名制品和签名校验保持原样，产品更新源不变。请先在测试 Home 中创建有代表性的本地数据，结束任务，再通过真实菜单下载和重启。工具记录完成的载荷字节与 Range 请求。请关闭安装器自动重新打开的 B：Windows Shell 重启应用时可能不会继承 A 进程中的测试 Home 设置。然后保持 `--app`、`--home` 等全部参数不变，在原命令末尾追加 `--verify-installed` 再运行。该模式复用原测试 Home，断言 B 的实际版本和用户数据路径，记录 `installed-observation.json`，并打开 B 供人工检查数据与 UI。只在这个已核实的 Home 中比较数据；截图、数据保留和进程退出仍须实际核对。每个场景前恢复虚拟机快照。分别使用 `missing-blockmap`、`corrupt-blockmap`、`offline`；离线场景中输入 `online` 并回车恢复服务，再重试检查。测试缓存缺失时，只在可丢弃虚拟机中移除 A 的缓存（`release.json` 指定的 `%LOCALAPPDATA%\<updaterCacheDirName>`），再运行 delta 场景；真正差量测试必须保留缓存。该工具不代表场景已通过，不自动审批证据；只有选择真实的重启操作才安装。
+
+非构建实现检查为 `corepack yarn typecheck`、`corepack yarn check:updates`。小型合成字节夹具运行实际锁定的差量下载器，验证 Range 复用、重建后的 SHA-512，以及缓存缺失、blockmap 损坏和缓存字节损坏时的全量回退。无界面检查还覆盖候选复验、启动顺序、PowerShell 进度/错误处理和语言同步。这些检查不执行 NSIS，不能证明真实应用 A→B、节省率、断网恢复、数据保留或 UI 验收。构建、运行时准备、签名、打包、触发 CI 和安装仍须明确执行；本实现尚未完成这些真实发行验收场景。
+
+明确请求的未签名验收安装包复用相同的 NSIS 安全检查，关闭签名和更新器。仅以 `acceptance-vVERSION` 标签发布预发布版，不上传更新渠道元数据。要在本机隔离测试 Home 中执行安装包界面验收，请明确运行 `node apps/desktop/scripts/accept-windows-package.mjs --local`；这不代表签名更新验收通过。
+
 ## 开发与验证
 
 启动诊断保存在 Desktop 用户数据目录下的 `logs/startup.log`（Windows 默认为 `%APPDATA%\EasyWork`）。日志记录 Host、插件加载阶段、耗时、资源状态和加载进度；启动仍在等待时，每五秒记录一次。单文件达到 2 MiB 时轮转，保留三份备份。运行时输出只保留元数据摘要，不记录请求正文、认证头或会话文本。致命异常会在用户数据目录留下一个小型 `startup-fatal.log` 元数据文件。

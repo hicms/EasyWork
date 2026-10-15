@@ -24,13 +24,15 @@
     "lib/startup-trace.mjs",
     "README.md",
     "README.zh.md",
-    "THIRD_PARTY_NOTICES.md"
+    "THIRD_PARTY_NOTICES.md",
+    "lib/desktop-updater.cjs",
+    "lib/desktop-updater-LICENSES.txt"
   ],
   "engines": {
     "node": "^22.19.0 || >=24.0.0"
   },
   "scripts": {
-    "build": "node ../../scripts/generate-brand-assets.mjs && node scripts/generate-app-icon.mjs && node scripts/generate-windows-app-icon.mjs && node scripts/generate-mac-app-icon.mjs && node scripts/generate-tray-icons.mjs && node scripts/clean.mjs && tsdown && tsc -p tsconfig.json --emitDeclarationOnly",
+    "build": "node ../../scripts/generate-brand-assets.mjs && node scripts/generate-app-icon.mjs && node scripts/generate-windows-app-icon.mjs && node scripts/generate-mac-app-icon.mjs && node scripts/generate-tray-icons.mjs && node scripts/clean.mjs && node scripts/updater-licenses.mjs && tsdown && tsc -p tsconfig.json --emitDeclarationOnly",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.scripts.json --noEmit",
     "check": "yarn run build && yarn run typecheck",
     "check:win-package": "yarn run check",
@@ -53,10 +55,12 @@
     "@electron/asar": "3.4.1",
     "@electron/fuses": "1.8.0",
     "@types/node": "^22.20.0",
+    "@types/semver": "7.7.1",
     "adm-zip": "^0.6.0",
     "builder-util": "26.15.3",
     "electron": "44.7.0",
     "electron-builder": "26.15.7",
+    "electron-updater": "6.8.10",
     "js-yaml": "4.3.1",
     "sharp": "0.35.3",
     "tsdown": "0.22.2",
@@ -89,6 +93,7 @@
       "nsis": "1.2.1"
     },
     "files": [
+      "lib/desktop-updater.cjs",
       "build/app-icon.ico",
       "build/app-icon.png",
       "build/app-icon-mac.png",
@@ -168,7 +173,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "differentialPackage": false,
+      "differentialPackage": true,
       "shortcutName": "EasyWork",
       "uninstallerIcon": "build/app-icon.ico",
       "useZip": false,
@@ -198,6 +203,10 @@
         "filter": [
           "cua-driver-*/**/*"
         ]
+      },
+      {
+        "from": "lib/desktop-updater-LICENSES.txt",
+        "to": "licenses/desktop-updater-LICENSES.txt"
       }
     ],
     "asarUnpack": [
@@ -208,6 +217,12 @@
       "build/easywork-runtime/profiles/easywork/**/spawn-helper",
       "build/easywork-runtime/profiles/easywork/**/bin/rg",
       "build/easywork-runtime/profiles/easywork/**/libreoffice-kit-*/**/*"
-    ]
+    ],
+    "generateUpdatesFilesForAllChannels": false,
+    "publish": {
+      "provider": "github",
+      "repo": "EasyWork",
+      "owner": "hicms"
+    }
   }
 }

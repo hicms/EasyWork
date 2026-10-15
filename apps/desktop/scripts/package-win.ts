@@ -145,7 +145,7 @@ export function packageWindowsArtifact(
   }
   options.run(
     options.nodeExecutable,
-    [
+    target === 'nsis' ? [join(options.desktopRoot, 'scripts/windows-installer.mjs')] : [
       options.builderCli,
       '--win',
       target,

@@ -36,7 +36,7 @@
     "check:runtime-assets": "node --test apps/desktop/tests/copy-runtime-assets.test.mjs apps/desktop/tests/startup-runtime.test.mjs",
     "check:local-workflow": "node --test scripts/local-workflow.test.mjs scripts/local-profile-stage.test.mjs apps/desktop/tests/windows-packaging.test.mjs",
     "check:layout": "yarn check:brand && yarn check:bilingual-docs && node scripts/verify-layout.mjs && node scripts/verify-delivery-paths.mjs",
-    "check": "yarn check:naming && yarn check:layout && yarn check:desktop-dsh-alignment && yarn check:web-dsh-alignment && yarn check:web-plan && yarn check:desktop-profile-layout && yarn check:runtime-assets && yarn check:local-workflow && yarn workspace dsh-plugin-desktop check",
+    "check": "yarn check:naming && yarn check:layout && yarn check:desktop-dsh-alignment && yarn check:web-dsh-alignment && yarn check:web-plan && yarn check:desktop-profile-layout && yarn check:runtime-assets && yarn check:local-workflow && yarn check:updates && yarn workspace dsh-plugin-desktop check",
     "dev": "yarn workspace dsh-plugin-desktop dev",
     "start": "yarn workspace dsh-plugin-desktop start",
     "package:dir": "yarn workspace dsh-plugin-desktop package:dir",
@@ -45,6 +45,7 @@
     "dist:win": "yarn workspace dsh-plugin-desktop dist:win",
     "dist:win-portable": "yarn workspace dsh-plugin-desktop dist:win-portable",
     "release:pack": "node scripts/package-desktop-release.mjs --source=local",
-    "release:pack:published": "node scripts/package-desktop-release.mjs --source=published"
+    "release:pack:published": "node scripts/package-desktop-release.mjs --source=published",
+    "check:updates": "node --test apps/desktop/tests/desktop-updates.test.mjs apps/desktop/tests/update-release.test.mjs apps/desktop/tests/windows-update-hardening.test.mjs apps/desktop/tests/update-language.test.mjs apps/desktop/tests/updater-differential.test.mjs"
   }
 }

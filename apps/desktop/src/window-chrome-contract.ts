@@ -6,6 +6,10 @@ export const CHROME_IPC = {
   fullscreen: 'easywork:window-fullscreen',
 } as const
 
+export function isWindowLanguage(value: unknown): value is string {
+  return typeof value === 'string' && /^[a-zA-Z]+(?:-[a-zA-Z0-9]+)*$/u.test(value)
+}
+
 export function chromeLabels(language: string) {
   return /^en(?:-|$)/iu.test(language)
     ? { application: 'Application', edit: 'Edit', menubar: 'Application menu', open: 'Open EasyWork', quit: 'Quit EasyWork', command: 'Terminal command dsh (optional)…',

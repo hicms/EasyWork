@@ -1,0 +1,81 @@
+import { execFileSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
+import { updateChannel } from '../apps/desktop/src/update-policy.ts'
+
+export function verifyReleaseSource({ commit, version, channel, defaultBranch, root, git = args => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim() }) {
+  if (!/^[a-f0-9]{40}$/u.test(commit ?? '')) throw new Error('Release source must be a full commit SHA')
+  if (updateChannel(version) !== channel) throw new Error('Release channel must match version')
+  if (!defaultBranch || /[\s~^:?*\[\\]/u.test(defaultBranch)) throw new Error('Invalid default branch')
+  git(['merge-base', '--is-ancestor', commit, `refs/remotes/origin/${defaultBranch}`])
+  const manifest = JSON.parse(git(['show', `${commit}:apps/desktop/package.json`]))
+  if (manifest.version !== version) throw new Error('Version must already be committed on the default branch')
+  return { commit, version, channel, tag: `v${version}`, artifact: `windows-${version}-${commit}` }
+}
+
+export const ACCEPTANCE_CHECKS = [
+  'installedRuntime', 'requiredPluginUi', 'updateMenu', 'aToB', 'differentialDownload',
+  'missingCacheFullDownload', 'offlineRetry', 'corruptDeltaFullDownload', 'dataPreserved',
+  'ordinaryQuitDoesNotInstall', 'busyShutdownDefersInstall', 'noOwnedProcessRemains',
+  'installerFailureRepair',
+]
+export const BOOTSTRAP_CHECKS = ['normalInstallation', 'installedRuntime', 'requiredPluginUi', 'updateMenu',
+  'dataPreserved', 'ordinaryQuitDoesNotInstall', 'noOwnedProcessRemains', 'installerFailureRepair']
+
+export async function listReleases(api) {
+  const releases = []
+  for (let page = 1; ; page++) {
+    const batch = await api(`/releases?per_page=100&page=${page}`)
+    if (!Array.isArray(batch)) throw new Error('Invalid release history')
+    releases.push(...batch)
+    if (batch.length < 100) return releases
+  }
+}
+
+export function findRelease(releases, tag) {
+  // GET /releases/tags/TAG cannot find pending-tag drafts. Authenticated listing can.
+  const matches = releases.filter(release => release.tag_name === tag)
+  if (matches.length > 1) throw new Error('Multiple releases share the candidate tag')
+  return matches[0]
+}
+
+export function verifyBootstrapHistory(releases, channel) {
+  for (const release of releases) {
+    if (release.draft !== false || !release.tag_name?.startsWith('v')) continue
+    let previousChannel
+    try { previousChannel = updateChannel(release.tag_name.slice(1)) } catch { continue }
+    if (previousChannel === channel && release.assets.some(asset => asset.name === 'release.json')) {
+      throw new Error('Bootstrap is only available before the first updater-enabled release in this channel')
+    }
+  }
+}
+
+export function verifyAcceptance(evidence, release) {
+  if (evidence.sourceCommit !== release.sourceCommit || evidence.installerSha512 !== release.installerSha512
+    || evidence.version !== release.version || evidence.channel !== release.channel) throw new Error('Acceptance must bind to the exact signed candidate')
+  if (!/^https:\/\/github\.com\/hicms\/EasyWork\/(?:issues|discussions)\/\d+(?:#[-\w]+)?$/u.test(evidence.evidenceUrl ?? '')) {
+    throw new Error('Acceptance requires a reviewable repository issue/discussion with results and screenshots')
+  }
+  if (!['bootstrap', 'upgrade'].includes(evidence.mode)) throw new Error('Acceptance mode must be bootstrap or upgrade')
+  const required = evidence.mode === 'bootstrap' ? BOOTSTRAP_CHECKS : ACCEPTANCE_CHECKS
+  for (const check of required) if (evidence.checks?.[check] !== true) throw new Error(`Missing actual acceptance: ${check}`)
+  if (evidence.mode === 'bootstrap') {
+    for (const check of ACCEPTANCE_CHECKS.filter(name => !BOOTSTRAP_CHECKS.includes(name))) {
+      if (evidence.checks?.[check] === true || !evidence.unperformed?.includes(check)) throw new Error(`Bootstrap must record unperformed check: ${check}`)
+    }
+  }
+  return evidence.evidenceUrl
+}
+
+export function readReleaseManifest(path) {
+  const release = JSON.parse(readFileSync(path, 'utf8'))
+  if (!/^[a-f0-9]{40}$/u.test(release.sourceCommit ?? '') || updateChannel(release.version) !== release.channel
+    || typeof release.publisher !== 'string' || !release.publisher.trim() || !Array.isArray(release.assets)
+    || !/^[A-Za-z\d+/]{86}==$/u.test(release.installerSha512 ?? '')) throw new Error('Invalid release manifest')
+  const installer = `EasyWork-${release.version}-x64-Setup.exe`
+  const expected = [installer, `${installer}.blockmap`, `${release.channel}.yml`, 'ui-acceptance.json', 'personal.png']
+  if (release.assets.length !== expected.length || new Set(release.assets.map(asset => asset.name)).size !== expected.length) throw new Error('Incomplete release asset set')
+  for (const asset of release.assets) {
+    if (!expected.includes(asset.name) || !Number.isSafeInteger(asset.size) || asset.size <= 0 || !/^[a-f0-9]{64}$/u.test(asset.sha256)) throw new Error('Invalid release asset')
+  }
+  return release
+}

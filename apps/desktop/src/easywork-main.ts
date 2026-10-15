@@ -17,7 +17,10 @@ import { StartupLog, startupErrorFields } from './startup-log.ts'
 import { runtimeProfileDirectory } from './runtime-layout.ts'
 import { syncWindowChrome, windowChromeOptions } from './window-chrome.ts'
 import { installWindowMenu } from './window-menu.ts'
+import { isWindowLanguage } from './window-chrome-contract.ts'
 import { installKeyboard } from './keyboard.ts'
+import { installDesktopUpdates } from './desktop-updates.ts'
+import { ShutdownCoordinator } from './shutdown-coordinator.ts'
 
 const PROFILE_NAME = 'easywork'
 
@@ -26,7 +29,6 @@ let window: BrowserWindow | undefined
 let keyboard: Awaited<ReturnType<typeof installKeyboard>> | undefined
 let windowHidden = false
 let starting = false
-let stopping = false
 let quitting = false
 let quitRequested = false
 let installer: ChildProcess | undefined
@@ -39,8 +41,34 @@ let loadingArc = 0
 let finishPlugins: (() => void) | undefined
 let heartbeat: ReturnType<typeof setInterval> | undefined
 let stopRuntimeOutput: (() => void) | undefined
+let updates: ReturnType<typeof installDesktopUpdates>
+let workspaceStartup: Promise<void> | undefined
+let shutdownReason: 'quit' | 'update' | undefined
 const errorWindows = new WeakSet<BrowserWindow>()
 const errorNavigations = new WeakMap<BrowserWindow, Promise<void>>()
+const shutdown = new ShutdownCoordinator(async reason => {
+  if (reason === 'update' && (!startupComplete || starting || installer || !runtime)) {
+    throw new Error('工作区尚未就绪，无法确认安全更新。请重新启动后重试。')
+  }
+  shutdownReason = reason
+  quitRequested = true
+  log!.write('app.shutdown-requested', { reason })
+  if (heartbeat) clearInterval(heartbeat)
+  if (reason === 'quit') {
+    updates?.suspend()
+    windowHidden = true
+    window?.hide()
+    if (installer) await stopOwnedProcess(installer)
+    await workspaceStartup
+  } else if (window && !window.isDestroyed()) window.setEnabled(false)
+  web?.fail(new Error('工作区正在退出'))
+  const child = runtime
+  const result = child ? await stopRuntimeProcess(child, reason === 'update') : undefined
+  if (reason === 'update' && result !== 'graceful') throw new Error('未确认安全关闭，已暂缓安装')
+  if (result) log!.write('host.stopped', { result })
+  runtime = undefined
+  await log!.flushForQuit()
+})
 
 function bundledProfileDirectory(): string {
   const overridden = process.env.EASYWORK_BUNDLED_PROFILE
@@ -373,12 +401,13 @@ async function startPersonalWorkspace(): Promise<void> {
     await showStartupError(error instanceof Error ? error.message : String(error))
   } finally {
     starting = false
-    if (quitRequested) app.quit()
   }
 }
 
 function installMenu(): void {
   installWindowMenu({ currentWindow: () => window, restore: restoreWindow, assertSender: assertStartupSender,
+    updates: language => updates?.menu(language) ?? [],
+    languageChanged: language => { updates?.setLanguage(language) },
     edit: (keyCode, modifiers) => { keyboard!.sendEditingKey(keyCode, modifiers) },
     command: () => { void manageCommand(join(process.resourcesPath, 'easywork-runtime'), '个人工作区') } })
   installTray()
@@ -397,8 +426,10 @@ function installTray(): void {
 }
 
 function cancelQuit(error: unknown): void {
-  stopping = false
+  quitting = false
   quitRequested = false
+  shutdownReason = undefined
+  if (window && !window.isDestroyed()) window.setEnabled(true)
   installTray()
   void showStartupError(error instanceof Error ? error.message : '本机进程停止尚未确认，请稍后重试。')
 }
@@ -421,7 +452,8 @@ function installTransport(): void {
     assertStartupSender(event)
     if (!progress || typeof progress !== 'object' || !('loading' in progress) || typeof progress.loading !== 'boolean'
       || !('arc' in progress) || typeof progress.arc !== 'number' || !Number.isFinite(progress.arc)
-      || progress.arc < 0 || progress.arc > 288) throw new Error('无效的页面加载进度')
+      || progress.arc < 0 || progress.arc > 288
+      || !('language' in progress) || !isWindowLanguage(progress.language)) throw new Error('无效的页面加载进度')
     if (startupComplete) return
     if (progress.loading) loadingObserved = true
     else if (!loadingObserved) return
@@ -434,6 +466,7 @@ function installTransport(): void {
       if (heartbeat) clearInterval(heartbeat)
       log!.write('startup.complete')
       void log!.flush()
+      updates?.startup(progress.language)
     }
   })
   ipcMain.handle(BOOT_IPC.failed, (event, message: unknown) => {
@@ -472,28 +505,11 @@ if (worker !== undefined) {
     app.on('before-quit', event => {
       if (quitting) return
       event.preventDefault()
-      quitRequested = true
-      log!.write('app.quit-requested')
-      if (heartbeat) clearInterval(heartbeat)
-      // Acknowledge the click immediately while the Host finishes its disposal.
-      windowHidden = true
-      if (window && !window.isDestroyed()) window.hide()
-      tray?.destroy()
-      tray = undefined
-      web?.fail(new Error('工作区正在退出'))
-      if (starting) {
-        if (installer) void stopOwnedProcess(installer).catch(cancelQuit)
-        return
-      }
-      if (stopping) return
-      stopping = true
-      const child = runtime
-      void (child ? stopRuntimeProcess(child) : Promise.resolve()).then(async result => {
-        if (result) { log!.write('host.stopped', { result }); process.stderr.write(`EasyWork Host stopped: ${result}\n`) }
-        runtime = undefined
+      if (quitRequested) return
+      void shutdown.request('quit').then(() => {
         log!.write('app.quit')
-        await log!.flushForQuit()
         quitting = true
+        tray?.destroy(); tray = undefined
         app.quit()
       }).catch(cancelQuit)
     })
@@ -507,7 +523,17 @@ if (worker !== undefined) {
     void app.whenReady().then(async () => {
       log!.write('app.ready')
       keyboard = await installKeyboard(bundledProfileDirectory(), app.getPath('userData'), () => window, assertStartupSender)
-      installMenu(); await startPersonalWorkspace()
+      if (quitRequested || quitting) return
+      updates = installDesktopUpdates({ currentWindow: () => window,
+        prepareInstall: async () => {
+          if (shutdownReason === 'quit') throw new Error('应用正在退出，请重新启动后更新')
+          await shutdown.request('update')
+        },
+        installerStarted: () => { quitting = true; tray?.destroy(); tray = undefined },
+        installFailed: () => { cancelQuit(new Error('更新已暂缓，请重新启动 EasyWork 后重试。')) },
+        log: event => { log!.write(event) },
+      })
+      installMenu(); workspaceStartup = startPersonalWorkspace(); await workspaceStartup
     }).catch(cause => {
       log!.write('app.start-failed', startupErrorFields(cause))
       process.stderr.write(`EasyWork failed to start: ${cause instanceof Error ? cause.stack ?? cause.message : String(cause)}\n`)

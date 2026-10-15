@@ -1,0 +1,199 @@
+name: Windows release
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Create a signed draft, or publish an accepted draft
+        type: choice
+        options: [draft, publish]
+        default: draft
+      source_commit:
+        description: Full 40-character commit SHA reachable from the default branch
+        type: string
+        required: true
+      version:
+        description: Committed Desktop version (x.y.z or x.y.z-alpha.n)
+        type: string
+        required: true
+      channel:
+        type: choice
+        options: [alpha, latest]
+        default: alpha
+      candidate_run:
+        description: Successful draft run ID (publish only)
+        type: string
+      acceptance_json:
+        description: Hash-bound actual Windows update acceptance JSON (publish only; see Desktop README)
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-desktop-release
+  cancel-in-progress: false
+
+env:
+  DSH_TELEMETRY_DISABLED: '1'
+
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      commit: ${{ steps.source.outputs.commit }}
+      version: ${{ steps.source.outputs.version }}
+      channel: ${{ steps.source.outputs.channel }}
+      artifact: ${{ steps.source.outputs.artifact }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Verify immutable source and committed version
+        id: source
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          RELEASE_COMMIT: ${{ inputs.source_commit }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_CHANNEL: ${{ inputs.channel }}
+        run: node scripts/desktop-release-gate.mjs
+      - name: Verify candidate provenance
+        if: inputs.operation == 'publish'
+        uses: actions/github-script@v8
+        env:
+          CANDIDATE_RUN: ${{ inputs.candidate_run }}
+        with:
+          script: |
+            if (!/^[1-9]\d*$/.test(process.env.CANDIDATE_RUN || '')) throw new Error('Missing candidate run ID');
+            const {data} = await github.rest.actions.getWorkflowRun({...context.repo, run_id: process.env.CANDIDATE_RUN});
+            if (data.path !== '.github/workflows/release-windows.yml' || data.event !== 'workflow_dispatch' || data.conclusion !== 'success') throw new Error('Candidate must come from a successful manual Windows release run');
+
+  checks:
+    if: inputs.operation == 'draft'
+    needs: source
+    uses: ./.github/workflows/ci.yml
+    with:
+      revision: ${{ needs.source.outputs.commit }}
+
+  windows:
+    if: inputs.operation == 'draft'
+    needs: [source, checks]
+    runs-on: windows-2022
+    environment: desktop-release-signing
+    env:
+      EASYWORK_RELEASE_DIRECTORY: ${{ github.workspace }}/apps/desktop/build/easywork-profile-release
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.source.outputs.commit }}
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - run: corepack enable
+      - run: corepack yarn install --immutable
+      - working-directory: apps/web
+        run: corepack pnpm install --frozen-lockfile
+      - name: Verify updater regressions on Windows before building
+        run: corepack yarn check:updates
+      - name: Build the same source and stage one shared Profile
+        run: |
+          corepack yarn workspace dsh-plugin-desktop build
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Push-Location apps/web
+          corepack pnpm build
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Pop-Location
+          node apps/desktop/scripts/pack-easywork-profile.mjs apps/web $env:EASYWORK_RELEASE_DIRECTORY
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          corepack yarn workspace dsh-plugin-desktop prepare:easywork-runtime
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          corepack yarn workspace dsh-plugin-desktop prepare:easywork-primary-runtime
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          corepack yarn workspace dsh-plugin-desktop prepare:easywork-command
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Sign and package only Windows x64 NSIS; verify final metadata
+        env:
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+          EASYWORK_WIN_PUBLISHER: ${{ vars.EASYWORK_WIN_PUBLISHER }}
+          EASYWORK_RELEASE_CHANNEL: ${{ needs.source.outputs.channel }}
+        run: node apps/desktop/scripts/release-win.mjs
+      - name: Actual unpacked Windows UI and operation acceptance in isolated Home
+        run: node apps/desktop/scripts/accept-windows-package.mjs
+      - name: Stage only the verified release asset set
+        run: node apps/desktop/scripts/stage-windows-release.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ needs.source.outputs.artifact }}
+          path: apps/desktop/dist/release/*
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+          overwrite: false
+
+  draft:
+    if: inputs.operation == 'draft'
+    needs: [source, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.source.outputs.commit }}
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.source.outputs.artifact }}
+          path: release
+      - name: Upload the complete immutable draft without public discovery
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_OPERATION: draft
+          RELEASE_COMMIT: ${{ needs.source.outputs.commit }}
+          RELEASE_VERSION: ${{ needs.source.outputs.version }}
+          RELEASE_CHANNEL: ${{ needs.source.outputs.channel }}
+        run: node scripts/github-desktop-release.mjs
+
+  publish:
+    if: inputs.operation == 'publish'
+    needs: source
+    runs-on: ubuntu-latest
+    environment: desktop-release-publish
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.source.outputs.commit }}
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.source.outputs.artifact }}
+          path: release
+          run-id: ${{ inputs.candidate_run }}
+          github-token: ${{ github.token }}
+      - name: Verify acceptance and every remote digest, then publish the complete draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_OPERATION: publish
+          RELEASE_COMMIT: ${{ needs.source.outputs.commit }}
+          RELEASE_VERSION: ${{ needs.source.outputs.version }}
+          RELEASE_CHANNEL: ${{ needs.source.outputs.channel }}
+          RELEASE_ACCEPTANCE: ${{ inputs.acceptance_json }}
+        run: node scripts/github-desktop-release.mjs

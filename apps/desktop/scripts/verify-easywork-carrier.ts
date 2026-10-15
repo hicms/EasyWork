@@ -60,6 +60,18 @@ export async function afterPack(context: PackContext): Promise<void> {
   if (manifest.main !== 'lib/easywork-main.js' || Object.keys(manifest.dependencies ?? {}).length > 0) {
     throw new Error('Electron carrier must declare only the EasyWork entry point, without runtime dependencies')
   }
+  // Load the bundled updater from the actual archive with Electron's resolver;
+  // a source-only dependency assertion would miss excluded root node_modules.
+  const updaterProbe = spawnSync(process.execPath, ['--input-type=commonjs', '-e',
+    "const runtime = require(process.argv[1]); if (typeof runtime.createUpdater !== 'function') throw Error('Missing bundled updater')",
+    join(archive, 'lib', 'desktop-updater.cjs')], {
+    env: { ...process.env, ELECTRON_RUN_AS_NODE: '1', NODE_PATH: '' }, cwd: tmpdir(), windowsHide: true, encoding: 'utf8', timeout: 30_000,
+  })
+  if (updaterProbe.error || updaterProbe.status !== 0) throw new Error('Packaged updater dependency closure failed: ' + String(updaterProbe.error ?? updaterProbe.stderr))
+  const updaterNotices = readFileSync(join(resources, 'licenses', 'desktop-updater-LICENSES.txt'), 'utf8')
+  if (!updaterNotices.includes('electron-updater@') || !updaterNotices.includes('Permission is hereby granted')) {
+    throw new Error('Packaged updater dependency notices are incomplete')
+  }
 
   const runtime = join(resources, 'easywork-runtime')
   // FFI loads a physical DLL path, not Electron's virtual ASAR path. Only its

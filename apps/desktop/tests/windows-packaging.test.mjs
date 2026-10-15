@@ -7,7 +7,8 @@ import { packageWindowsArtifact } from '../scripts/package-win.ts'
 import { verifyWindowsPortable } from '../scripts/verify-win-portable.ts'
 import { DSH_VERSION } from '../scripts/runtime-version.mjs'
 
-test('portable packages a single EXE with automatic publishing disabled and signing secrets removed', () => {
+test('unsigned packaging removes signing secrets and routes NSIS through the shared safety configuration', () => {
+  for (const target of ['portable', 'nsis']) {
   const calls = []
   packageWindowsArtifact({
     env: { CSC_LINK: 'private-signing-key', WIN_CSC_KEY_PASSWORD: 'secret', DSH_PACKAGE_CHECK_ALREADY_RAN: '1' },
@@ -15,14 +16,16 @@ test('portable packages a single EXE with automatic publishing disabled and sign
     workspaceRoot: 'workspace', desktopRoot: 'desktop', commandShell: 'cmd.exe',
     builderCli: 'builder-cli', verifier: 'portable-verifier', nodeExecutable: 'node',
     run: (command, args, cwd, env) => calls.push({ command, args, cwd, env }), log: () => {},
-  }, 'portable', 'portable executable')
-  assert.deepEqual(calls[0].args.slice(0, 6), ['builder-cli', '--win', 'portable', '--x64', '--publish', 'never'])
+  }, target, target === 'nsis' ? 'installer' : 'portable executable')
+  if (target === 'portable') assert.deepEqual(calls[0].args.slice(0, 6), ['builder-cli', '--win', 'portable', '--x64', '--publish', 'never'])
+  else assert.deepEqual(calls[0].args, [join('desktop', 'scripts/windows-installer.mjs')])
   assert.equal(calls[0].env.CSC_IDENTITY_AUTO_DISCOVERY, 'false')
   for (const call of calls) {
     assert.equal(call.env.CSC_LINK, undefined)
     assert.equal(call.env.WIN_CSC_KEY_PASSWORD, undefined)
   }
   assert.deepEqual(calls[1].args, ['portable-verifier'])
+  }
 })
 
 test('portable verification requires the single EXE and verifies bundled runtime metadata', t => {

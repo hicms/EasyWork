@@ -40,7 +40,9 @@ if (process.isMainFrame && location.protocol === `${APP_SCHEME}:` && location.ho
     const arc = Number.isFinite(value) && value >= 72 && value <= 288 ? value : 0
     if (arc !== lastArc) { lastArc = arc; report(true, arc) }
   })
-  const report = (loading: boolean, arc: number): void => { void ipcRenderer.invoke(BOOT_IPC.progress, { loading, arc }).catch(() => {}) }
+  const report = (loading: boolean, arc: number): void => {
+    void ipcRenderer.invoke(BOOT_IPC.progress, { loading, arc, language: document.documentElement.lang || navigator.language }).catch(() => {})
+  }
   observer.observe(document, { subtree: true, childList: true, attributes: true, attributeFilter: ['style', 'data-dsh-boot'] })
   window.addEventListener('pagehide', () => { disposed = true; observer.disconnect(); clearPreloads() }, { once: true })
   contextBridge.exposeInMainWorld('dshDesktopBoot', {

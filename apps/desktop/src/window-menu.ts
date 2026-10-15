@@ -1,20 +1,24 @@
 /** Native menus for the carrier's Windows caption, preserving editor-owned history. */
 import { app, ipcMain, Menu, type BrowserWindow, type IpcMainInvokeEvent, type MenuItemConstructorOptions } from 'electron'
-import { CHROME_IPC, chromeLabels } from './window-chrome-contract.ts'
+import { CHROME_IPC, chromeLabels, isWindowLanguage } from './window-chrome-contract.ts'
 
 export function installWindowMenu(operations: {
   currentWindow(): BrowserWindow | undefined,
   restore(): void,
   command(): void,
+  updates(language: string): MenuItemConstructorOptions[],
+  languageChanged(language: string): void,
   edit(keyCode: string, modifiers: Array<'control'>): void,
   assertSender(event: IpcMainInvokeEvent): void,
 }): void {
-  let language = 'zh-CN'
+  let language = app.getLocale()
+  operations.languageChanged(language)
   const applicationItems = (): MenuItemConstructorOptions[] => {
     const labels = chromeLabels(language)
     return [
       { label: labels.open, click: operations.restore },
       { label: labels.command, click: operations.command },
+      ...operations.updates(language),
       { type: 'separator' },
       { label: labels.quit, accelerator: 'CmdOrCtrl+Q', click: () => { app.quit() } },
     ]
@@ -56,11 +60,12 @@ export function installWindowMenu(operations: {
   })
   ipcMain.handle(CHROME_IPC.appearance, (event, lang: unknown, color: unknown, symbolColor: unknown) => {
     operations.assertSender(event)
-    if (typeof lang !== 'string' || !/^[a-zA-Z]+(?:-[a-zA-Z0-9]+)*$/u.test(lang)) throw new Error('无效的窗口语言')
+    if (!isWindowLanguage(lang)) throw new Error('无效的窗口语言')
     const validColor = (value: unknown): value is string => typeof value === 'string'
       && /^(?:#[\da-f]{3,8}|rgba?\([\d.,%\s]+\))$/iu.test(value)
     if (!validColor(color) || !validColor(symbolColor)) throw new Error('无效的窗口颜色')
     language = lang
+    operations.languageChanged(lang)
     operations.currentWindow()!.setTitleBarOverlay({ color, symbolColor })
   })
 }

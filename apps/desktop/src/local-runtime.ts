@@ -155,19 +155,24 @@ const profile = loadProfileDirectory('dsh', ${JSON.stringify(profile)}, installA
 reportSkippedBundles('dsh', profile);
 startupPhase('profile.resolve', 'end', resolveAt);
 let stopping = false;
-async function stop() {
+async function stop(requireDrainedProcesses) {
   if (stopping) return;
   stopping = true;
   try {
     const running = await application;
     await running.shutdown.shutdown(0);
+    if (requireDrainedProcesses && process.platform === 'win32') {
+      const drain = globalThis[Symbol.for('easywork.waitForOwnedProcesses')];
+      if (typeof drain !== 'function') throw new Error('Owned process monitor is unavailable');
+      await drain();
+    }
     if (process.connected) {
       await new Promise((resolve, reject) => process.send({ type: 'easywork-shutdown-complete' }, error => error ? reject(error) : resolve()));
       process.disconnect();
     }
   } catch (error) { console.error('EasyWork Host shutdown failed:', error); process.exit(1); }
 }
-process.on('message', message => { if (message?.type === 'easywork-shutdown') void stop(); });
+process.on('message', message => { if (message?.type === 'easywork-shutdown') void stop(message.requireDrainedProcesses === true); });
 const activateAt = performance.now();
 startupPhase('plugins.activate', 'begin', activateAt);
 const application = runProfile({ environment: loadLayeredEnv('dsh'), profile: 'easywork', resolvedProfile: { profile, installAnchor }, patchFiles: ${JSON.stringify(patches)}, args: process.argv.slice(2), packageManager: { command: ${JSON.stringify(executable)}, args: [${JSON.stringify(packageManager)}] } });

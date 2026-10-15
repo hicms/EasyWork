@@ -23,6 +23,17 @@ limits.writeUInt32LE(0x2000, 16);
 if (!api.setInformationJobObject(job, 9, limits, limits.length)) throwLastError(api, 'SetInformationJobObject');
 if (!api.assignProcessToJobObject(job, api.current())) throwLastError(api, 'AssignProcessToJobObject');
 // Keep the sole handle open until Node exits. Windows then terminates every descendant.
+// Updating requires the children to leave naturally BEFORE closing this handle.
+globalThis[Symbol.for('easywork.waitForOwnedProcesses')] = async () => {
+  const deadline = Date.now() + 2000;
+  for (;;) {
+    const accounting = Buffer.alloc(48);
+    if (!api.queryInformationJobObject(job, 1, accounting, accounting.length, null)) throwLastError(api, 'QueryInformationJobObject');
+    if (accounting.readUInt32LE(40) === 1) return;
+    if (Date.now() >= deadline) throw new Error('Owned processes are still running; update installation refused');
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+};
 `, { mode: 0o600 })
   return ['--import', pathToFileURL(bootstrap).href]
 }

@@ -41,6 +41,8 @@ Windows x64 本地打包在 Windows PowerShell 中执行：
 
 GitHub Actions CI 仅支持手动运行，不会因 push 或 Pull Request 自动触发。需要云端验证时，在仓库的 Actions → CI → Run workflow 中手动启动；一次运行会检查 Desktop 和 Web。日常修改可按需使用本地检查。
 
+Windows x64 NSIS 的签名差量更新使用独立的 **Windows release** 手动工作流，先生成完整 Release 草稿，实际验收通过后再手动公开。客户端由用户选择下载，完成后通过“应用程序 → 重启并更新”安装；普通退出不安装。旧版需先正常安装一次带更新器的版本。签名配置、渠道隔离、审批和验收要求见 [Desktop 更新与发布](apps/desktop/README.zh.md#windows-更新与手动发布)。当前实现尚未完成真实 A→B 安装验收。
+
 Logo 原稿和配色位于 `assets/brand/`。运行 `node scripts/generate-brand-assets.mjs` 同步矢量资源，桌面构建会自动生成各平台图标。
 
 许可证见 [LICENSE](LICENSE)，第三方组件声明见 [THIRD_PARTY_NOTICES.md](apps/desktop/THIRD_PARTY_NOTICES.md)。

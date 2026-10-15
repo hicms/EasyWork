@@ -878,6 +878,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/semver@npm:7.7.1":
+  version: 7.7.1
+  resolution: "@types/semver@npm:7.7.1"
+  checksum: 10c0/c938aef3bf79a73f0f3f6037c16e2e759ff40c54122ddf0b2583703393d8d3127130823facb880e694caa324eb6845628186aac1997ee8b31dc2d18fafe26268
+  languageName: node
+  linkType: hard
+
 "@xmldom/xmldom@npm:^0.8.8":
   version: 0.8.14
   resolution: "@xmldom/xmldom@npm:0.8.14"
@@ -1002,7 +1009,7 @@ __metadata:
 
 "app-builder-lib@patch:app-builder-lib@npm%3A26.15.7#./patches/app-builder-lib@26.15.7.patch::locator=easywork-desktop-workspace%40workspace%3A.":
   version: 26.15.7
-  resolution: "app-builder-lib@patch:app-builder-lib@npm%3A26.15.7#./patches/app-builder-lib@26.15.7.patch::version=26.15.7&hash=5ac45c&locator=easywork-desktop-workspace%40workspace%3A."
+  resolution: "app-builder-lib@patch:app-builder-lib@npm%3A26.15.7#./patches/app-builder-lib@26.15.7.patch::version=26.15.7&hash=a705b5&locator=easywork-desktop-workspace%40workspace%3A."
   dependencies:
     "@electron/asar": "npm:3.4.1"
     "@electron/fuses": "npm:^1.8.0"
@@ -1048,7 +1055,7 @@ __metadata:
   peerDependencies:
     dmg-builder: 26.15.7
     electron-builder-squirrel-windows: 26.15.7
-  checksum: 10c0/4788979599b280fc8b2adea3facf3d8fc76b6b662ab8e228fdbd2fc089a9c3f7bafa4a2e96c7a1bebd19c9ae7f1443dd0b97b9f1b3092a9b59d0caa87a64c806
+  checksum: 10c0/591b3d9175e37dfb2131550bb066d6d58ddea0eb4a754f4bb9776b13f346fba00fae775a3961f4c1f9adbf8642c9c8fc8a5fecbacf92ae61ea2b37682aa94b0a
   languageName: node
   linkType: hard
 
@@ -1530,10 +1537,12 @@ __metadata:
     "@electron/asar": "npm:3.4.1"
     "@electron/fuses": "npm:1.8.0"
     "@types/node": "npm:^22.20.0"
+    "@types/semver": "npm:7.7.1"
     adm-zip: "npm:^0.6.0"
     builder-util: "npm:26.15.3"
     electron: "npm:44.7.0"
     electron-builder: "npm:26.15.7"
+    electron-updater: "npm:6.8.10"
     js-yaml: "npm:4.3.1"
     sharp: "npm:0.35.3"
     tsdown: "npm:0.22.2"
@@ -1632,6 +1641,22 @@ __metadata:
     lazy-val: "npm:^1.0.5"
     mime: "npm:^2.5.2"
   checksum: 10c0/809629339769d6d45460af91de55546b1ae4e88a62d7cfe9b2b597b5aa31d190c1aea80f517f8248c08acee7e6f7327eb921b4dc9c9dd601bcde4feeedb7a87a
+  languageName: node
+  linkType: hard
+
+"electron-updater@npm:6.8.10":
+  version: 6.8.10
+  resolution: "electron-updater@npm:6.8.10"
+  dependencies:
+    builder-util-runtime: "npm:9.7.0"
+    fs-extra: "npm:^10.1.0"
+    js-yaml: "npm:^4.1.0"
+    lazy-val: "npm:^1.0.5"
+    lodash.escaperegexp: "npm:^4.1.2"
+    lodash.isequal: "npm:^4.5.0"
+    semver: "npm:~7.7.3"
+    tiny-typed-emitter: "npm:^2.1.0"
+  checksum: 10c0/5e4fc9518d573f853f1776d7d100fdd27353e6cfacb99ee73648afda9618dff2bf72f8d913dd5003782689f58b9a113b2700c863b20eb814e4d1b48d221333eb
   languageName: node
   linkType: hard
 
@@ -2294,6 +2319,20 @@ __metadata:
   version: 1.0.5
   resolution: "lazy-val@npm:1.0.5"
   checksum: 10c0/28ba7a0e704895a444eed47d110274090f485b991f2ea6fff2ab0878c529c53f60f2eb2d944cbbd68b91408e7455eabc62861c48289d4757fa9c818b97454f24
+  languageName: node
+  linkType: hard
+
+"lodash.escaperegexp@npm:^4.1.2":
+  version: 4.1.2
+  resolution: "lodash.escaperegexp@npm:4.1.2"
+  checksum: 10c0/484ad4067fa9119bb0f7c19a36ab143d0173a081314993fe977bd00cf2a3c6a487ce417a10f6bac598d968364f992153315f0dbe25c9e38e3eb7581dd333e087
+  languageName: node
+  linkType: hard
+
+"lodash.isequal@npm:^4.5.0":
+  version: 4.5.0
+  resolution: "lodash.isequal@npm:4.5.0"
+  checksum: 10c0/dfdb2356db19631a4b445d5f37868a095e2402292d59539a987f134a8778c62a2810c2452d11ae9e6dcac71fc9de40a6fedcb20e2952a15b431ad8b29e50e28f
   languageName: node
   linkType: hard
 
@@ -3189,6 +3228,13 @@ __metadata:
   dependencies:
     semver: "npm:^5.5.0"
   checksum: 10c0/bbdece69f596f16d1a7b0df7fe451fe959c6f26af283d8919154f59abf8a853b3da1aea8d10e49e7af5b039a38a3d8b4ca0c044b59dcf19a93d63c6ee7e36507
+  languageName: node
+  linkType: hard
+
+"tiny-typed-emitter@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "tiny-typed-emitter@npm:2.1.0"
+  checksum: 10c0/522bed4c579ee7ee16548540cb693a3d098b137496110f5a74bff970b54187e6b7343a359b703e33f77c5b4b90ec6cebc0d0ec3dbdf1bd418723c5c3ce36d8a2
   languageName: node
   linkType: hard
 

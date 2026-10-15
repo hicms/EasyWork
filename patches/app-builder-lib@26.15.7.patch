@@ -56,7 +56,7 @@ index 8d2992afbe79af270a0d08c38203166d3afc03f1..bd8dc7fd2bc01a4ec9ade821bbd5d7bd
 diff --git a/templates/nsis/include/extractAppPackage.nsh b/templates/nsis/include/extractAppPackage.nsh
 --- a/templates/nsis/include/extractAppPackage.nsh
 +++ b/templates/nsis/include/extractAppPackage.nsh
-@@ -92,47 +92,6 @@
+@@ -92,47 +92,18 @@
  !macro extractUsing7za FILE
 -  Push $OUTDIR
 -  CreateDirectory "$PLUGINSDIR\7z-out"
@@ -103,39 +103,23 @@ diff --git a/templates/nsis/include/extractAppPackage.nsh b/templates/nsis/inclu
 -    Goto LoopExtract7za
 -
 -  DoneExtract7za:
-+  # The Desktop package favors install speed over atomic replacement: avoid
-+  # writing the entire app to $PLUGINSDIR and copying every file a second time.
 +  SetOutPath "$INSTDIR"
-+  Nsis7z::Extract "${FILE}"
- !macroend
-diff --git a/templates/nsis/include/installUtil.nsh b/templates/nsis/include/installUtil.nsh
---- a/templates/nsis/include/installUtil.nsh
-+++ b/templates/nsis/include/installUtil.nsh
-@@ -128,6 +128,11 @@ Function handleUninstallResult
-   ${if} $R0 != 0
--    MessageBox MB_OK|MB_ICONEXCLAMATION "$(uninstallFailed): $R0"
--    DetailPrint `Uninstall was not successful. Uninstaller error code: $R0.`
--    SetErrorLevel 2
--    Quit
-+    ${if} $R0 == 2
-+      DetailPrint `Old uninstaller returned code 2; continuing with non-atomic in-place replacement.`
-+      StrCpy $R0 0
-+    ${else}
-+      MessageBox MB_OK|MB_ICONEXCLAMATION "$(uninstallFailed): $R0"
-+      DetailPrint `Uninstall was not successful. Uninstaller error code: $R0.`
++  !ifdef EASYWORK_NSIS_7ZA
++    # Nsis7z::Extract discards its error result. Signed releases must use a
++    # checksum-locked extractor with an observable exit code, without a backup tree.
++    File /oname=$PLUGINSDIR\easywork-7za.exe "${EASYWORK_NSIS_7ZA}"
++    nsExec::ExecToLog '"$PLUGINSDIR\easywork-7za.exe" x -y -aoa "${FILE}" "-o$INSTDIR"'
++    Pop $R0
++    ${if} $R0 != 0
++      MessageBox MB_OK|MB_ICONSTOP "EasyWork extraction failed ($R0). Close EasyWork and run the complete Setup installer again to repair it."
 +      SetErrorLevel 2
 +      Quit
 +    ${endif}
-   ${endif}
-@@ -233,4 +238,8 @@ Function uninstallOldVersion
-     CheckResult:
-       ${if} $R0 == 0
-         Return
-       ${endIf}
-+      ${if} $R0 == 2
-+        # Code 2 is handled by the non-atomic in-place replacement path.
-+        Return
-+      ${endIf}
++  !else
++    # Explicitly unsigned local test builds retain the original fast extraction.
++    Nsis7z::Extract "${FILE}"
++  !endif
+ !macroend
 diff --git a/out/util/appFileCopier.js b/out/util/appFileCopier.js
 --- a/out/util/appFileCopier.js
 +++ b/out/util/appFileCopier.js
@@ -150,3 +134,61 @@ diff --git a/out/util/appFileCopier.js b/out/util/appFileCopier.js
      // Validate against the as-declared (pre-extraMetadata) production dependencies so a configured
      // `extraMetadata.dependencies` entry that isn't installed cannot reject a correct collection.
      const deps = await resolveFirstMatchingCollection({
+diff --git a/templates/nsis/include/installUtil.nsh b/templates/nsis/include/installUtil.nsh
+--- a/templates/nsis/include/installUtil.nsh
++++ b/templates/nsis/include/installUtil.nsh
+@@ -207,7 +207,29 @@
+   ${endif}
+ 
+   StrCpy $uninstallerFileNameTemp "$PLUGINSDIR\old-uninstaller.exe"
+-  !insertmacro copyFile "$uninstallerFileName" "$uninstallerFileNameTemp"
++  !ifdef EASYWORK_SAFE_INSTALL
++    ${if} ${isUpdated}
++    ${andIf} $installationDir != $INSTDIR
++      MessageBox MB_OK|MB_ICONSTOP "Registered EasyWork installation differs from the requested update target."
++      SetErrorLevel 2
++      Quit
++    ${endif}
++    System::Call 'kernel32::SetEnvironmentVariable(t "EASYWORK_NSIS_UNINSTALL_DIRECTORY", t "$installationDir") i.r9'
++    ${if} $9 == 0
++      SetErrorLevel 2
++      Quit
++    ${endif}
++    ; Never run an older uninstaller that can kill every EasyWork.exe by name.
++    ClearErrors
++    File /oname=$PLUGINSDIR\old-uninstaller.exe "${UNINSTALLER_OUT_FILE}"
++    ${if} ${Errors}
++      MessageBox MB_OK|MB_ICONSTOP "Cannot extract the current EasyWork uninstaller. Installation stopped."
++      SetErrorLevel 2
++      Quit
++    ${endif}
++  !else
++    !insertmacro copyFile "$uninstallerFileName" "$uninstallerFileNameTemp"
++  !endif
+ 
+   # Retry counter
+   StrCpy $R5 0
+@@ -223,12 +245,21 @@
+   OneMoreAttempt:
++    !ifdef EASYWORK_SAFE_INSTALL
++      ClearErrors
++    !endif
+     ExecWait '"$uninstallerFileNameTemp" /S /KEEP_APP_DATA $0 _?=$installationDir' $R0
+     ifErrors TryInPlace CheckResult
+ 
+     TryInPlace:
+       # the execution failed - might have been caused by some group policy restrictions
+       # we try to execute the uninstaller in place
+-      ExecWait '"$uninstallerFileName" /S /KEEP_APP_DATA $0 _?=$installationDir' $R0
+-      ifErrors DoesNotExist
++      !ifdef EASYWORK_SAFE_INSTALL
++        MessageBox MB_OK|MB_ICONSTOP "Cannot launch the current EasyWork uninstaller. Installation stopped."
++        SetErrorLevel 2
++        Quit
++      !else
++        ExecWait '"$uninstallerFileName" /S /KEEP_APP_DATA $0 _?=$installationDir' $R0
++        ifErrors DoesNotExist
++      !endif
+ 
+     CheckResult:
+       ${if} $R0 == 0

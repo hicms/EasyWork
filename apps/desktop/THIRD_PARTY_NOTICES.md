@@ -11,6 +11,16 @@ third-party notices are maintained by the upstream project:
 EasyWork bundles and their dependencies retain their own license terms, which
 must be checked from the exact release artifacts used for an installer.
 
+The Electron carrier also bundles `electron-updater` 6.8.10 and its JavaScript
+runtime dependencies. Their exact versions and complete license texts are shipped
+in `resources/licenses/desktop-updater-LICENSES.txt`, generated from the locked
+packages during the carrier build. The signed Windows installer temporarily uses
+the checksum-locked electron-builder 7-Zip toolset for checked in-place extraction.
+Its complete license and LGPL text are shipped in `resources/licenses/7zip-LICENSE.txt`
+and `resources/licenses/7zip-COPYING.txt`. This toolset contains unmodified 7-Zip 24.09. Its corresponding source is
+available at <https://www.7-zip.org/a/7z2409-src.7z>; distribution terms are at
+<https://www.7-zip.org/>.
+
 The Desktop Profile bundles two separate third-party plugins:
 
 - [`@cocofhu/skillhub`](https://www.npmjs.com/package/@cocofhu/skillhub)
