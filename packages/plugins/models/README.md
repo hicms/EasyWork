@@ -6,6 +6,10 @@ Desktop 和 Web 共用此 Profile 插件，连接 `https://ask.vigoai.cn`。在�
 
 模型菜单采用独立浮层，按窗口边缘定位并在内部滚动，避免输入框或聊天区横向移位。厂商标识使用本地 SVG，能力通过带说明的图标呈现；完整名称、上下文等信息保留在提示中。思考参数使用分段切换按钮，选中项高亮，待服务确认时禁用；按钮沿用服务声明的原始值。图标来源及许可见 `THIRD_PARTY_NOTICES.md`。`corepack pnpm --filter easywork-plugin-models test:ui` 用真实浏览器检查桌面、窄分栏、明暗主题和小窗口下的布局与交互。
 
+EasyWork 默认在服务声明的可选值内开启思考并请求可显示的思考摘要：Gemini 选择 `includeThoughts=true`，Claude 选择 `thinking.display=summarized`，MiniMax 选择 `reasoning_split=true`。原默认关闭的推理开关优先使用可选的自适应或开启；`none`、`off`、`minimal` 强度默认改用最低可选的有效思考档位，已开启的强度保持原值。未声明这些能力时保留服务默认，不添加额外参数。服务目录中的 `default` 仍是上游默认，产品偏好由共享 `defaultControls` 统一选择，Desktop、Web、模型菜单与实际请求保持一致。
+
+关闭和隐藏选项仍可手动选择并随会话保存。已有会话或全局配置中保存的完整思考参数保持原值，不自动覆盖；重新选择模型即可应用新的产品默认。未保存思考参数时自动使用新默认。实际思考文字由模型服务返回；开启显示表示请求摘要，不能保证每次请求都有摘要，也不会把签名或用量当成思考文字。
+
 Host 调用 `/api/auth/register`、`/api/auth/login`、`/api/auth/me`、`/api/auth/logout` 和 `/api/models`；注册请求为 `{email,password,inviteCode}`，确认密码仅在界面校验。JWT 只进入官方 credential grant record，浏览器仅接收脱敏状态。密码和邀请码仅用于本次请求，不保存，提交后清空对应输入框。注册与登录共用会话保存和撤销流程。退出、过期和服务 401 撤销本插件的 JWT、目录及在途调用；为保证跨进程条件更新，已退出记录保留不含秘密的标记。暂时断网保留凭据，目录失败可以重试。当前服务不提供刷新令牌接口。登录授权远程模型服务，不迁移或删除本地 Home、会话、文件和其他插件数据。
 
 `ModelAdapter` 使用发布的 `@deepseek-ai/dsh-llm-pi-ai` 与公开 pi-ai provider/payload API，支持 OpenAI Chat Completions、Anthropic Messages、Gemini GenerateContent。工具、图片、流式事件和回放转换由官方适配器拥有；每次调用固定账号、模型及完整思考参数。目录只声明输入能力与上下文，缺失容量使用明确的 32K 保守估计，不推断厂商名称。服务未声明输出上限时不设置会话请求默认上限。多维思考参数编码为官方 opaque reasoningEffort；调用适配器前验证并解码，库侧不接收这个自有值。

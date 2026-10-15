@@ -2,7 +2,7 @@ import * as React from 'react';
 import { createPortal } from 'react-dom';
 import type { ModelsClient } from './management.ts';
 import type { SessionModels } from './selection.ts';
-import { selectedControls } from '../catalog.ts';
+import { defaultControls, selectedControls } from '../catalog.ts';
 import { providerId } from '../shared.ts';
 import { filterModels, ModelList } from './ModelList.tsx';
 import { styles } from './styles.ts';
@@ -43,7 +43,7 @@ export function ModelPicker({ account, selection, locked, openAccount }: {
     return () => { document.removeEventListener('pointerdown', outside); document.removeEventListener('keydown', escape); };
   }, [open, selection]);
   React.useEffect(() => { if (locked) setOpen(false); }, [locked]);
-  let values = current ? Object.fromEntries((current.reasoningControls ?? []).map(control => [control.path, control.default])) : {};
+  let values = current ? defaultControls(current) : {};
   if (current) { try { values = selectedControls(current, selected.current?.reasoningEffort); } catch { /* A removed server control remains visible as an unavailable saved selection. */ } }
   const select = (model: typeof models[number]) => { void selection.select(model).then(() => { setOpen(false); trigger.current?.focus(); }).catch(() => {}); };
   const keyboard = (event: React.KeyboardEvent<HTMLDivElement>) => {

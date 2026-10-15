@@ -52,8 +52,31 @@ export function parseCatalog(value: unknown): readonly ServiceModel[] {
 export function encodeControls(values: Readonly<Record<string, Json>>): string {
   return 'controls:' + JSON.stringify(Object.fromEntries(Object.entries(values).sort(([a], [b]) => a.localeCompare(b))));
 }
+function preferredDefault(control: ReasoningControl): Json {
+  const { path, values, default: upstream } = control;
+  const thinkingType = path === 'thinking.type' || path === 'thinking';
+  const current = thinkingType && record(upstream) ? upstream.type : upstream;
+  let preferences: readonly Json[] = [];
+  if (['generationConfig.thinkingConfig.includeThoughts', 'enable_thinking', 'reasoning_split'].includes(path)) preferences = [true];
+  else if (path === 'thinking.display') preferences = ['summarized'];
+  else if (thinkingType && current === 'disabled') preferences = ['adaptive', 'enabled'];
+  else if (['reasoning_effort', 'generationConfig.thinkingConfig.thinkingLevel'].includes(path)
+    && typeof current === 'string' && ['none', 'off', 'minimal'].includes(current.toLowerCase())) {
+    preferences = ['low', 'medium', 'high', 'xhigh', 'max'];
+  }
+  for (const preferred of preferences) {
+    const offered = values.find(value => {
+      const candidate = thinkingType && record(value) ? value.type : value;
+      return typeof candidate === 'string' && typeof preferred === 'string'
+        ? candidate.toLowerCase() === preferred : equal(candidate, preferred);
+    });
+    if (offered !== undefined) return offered;
+  }
+  return upstream;
+}
 export function defaultControls(model: ServiceModel): Record<string, Json> {
-  return Object.fromEntries((model.reasoningControls ?? []).map(control => [control.path, control.default]));
+  // Product defaults use offered values; saved selections still round-trip unchanged.
+  return Object.fromEntries((model.reasoningControls ?? []).map(control => [control.path, preferredDefault(control)]));
 }
 export function controlOptions(model: ServiceModel): readonly { id: string; values: Readonly<Record<string, Json>> }[] {
   if (!model.reasoningControls?.length) return [];

@@ -23,3 +23,30 @@ test('composer and command share official projection and selectModel; a rejected
     assert.equal(selection.getSnapshot().current?.model, 'from-another-view'); assert.equal(selection.getSnapshot().busy, false);
   } finally { selection.dispose(); }
 });
+
+test('selecting a model starts with visible thoughts and subsequent edits retain a manual hide choice', async () => {
+  const row = { ...model, reasoningControls: [
+    { path: 'generationConfig.thinkingConfig.includeThoughts', values: [false, true], default: false },
+    { path: 'generationConfig.thinkingConfig.thinkingLevel', values: ['medium', 'high'], default: 'medium' },
+  ] };
+  const calls: Record<string, unknown>[] = [];
+  const sessions = {
+    binding: () => ({ session: { projections: { faceOf: () => ({ getSnapshot: () => null, subscribe: () => () => {} }) } } }),
+    subagentAddress: () => undefined,
+  };
+  const ctx = { remote: { session: {
+    selectModel: async (request: Record<string, unknown>) => { calls.push(request); return { ok: true, value: { selected: request } }; },
+  } } };
+  const selection = new SessionModels(ctx as never, 'session' as never, {} as never, sessions as never);
+  try {
+    await selection.select(row);
+    assert.equal(calls[0].reasoningEffort, encodeControls({
+      'generationConfig.thinkingConfig.includeThoughts': true, 'generationConfig.thinkingConfig.thinkingLevel': 'medium',
+    }));
+    await selection.changeControl(row, 'generationConfig.thinkingConfig.includeThoughts', false);
+    await selection.changeControl(row, 'generationConfig.thinkingConfig.thinkingLevel', 'high');
+    assert.equal(selection.getSnapshot().current?.reasoningEffort, encodeControls({
+      'generationConfig.thinkingConfig.includeThoughts': false, 'generationConfig.thinkingConfig.thinkingLevel': 'high',
+    }));
+  } finally { selection.dispose(); }
+});

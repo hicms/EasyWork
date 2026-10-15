@@ -32,8 +32,11 @@ async function collect(adapter: ModelAdapter, options: GenerateOptions): Promise
 for (const protocol of ['openai-completions', 'anthropic-messages', 'gemini-generate-content'] as const) {
   test(`ModelAdapter routes ${protocol}, JWT, controls and stream conversion through the official adapter`, async t => {
     const row: ServiceModel = { ...model, protocol, reasoningControls: protocol === 'gemini-generate-content'
-      ? [{ path: 'generationConfig.thinkingConfig.includeThoughts', values: [false, true], default: true }]
-      : protocol === 'anthropic-messages' ? [{ path: 'thinking.type', values: ['adaptive', 'disabled'], default: 'adaptive' }] : model.reasoningControls };
+      ? [{ path: 'generationConfig.thinkingConfig.includeThoughts', values: [false, true], default: false }]
+      : protocol === 'anthropic-messages' ? [
+        { path: 'thinking.type', values: ['adaptive', 'disabled'], default: 'adaptive' },
+        { path: 'thinking.display', values: ['omitted', 'summarized'], default: 'omitted' },
+      ] : model.reasoningControls };
     const fixture = await loggedIn([row]); t.after(() => fixture.account.dispose());
     let observed: { path: string; headers: Headers; body: Record<string, any> } | undefined;
     const transport = mock.method(globalThis, 'fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -49,13 +52,19 @@ for (const protocol of ['openai-completions', 'anthropic-messages', 'gemini-gene
     assert.equal(observed.path, '/api/llm/' + row.id + (protocol === 'openai-completions' ? '/chat/completions' : protocol === 'anthropic-messages' ? '/v1/messages' : '/v1beta/models/' + row.id + ':streamGenerateContent'));
     assert.equal(observed.headers.get('authorization'), 'Bearer ' + token);
     if (protocol === 'openai-completions') assert.equal(observed.body.reasoning_effort, 'high');
-    else if (protocol === 'anthropic-messages') { assert.equal(observed.headers.get('x-api-key'), token); assert.equal(observed.body.thinking.type, 'adaptive'); }
+    else if (protocol === 'anthropic-messages') { assert.equal(observed.headers.get('x-api-key'), token); assert.equal(observed.body.thinking.type, 'adaptive'); assert.equal(observed.body.thinking.display, 'summarized'); }
     else { assert.equal(observed.headers.get('x-goog-api-key'), token); assert.equal(observed.body.generationConfig.thinkingConfig.includeThoughts, true); }
     assert.ok(chunks.some(chunk => chunk.type === 'text-delta' || chunk.type === 'block-delta'), JSON.stringify(chunks));
     assert.equal(chunks.at(-1)?.type, 'finish');
     assert.ok(chunks.some(chunk => chunk.type === 'usage'));
     assert.equal(chunks.findIndex(chunk => chunk.type === 'usage') < chunks.findIndex(chunk => chunk.type === 'finish'), true);
     if (chunks.at(-1)?.type === 'finish') assert.equal((chunks.at(-1) as Extract<StreamChunk, { type: 'finish' }>).reason.kind, 'stop', JSON.stringify(chunks));
+    if (protocol !== 'openai-completions') {
+      const hidden = Object.fromEntries(row.reasoningControls!.map(control => [control.path, control.default]));
+      await collect(adapter, request(row.id, encodeControls(hidden)));
+      if (protocol === 'gemini-generate-content') assert.equal(observed.body.generationConfig.thinkingConfig.includeThoughts, false);
+      else assert.equal(observed.body.thinking.display, 'omitted');
+    }
   });
 }
 

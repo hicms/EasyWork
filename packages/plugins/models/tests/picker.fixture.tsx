@@ -4,14 +4,17 @@ import { ModelPicker } from '../src/client/ModelPicker.tsx';
 import { defaultControls, encodeControls, selectedControls } from '../src/catalog.ts';
 import type { ServiceModel, Json } from '../src/shared.ts';
 
-const names = ['DeepSeek V3.2', 'GPT 5.4', 'Claude Sonnet 4.6', 'Gemini 3.1 Pro', 'Grok 4.7 Fast', 'Kimi K2.5', 'GLM 5', 'Qwen 3.5 Plus', 'MiniMax M3.1 Flash', 'Ling 2.5'];
+const names = ['DeepSeek V3.2', 'GPT 5.4', 'Claude Sonnet 4.6', 'Gemini 3.5 Flash-Lite', 'Grok 4.7 Fast', 'Kimi K2.5', 'GLM 5', 'Qwen 3.5 Plus', 'MiniMax M3.1 Flash', 'Ling 2.5'];
 const vendors = ['deepseek', 'openai', 'anthropic', 'google', 'xai', 'moonshot', 'zhipu', 'alibaba', 'minimax', 'antgroup'];
 const models: ServiceModel[] = Array.from({ length: 24 }, (_, index) => ({
   id: 'model-' + index, name: names[index % names.length] + (index >= names.length ? ' · Extended model name for narrow panes' : ''),
   vendor: vendors[index % vendors.length], tier: ['flagship', 'balanced', 'fast'][Math.floor(index / 8)],
-  protocol: 'openai-completions', isDefault: index === 0, supportsImages: index % 3 === 0,
+  protocol: index === 3 ? 'gemini-generate-content' : 'openai-completions', isDefault: index === 0, supportsImages: index % 3 === 0,
   supportsReasoning: true, supportsTools: true, contextWindow: 200_000, priceMultiplier: index % 2 ? 1 : 2.5,
-  reasoningControls: [{ path: 'reasoning_effort', default: 'high', values: ['low', 'high'] },
+  reasoningControls: index === 3 ? [
+    { path: 'generationConfig.thinkingConfig.includeThoughts', values: [false, true], default: false },
+    { path: 'generationConfig.thinkingConfig.thinkingLevel', values: ['minimal', 'low', 'medium', 'high'], default: 'minimal' },
+  ] : [{ path: 'reasoning_effort', default: 'high', values: ['low', 'high'] },
     ...(index === 0 ? [
       { path: 'thinking.type', default: {type:'enabled',keep:'all'}, values:[{type:'enabled',keep:'all'},{type:'disabled'}] },
       ...['thinking.display', 'preserve_thinking', 'reasoning_split', 'thinking.clear_thinking'].map(path => ({path, default: true, values: [true,false]})),
