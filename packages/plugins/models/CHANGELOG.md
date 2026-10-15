@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add invitation-only registration to the shared Desktop/Web account page, with password confirmation, automatic login and safe registration errors.
 - Replace thinking-option dropdowns with highlighted choice buttons, preserving typed service values and keyboard navigation.
 - Fix model-menu overflow moving the chat area. Use a viewport-clamped portal, compact vendor/capability icons and internal list scrolling; preserve model and thinking selection behavior.
 

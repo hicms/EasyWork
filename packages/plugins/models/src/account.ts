@@ -101,10 +101,20 @@ export class ModelsAccount {
   }
   async login(email: string, password: string, signal?: AbortSignal): Promise<ModelsSnapshot> {
     if (!email.trim() || email.length > 254 || !password || password.length > 1024) throw new AskError(400, '请填写登录邮箱和密码。');
+    return this.authenticate('/api/auth/login', { email: email.trim(), password }, signal);
+  }
+  async register(email: string, password: string, inviteCode: string, signal?: AbortSignal): Promise<ModelsSnapshot> {
+    if (!email.trim() || Buffer.byteLength(email.trim(), 'utf8') > 254) throw new AskError(400, '请填写有效的注册邮箱。');
+    if ([...password].length < 8 || Buffer.byteLength(password, 'utf8') > 1024) throw new AskError(400, '密码至少需要 8 个字符，且不能超过 1024 字节。');
+    if (!inviteCode.trim()) throw new AskError(400, '请填写邀请码。');
+    return this.authenticate('/api/auth/register', { email: email.trim(), password, inviteCode: inviteCode.trim() }, signal);
+  }
+  private async authenticate(path: '/api/auth/login' | '/api/auth/register', body: { email: string; password: string; inviteCode?: string }, signal?: AbortSignal): Promise<ModelsSnapshot> {
+    this.lifetime.signal.throwIfAborted(); signal?.throwIfAborted();
     const mutation = ++this.mutation; const operation = randomUUID();
-    // A locked reservation orders login/logout across every Host sharing this Profile.
+    // A locked reservation orders login/register/logout across every Host sharing this Profile.
     await this.records.change(current => ({ origin: serviceOrigin, ...this.stored(current), operation }));
-    const response = await this.api.request('/api/auth/login', { body: { email: email.trim(), password }, signal: AbortSignal.any([this.lifetime.signal, ...(signal ? [signal] : [])]) });
+    const response = await this.api.request(path, { body, signal: AbortSignal.any([this.lifetime.signal, ...(signal ? [signal] : [])]) });
     const grant = parseGrant(response);
     if (!grant || grant.expiresAt <= Date.now()) throw new AskError(502, '模型服务返回了无效登录状态。');
     if (mutation !== this.mutation || this.lifetime.signal.aborted || signal?.aborted) {
@@ -114,15 +124,26 @@ export class ModelsAccount {
     let committed = false;
     try {
       await this.records.change(current => {
-        if (mutation !== this.mutation || !record(current) || current.operation !== operation) return undefined;
+        if (mutation !== this.mutation || this.lifetime.signal.aborted || signal?.aborted || !record(current) || current.operation !== operation) return undefined;
         committed = true; return { origin: serviceOrigin, ...grant, operation };
       });
     } catch (error) {
       await this.api.request('/api/auth/logout', { token: grant.token, method: 'POST' }).catch(() => {});
       throw error;
     }
-    if (!committed || mutation !== this.mutation) {
-      await this.api.request('/api/auth/logout', { token: grant.token, method: 'POST' }).catch(() => {});
+    if (!committed || mutation !== this.mutation || this.lifetime.signal.aborted || signal?.aborted) {
+      try {
+        if (committed) {
+          let released = false;
+          await this.records.change(current => {
+            if (!record(current) || current.operation !== operation || this.stored(current)?.token !== grant.token) return undefined;
+            released = true; return { origin: serviceOrigin, signedOut: true, operation };
+          });
+          if (released && this.grant?.token === grant.token) { this.activate(undefined); await this.changed([]); }
+        }
+      } finally {
+        await this.api.request('/api/auth/logout', { token: grant.token, method: 'POST' }).catch(() => {});
+      }
       throw new AskError(409, '账号状态已变更，登录已取消。');
     }
     this.activate(grant); this.error = null; this.loading = undefined;

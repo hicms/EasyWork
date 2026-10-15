@@ -26,6 +26,7 @@ export function mockService(models: readonly ServiceModel[] = [model]) {
   const fetcher: typeof fetch = async (input, init) => {
     const request = new Request(input, init); calls.push(request);
     switch (new URL(request.url).pathname) {
+      case '/api/auth/register': return Response.json({ token: loginToken, expiresAt: Date.now() + 30 * 86_400_000, user: { id: 'user', email: 'test@example.com' } }, { status: 201 });
       case '/api/auth/login': return Response.json({ token: loginToken, expiresAt: Date.now() + 30 * 86_400_000, user: { id: 'user', email: 'test@example.com' } });
       case '/api/auth/me': return Response.json({ id: 'user', email: 'test@example.com' }, { status: meStatus });
       case '/api/models': return Response.json(models.map(row => ({ kind: 'chat', ...row })), { status: modelsStatus });

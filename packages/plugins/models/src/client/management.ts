@@ -27,6 +27,8 @@ export class ModelsClient {
   }
   async refresh(force = false): Promise<void> { if (!this.state.busy) await this.invoke(force ? 'refresh' : 'state'); }
   login(email: string, password: string): Promise<void> { return this.invoke('login', { email, password }); }
+  register(email: string, password: string, inviteCode: string): Promise<void> { return this.invoke('register', { email, password, inviteCode }); }
   logout(): Promise<void> { return this.invoke('logout'); }
+  clearError(): void { if (this.state.error) this.publish({ ...this.state, error: null }); }
   reset(): void { this.generation++; this.publish({ ...this.state, busy: false, ready: false, snapshot: { origin: serviceOrigin, user: null, expiresAt: null, models: [], error: null }, error: null }); }
 }

@@ -59,6 +59,7 @@ export function apply(ctx: Context): void {
         else if (body.endpoint === 'refresh') value = await account.state(true);
         else if (body.endpoint === 'logout') value = await account.logout();
         else if (body.endpoint === 'login' && typeof payload.email === 'string' && typeof payload.password === 'string') value = await account.login(payload.email, payload.password, request.signal);
+        else if (body.endpoint === 'register' && typeof payload.email === 'string' && typeof payload.password === 'string' && typeof payload.inviteCode === 'string') value = await account.register(payload.email, payload.password, payload.inviteCode, request.signal);
         else throw new AskError(400, '请求格式无效。');
         return Response.json({ ok: true, value }, { headers });
       } catch (error) {

@@ -53,6 +53,7 @@ test('account page offers login when signed out and server models plus logout wh
   const account = { subscribe() { return () => {}; }, getSnapshot: () => state };
   const loggedOut = renderToStaticMarkup(React.createElement(AccountModels, { account }));
   assert.ok(loggedOut.includes('type="email"')); assert.ok(loggedOut.includes('type="password"')); assert.ok(!loggedOut.includes('value="test password"'));
+  assert.ok(loggedOut.includes('使用邀请码注册'));
   state = { ...state, snapshot: { user: { email: 'user@example.test' }, models: [row], error: null } };
   const loggedIn = renderToStaticMarkup(React.createElement(AccountModels, { account }));
   assert.ok(loggedIn.includes('退出登录')); assert.ok(loggedIn.includes('Sample model')); assert.ok(!loggedIn.includes('type="password"'));
@@ -63,4 +64,5 @@ test('the complete client bundle contains no Host adapter, credential store or e
   for (const hostFile of ['account.ts', 'model-adapter.ts', 'ask-client.ts', 'web-search.ts', 'web-fetch.ts']) assert.equal(inputs.includes('/src/' + hostFile), false, hostFile);
   assert.ok(result.outputFiles[0].text.includes('/api/easywork-models'));
   assert.equal(result.outputFiles[0].text.includes('/api/auth/login'), false);
+  assert.equal(result.outputFiles[0].text.includes('/api/auth/register'), false);
 });

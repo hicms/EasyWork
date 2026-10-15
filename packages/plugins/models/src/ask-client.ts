@@ -22,6 +22,10 @@ export class AskClient {
     }
     if (!response.ok) {
       await response.body?.cancel();
+      if (path === '/api/auth/register') {
+        if (response.status === 400) throw new AskError(400, '注册失败，请检查邮箱、密码和邀请码；邀请码可能无效或已使用。');
+        if (response.status === 409) throw new AskError(409, '该邮箱已注册，请直接登录。');
+      }
       throw new AskError(response.status, response.status === 401 ? '登录已失效或账号密码错误，请重新登录。' : '模型服务请求失败，请稍后重试。');
     }
     if (response.status === 204) return null;

@@ -49,6 +49,22 @@ test('Host management uses scoped credentials, redacts responses and synchronize
   assert.equal(selection.provider, 'easywork'); assert.equal(selection.model, model.id);
   assert.equal(keys.size, 1); assert.ok([...keys][0].includes('easywork-plugin-models'));
   assert.ok(JSON.stringify(records.value).includes(token)); assert.equal(JSON.stringify(records.value).includes('test password'), false);
+  await invoke({ endpoint: 'logout' });
+  const signup = { email: ' test@example.com ', password: 'new registration password', inviteCode: ' ASK-host-invitation ' };
+  const beforeRegistration = fixture.calls.length;
+  for (const inviteCode of [undefined, null, 123, '', '   ']) {
+    assert.equal((await invoke({ endpoint: 'register', payload: { ...signup, inviteCode } })).status, 400);
+  }
+  assert.equal(fixture.calls.length, beforeRegistration);
+  const registered = await invoke({ endpoint: 'register', payload: signup });
+  assert.equal(registered.status, 200); assert.equal(registered.value.models[0].id, model.id);
+  assert.equal(registered.value.user.email, 'test@example.com');
+  const request = fixture.calls.find(call => call.url.endsWith('/api/auth/register'))!;
+  assert.deepEqual(await request.json(), { email: 'test@example.com', password: signup.password, inviteCode: signup.inviteCode.trim() });
+  for (const secret of [signup.password, signup.inviteCode.trim()]) {
+    assert.equal(JSON.stringify(registered).includes(secret), false);
+    assert.equal(JSON.stringify(records.value).includes(secret), false);
+  }
   assert.equal((await invoke({ endpoint: 'unknown' })).status, 400);
   const prepared = await adapter.prepareCall('easywork', model.id);
   await records.change(() => ({ kind: 'grant', payload: { origin: 'https://ask.vigoai.cn', signedOut: true, operation: 'external-logout' } }));
