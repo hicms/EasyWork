@@ -122,6 +122,7 @@ test('exit zero without acknowledgement is unsafe; timeout does not kill the pro
   t.mock.timers.enable({ apis: ['setTimeout'] })
   const child = childFixture(); watchRuntimeShutdown(child)
   const failed = stopRuntimeProcess(child, true)
+  child.exitCode = 0 // Node sets this before emitting close; model the same lifecycle on every OS.
   child.emit('close', 0, null)
   await assert.rejects(failed, /暂缓安装/u)
   const running = childFixture(); let killed = false; running.kill = () => { killed = true }
