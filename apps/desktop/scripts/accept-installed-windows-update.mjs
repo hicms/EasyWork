@@ -168,12 +168,16 @@ Start-Sleep -Milliseconds 500
   assert.equal(data.id,projectId); assert.equal(data.name,'Automatic update acceptance'); assert.equal(data.preference,'preserve across restart')
   assert.equal(await hashFile(marker),markerHash)
   proof.checks.dataPreserved = true
-  for (const label of ['项目', '专家', '技能', '连接器', '资料库', '插件']) await page.getByRole('navigation', { name:'全局面板' }).getByRole('button',{name:label,exact:true}).waitFor()
+  for (const [label, content] of [['项目', '新建项目'], ['专家', '制作专家'], ['技能', 'Excel 表格设计'],
+    ['连接器', 'MCP 服务管理'], ['资料库', '新建或导入资料'], ['插件', '添加插件']]) {
+    await page.getByRole('navigation', { name:'全局面板' }).getByRole('button',{name:label,exact:true}).click()
+    await page.getByText(content, { exact: true }).first().waitFor()
+  }
   await page.getByRole('button',{name:'登录 EasyWork',exact:true}).click()
   await page.getByRole('heading',{name:'EasyWork 账号与模型',exact:true}).waitFor()
   await page.getByRole('dialog',{name:'设置',exact:true}).getByRole('button',{name:'关闭',exact:true}).click()
   await page.screenshot({path:join(output,'installed-B.png')})
-  proof.checks.installedRuntime = true; proof.checks.requiredPluginEntries = true
+  proof.checks.installedRuntime = true; proof.checks.requiredPluginViews = true
   await quit(pid); proof.checks.gracefulQuit = true
   proof.ok = true
 } catch (error) {

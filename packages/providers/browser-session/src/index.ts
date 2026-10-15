@@ -148,9 +148,10 @@ export function apply(ctx: Context, config: Config): void {
         const browser = config.electronExecutable?.trim()
           ? await launchManagedElectron(config.electronExecutable, signal, config.electronAppPath)
           : await launchManagedChromium(config.executablePath!, signal);
-        const scope = createScope(ctx, agent);
+        let scope: Scope | undefined;
         try {
           signal.throwIfAborted();
+          scope = createScope(ctx, agent);
           scope.ctx.on('tools/execute', async (exec, next) => {
             if (!exec.name.startsWith(TOOL_PREFIX)) return next();
             if (exec.agent !== agent) {
@@ -171,17 +172,18 @@ export function apply(ctx: Context, config: Config): void {
             reconnect: { enabled: false },
           }));
           signal.throwIfAborted();
+          const ownedScope = scope;
           return {
             value: { browser, scope },
             async close() {
               ready.delete(agent);
               active.delete(agent);
-              try { await scope.dispose(); }
+              try { await ownedScope.dispose(); }
               finally { await browser.close(); }
             },
           };
         } catch (error) {
-          try { await scope.dispose(); }
+          try { await scope?.dispose(); }
           finally { await browser.close(); }
           throw error;
         }

@@ -25,7 +25,9 @@ async function stopWorker(child: ChildProcess): Promise<void> {
   if (child.exitCode !== null || child.signalCode !== null) return;
   const exited = new Promise<void>(resolve => child.once('exit', () => resolve()));
   child.kill('SIGTERM');
-  await Promise.race([exited, delay(3_000)]);
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try { await Promise.race([exited, new Promise<void>(resolve => { timer = setTimeout(resolve, 3_000); })]); }
+  finally { clearTimeout(timer); }
   if (child.exitCode === null && child.signalCode === null) {
     child.kill('SIGKILL');
     await exited;
@@ -74,6 +76,7 @@ export async function launchManagedElectron(executable: string, signal?: AbortSi
     child.stderr?.resume();
     const endpoint = await readyEndpoint(port, child, signal);
     browser = await chromium.connectOverCDP(endpoint);
+    signal?.throwIfAborted();
     const context: BrowserContext | undefined = browser.contexts()[0];
     if (!context || context.pages().length === 0) throw new Error('Electron browser worker has no page');
     const ownedWorker = child;
