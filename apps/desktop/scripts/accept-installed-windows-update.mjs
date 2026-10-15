@@ -5,7 +5,7 @@ import { createRequire } from 'node:module'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
-import { extractFile } from '@electron/asar'
+import { extractFile, uncache } from '@electron/asar'
 import { CURRENT_APP_INSTALLER_FILE_NAME } from 'builder-util-runtime'
 import { readReleaseManifest, verifyReleaseSource } from '../../../scripts/desktop-release-policy.mjs'
 import { newerVersion } from '../src/update-policy.ts'
@@ -43,19 +43,30 @@ const { _electron, expect } = require('@playwright/test')
 const proof = { sourceCommit: candidate.sourceCommit, baseline: baseline.version, version: candidate.version,
   installerSha512: candidate.installerSha512, scenario, checks: {}, dataScope: ['project', 'local file', 'browser preference'] }
 let running, server
+const checkpoint = phase => {
+  proof.phase = phase
+  writeFileSync(join(output, 'acceptance.json'), JSON.stringify(proof, null, 2) + '\n')
+  console.log(phase)
+}
 const waitFor = async (read, description, milliseconds = 180_000) => {
+  checkpoint(description)
   const until = Date.now() + milliseconds
   while (Date.now() < until) { const value = await read(); if (value) return value; await delay(1000) }
   throw new Error('Timed out: ' + description)
 }
 const installedVersion = () => {
-  try { return JSON.parse(extractFile(join(appDirectory, 'resources/app.asar'), 'package.json')).version } catch { return undefined }
+  try {
+    const archive = join(appDirectory, 'resources/app.asar')
+    uncache(archive) // NSIS replaces the archive at the same path.
+    return JSON.parse(extractFile(archive, 'package.json')).version
+  } catch { return undefined }
 }
 const logs = () => {
   try { return readFileSync(join(home, 'logs/startup.log'), 'utf8').split('\n').filter(Boolean).flatMap(line => { try { return [JSON.parse(line)] } catch { return [] } }) }
   catch { return [] }
 }
 const launch = async (expected, intercept = true) => {
+  checkpoint(`Launch ${expected}`)
   running = await _electron.launch({ executablePath: appExecutable, env, args: ['--lang=zh-CN'], timeout: 180_000 })
   assert.equal(await running.evaluate(({ app }) => app.getVersion()), expected)
   const identity = JSON.parse(extractFile(join(appDirectory, 'resources/app.asar'), 'package.json'))
@@ -93,6 +104,7 @@ const quit = async pid => {
   running = undefined
 }
 try {
+  checkpoint('Install baseline')
   const installer = join(baselineDirectory, `EasyWork-${baseline.version}-x64-Setup.exe`)
   await new Promise((resolve, reject) => {
     const child = spawn(installer, ['/S', '/currentuser', `/D=${appDirectory}`], {
@@ -147,7 +159,17 @@ try {
   }
   ;({ page, pid } = await launch(baseline.version))
   await page.getByText('新版本就绪', { exact: true }).waitFor({ timeout: 120_000 })
-  const installingAt = Date.now(), closed = running.waitForEvent('close', { timeout: 40_000 })
+  const installingAt = Date.now()
+  const appProcess = running.process()
+  assert.equal(appProcess.pid, pid, 'Exit observation must belong to the actual Electron main process')
+  const exited = new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => reject(new Error('A process did not exit for installation')), 40_000)
+    appProcess.once('exit', (code, signal) => {
+      clearTimeout(timeout)
+      code === 0 && signal === null ? resolve() : reject(new Error(`A exited ${code}/${signal}`))
+    })
+  })
+  void exited.catch(() => {})
   // Observe only this runner-owned installation, from outside the Host's Windows Job.
   const observer = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', `
 $until = [DateTime]::UtcNow.AddSeconds(12)
@@ -173,8 +195,9 @@ while ([DateTime]::UtcNow -lt $until) {
     if (observationFailure) throw observationFailure
     return existsSync(join(output, 'shutdown-processes.jsonl'))
   }, 'first owned-process snapshot', 10_000)
-  await page.getByRole('button', { name: '重启升级', exact: true }).click()
-  await closed; running = undefined; await observed
+  checkpoint('Click restart and await natural process exit')
+  await page.getByRole('button', { name: '重启升级', exact: true }).click({ noWaitAfter: true, timeout: 10_000 })
+  await exited; running = undefined; await observed
   if (observationFailure) throw observationFailure
   assert(logs().some(row => row.pid === pid && row.event === 'host.stopped' && row.result === 'graceful'))
   await waitFor(() => installedVersion() === candidate.version, 'B installed')
@@ -217,18 +240,30 @@ Start-Sleep -Milliseconds 500
   proof.ok = true
 } catch (error) {
   proof.failure = error.stack ?? String(error)
+  checkpoint('Failed')
   throw error
 } finally {
+  if (!proof.ok) try {
+    execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', `
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+$bounds = [Windows.Forms.SystemInformation]::VirtualScreen
+$bitmap = [Drawing.Bitmap]::new($bounds.Width, $bounds.Height)
+$graphics = [Drawing.Graphics]::FromImage($bitmap)
+$graphics.CopyFromScreen($bounds.Location, [Drawing.Point]::Empty, $bounds.Size)
+$bitmap.Save($env:EASYWORK_ACCEPTANCE_SCREENSHOT, [Drawing.Imaging.ImageFormat]::Png)
+$graphics.Dispose()
+$bitmap.Dispose()
+`], { windowsHide: true, timeout: 10_000, env: { ...env, EASYWORK_ACCEPTANCE_SCREENSHOT: join(output, 'failure-desktop.png') }, stdio: 'ignore' })
+  } catch { /* Diagnostics must not replace the original acceptance failure. */ }
   // Preserve the original failure even if Electron's error window cannot quit.
-  let cleanupTimedOut = false
-  if (running) await Promise.race([
-    running.close().catch(() => {}),
-    delay(15_000).then(() => { cleanupTimedOut = true }),
-  ])
+  let cleanupTimer
+  if (running) await Promise.race([running.close().catch(() => {}), new Promise(resolve => { cleanupTimer = setTimeout(resolve, 15_000) })])
+  clearTimeout(cleanupTimer)
   proof.requests = server?.requests ?? []
   await server?.close()
   if (existsSync(join(home,'logs/startup.log'))) copyFileSync(join(home,'logs/startup.log'),join(output,'startup.log'))
   writeFileSync(join(output,'acceptance.json'),JSON.stringify(proof,null,2)+'\n')
   console.log(JSON.stringify(proof))
-  if (cleanupTimedOut) process.exit(1) // Disposable runner only; never a passing acceptance.
+  if (!proof.ok) process.exit(1) // A failed detached installer must not keep the test harness alive.
 }

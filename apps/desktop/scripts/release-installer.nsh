@@ -13,19 +13,25 @@
 !define EASYWORK_NSIS_PROCESS_CHECK "$%EASYWORK_NSIS_PROCESS_CHECK%"
 Var EasyWorkCheckedDirectory
 
+!macro customInit
+  ; Every installer instance, including elevated ones, must release the old
+  ; directory before the fresh uninstaller removes it. installSection restores it.
+  SetOutPath $TEMP
+!macroend
+
 !macro easyworkValidateTarget
   !ifdef BUILD_UNINSTALLER
     ; initMultiUser may reset INSTDIR after the first check in un.onInit.
     ${if} $EasyWorkCheckedDirectory != ""
     ${andIf} $EasyWorkCheckedDirectory != $INSTDIR
-      MessageBox MB_OK|MB_ICONSTOP "EasyWork uninstall target changed. Installation stopped."
+      MessageBox MB_OK|MB_ICONSTOP "EasyWork uninstall target changed. Installation stopped." /SD IDOK
       SetErrorLevel 2
       Quit
     ${endif}
     ReadEnvStr $R8 EASYWORK_NSIS_UNINSTALL_DIRECTORY
     ${if} $R8 != ""
     ${andIf} $R8 != $INSTDIR
-      MessageBox MB_OK|MB_ICONSTOP "EasyWork uninstall target does not match the requested installation."
+      MessageBox MB_OK|MB_ICONSTOP "EasyWork uninstall target does not match the requested installation." /SD IDOK
       SetErrorLevel 2
       Quit
     ${endif}
@@ -34,7 +40,7 @@ Var EasyWorkCheckedDirectory
       ReadEnvStr $R8 EASYWORK_UPDATE_INSTALL_DIRECTORY
       ${if} $R8 == ""
       ${orIf} $R8 != $INSTDIR
-        MessageBox MB_OK|MB_ICONSTOP "EasyWork update target does not match the running application."
+        MessageBox MB_OK|MB_ICONSTOP "EasyWork update target does not match the running application." /SD IDOK
         SetErrorLevel 2
         Quit
       ${endif}
@@ -55,7 +61,7 @@ Var EasyWorkCheckedDirectory
   Pop $R0
   System::Call 'kernel32::SetEnvironmentVariable(t "EASYWORK_INSTALL_TARGET", p 0)'
   ${if} $R0 != 0
-    MessageBox MB_OK|MB_ICONSTOP "Cannot confirm that EasyWork at $INSTDIR has stopped. Close its tasks and windows, then run Setup again. No processes were terminated."
+    MessageBox MB_OK|MB_ICONSTOP "Cannot confirm that EasyWork at $INSTDIR has stopped. Close its tasks and windows, then run Setup again. No processes were terminated." /SD IDOK
     SetErrorLevel 2
     Quit
   ${endif}
@@ -65,13 +71,30 @@ Var EasyWorkCheckedDirectory
   !insertmacro customCheckAppRunning
 !macroend
 
+!macro easyworkCheckUninstallResult
+  ${if} ${Errors}
+  ${orIf} $R0 != 0
+    MessageBox MB_OK|MB_ICONSTOP "EasyWork could not remove the previous installation. Run the complete Setup again to repair it." /SD IDOK
+    SetErrorLevel 2
+    Quit
+  ${endif}
+!macroend
+
+!macro customUnInstallCheck
+  !insertmacro easyworkCheckUninstallResult
+!macroend
+
+!macro customUnInstallCheckCurrentUser
+  !insertmacro easyworkCheckUninstallResult
+!macroend
+
 !macro customRemoveFiles
   !insertmacro customCheckAppRunning
   SetOutPath $TEMP
   ClearErrors
   RMDir /r "$INSTDIR"
   ${if} ${Errors}
-    MessageBox MB_OK|MB_ICONSTOP "EasyWork replacement failed. Close EasyWork and run the complete Setup again to repair it. Automatic rollback is not available."
+    MessageBox MB_OK|MB_ICONSTOP "EasyWork replacement failed. Close EasyWork and run the complete Setup again to repair it. Automatic rollback is not available." /SD IDOK
     SetErrorLevel 2
     Quit
   ${endif}
