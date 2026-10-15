@@ -31,7 +31,7 @@ async function collect(adapter: ModelAdapter, options: GenerateOptions): Promise
 }
 for (const protocol of ['openai-completions', 'anthropic-messages', 'gemini-generate-content'] as const) {
   test(`ModelAdapter routes ${protocol}, JWT, controls and stream conversion through the official adapter`, async t => {
-    const row: ServiceModel = { ...model, protocol, reasoningControls: protocol === 'gemini-generate-content'
+    const row: ServiceModel = { ...model, protocol, contextWindow: 262_144, reasoningControls: protocol === 'gemini-generate-content'
       ? [{ path: 'generationConfig.thinkingConfig.includeThoughts', values: [false, true], default: false }]
       : protocol === 'anthropic-messages' ? [
         { path: 'thinking.type', values: ['adaptive', 'disabled'], default: 'adaptive' },
@@ -51,6 +51,8 @@ for (const protocol of ['openai-completions', 'anthropic-messages', 'gemini-gene
     assert.ok(observed, JSON.stringify(chunks));
     assert.equal(observed.path, '/api/llm/' + row.id + (protocol === 'openai-completions' ? '/chat/completions' : protocol === 'anthropic-messages' ? '/v1/messages' : '/v1beta/models/' + row.id + ':streamGenerateContent'));
     assert.equal(observed.headers.get('authorization'), 'Bearer ' + token);
+    const outputBudget = () => observed!.body.max_completion_tokens ?? observed!.body.max_tokens ?? observed!.body.generationConfig?.maxOutputTokens;
+    assert.equal(outputBudget(), 32_768, 'large-context models receive the full product output budget');
     if (protocol === 'openai-completions') assert.equal(observed.body.reasoning_effort, 'high');
     else if (protocol === 'anthropic-messages') { assert.equal(observed.headers.get('x-api-key'), token); assert.equal(observed.body.thinking.type, 'adaptive'); assert.equal(observed.body.thinking.display, 'summarized'); }
     else { assert.equal(observed.headers.get('x-goog-api-key'), token); assert.equal(observed.body.generationConfig.thinkingConfig.includeThoughts, true); }
@@ -59,6 +61,8 @@ for (const protocol of ['openai-completions', 'anthropic-messages', 'gemini-gene
     assert.ok(chunks.some(chunk => chunk.type === 'usage'));
     assert.equal(chunks.findIndex(chunk => chunk.type === 'usage') < chunks.findIndex(chunk => chunk.type === 'finish'), true);
     if (chunks.at(-1)?.type === 'finish') assert.equal((chunks.at(-1) as Extract<StreamChunk, { type: 'finish' }>).reason.kind, 'stop', JSON.stringify(chunks));
+    await collect(adapter, { ...request(row.id, effort), maxTokens: 2048 });
+    assert.equal(outputBudget(), 2048, 'an explicit smaller request budget is preserved');
     if (protocol !== 'openai-completions') {
       const hidden = Object.fromEntries(row.reasoningControls!.map(control => [control.path, control.default]));
       await collect(adapter, request(row.id, encodeControls(hidden)));
@@ -66,6 +70,26 @@ for (const protocol of ['openai-completions', 'anthropic-messages', 'gemini-gene
       else assert.equal(observed.body.thinking.display, 'omitted');
     }
   });
+
+  for (const [contextWindow, minimum, maximum] of [[8192, 1, 4095], [null, 8193, 32_768]] as const) {
+    test(`${protocol} fits its output budget to ${contextWindow ?? 'unknown'} context`, async t => {
+      const row: ServiceModel = { ...model, protocol, contextWindow, reasoningControls: null };
+      const fixture = await loggedIn([row]); t.after(() => fixture.account.dispose());
+      let budget: number | undefined;
+      const transport = mock.method(globalThis, 'fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+        const payload = await new Request(input, init).json() as Record<string, any>;
+        budget = payload.max_completion_tokens ?? payload.max_tokens ?? payload.generationConfig?.maxOutputTokens;
+        if (protocol === 'anthropic-messages') return anthropic();
+        if (protocol === 'gemini-generate-content') return new Response('data: ' + JSON.stringify({ candidates: [{ content: { role: 'model', parts: [{ text: 'OK' }] }, finishReason: 'STOP', index: 0 }] }) + '\n\n', { headers: { 'content-type': 'text/event-stream' } });
+        return openai();
+      }); t.after(() => transport.mock.restore());
+      const chunks = await collect(new ModelAdapter(fixture.account), {
+        ...request(row.id), messages: [{ role: 'user', content: [{ type: 'text', text: 'Long context. '.repeat(500) }] }],
+      });
+      assert.equal(chunks.at(-1)?.type, 'finish');
+      assert.ok(typeof budget === 'number' && budget >= minimum && budget <= maximum, `remaining context budget: ${budget}`);
+    });
+  }
 }
 
 test('official tool-call assembly, tool-result continuation and replay survive the owned adapter', async t => {

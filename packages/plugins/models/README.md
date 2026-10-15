@@ -14,6 +14,8 @@ Host 调用 `/api/auth/register`、`/api/auth/login`、`/api/auth/me`、`/api/au
 
 `ModelAdapter` 使用发布的 `@deepseek-ai/dsh-llm-pi-ai` 与公开 pi-ai provider/payload API，支持 OpenAI Chat Completions、Anthropic Messages、Gemini GenerateContent。工具、图片、流式事件和回放转换由官方适配器拥有；每次调用固定账号、模型及完整思考参数。目录只声明输入能力与上下文，缺失容量使用明确的 32K 保守估计，不推断厂商名称。服务未声明输出上限时不设置会话请求默认上限。多维思考参数编码为官方 opaque reasoningEffort；调用适配器前验证并解码，库侧不接收这个自有值。
 
+单次生成的默认输出预算为 32,768 token，Desktop 与 Web 保持一致。官方适配器会按输入、历史消息和安全余量缩减可用输出额度；显式请求更小的额度时保留该值。该预算不是每次固定消耗量，模型可以提前结束；模型及服务端的实际输出限制仍然适用。
+
 `cordis.patch.yml` 是账号/模型替换的权威清单：停用对应官方提供方、账号控制器和三个 UI 插件，保留官方 Host、凭据、Session、设置外壳和其他客户端。完整上游清单保持只读参考。Desktop/Web 默认交付同一个源码包，不修改 DSH 源码。
 
 支持工具调用的模型共用原生 `web_search` 和 `web_fetch`。搜索由本插件注册的 `easywork` provider 使用当前 EasyWork JWT 调用 `POST /api/search`；Exa/Tavily 等搜索 Key 保留在服务端，不由 `/api/models` 下发，也不读取同步插件的凭据。未登录时返回 `WEB_AUTH_REQUIRED`；服务 401 使当前账号失效，临时服务失败保留登录状态。退出或账号变更中止在途搜索，搜索结果只保留可引用的公开字段。

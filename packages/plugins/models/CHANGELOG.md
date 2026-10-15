@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Raise the shared default output budget from 8,192 to 32,768 tokens, preserving remaining-context safeguards and explicitly smaller request budgets across all three protocols.
 - Default to supported thinking and visible summaries while preserving manual off/hidden selections and existing saved preferences.
 - Add invitation-only registration to the shared Desktop/Web account page, with password confirmation, automatic login and safe registration errors.
 - Replace thinking-option dropdowns with highlighted choice buttons, preserving typed service values and keyboard navigation.

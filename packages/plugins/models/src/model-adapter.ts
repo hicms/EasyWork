@@ -9,6 +9,7 @@ import { applyControls, controlOptions, defaultControls, encodeControls, selecte
 import { providerId, serviceOrigin, valueLabel, type ServiceModel } from './shared.ts';
 
 const retryPolicy = resolveRetryPolicy(undefined, 'easywork-models');
+const defaultMaxOutputTokens = 32_768;
 const apis: Record<ServiceModel['protocol'], ProviderStreams> = {
   'openai-completions': lazyApi(() => import('@earendil-works/pi-ai/api/openai-completions')),
   'anthropic-messages': lazyApi(() => import('@earendil-works/pi-ai/api/anthropic-messages')),
@@ -55,7 +56,7 @@ export class ModelAdapter extends LlmAdapter {
       api: model.protocol === 'gemini-generate-content' ? 'google-generative-ai' : model.protocol,
       baseUrl, reasoning: false, input: model.supportsImages ? ['text', 'image'] : ['text'],
       cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-      contextWindow: model.contextWindow ?? 32_768, maxTokens: Math.min(model.contextWindow ?? 8192, 8192),
+      contextWindow: model.contextWindow ?? 32_768, maxTokens: Math.min(model.contextWindow ?? defaultMaxOutputTokens, defaultMaxOutputTokens),
     };
     const token = binding.grant.token;
     const provider = createProvider({ id: providerId, name: 'EasyWork', models: [piModel],
