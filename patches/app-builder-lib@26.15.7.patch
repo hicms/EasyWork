@@ -192,3 +192,11 @@ diff --git a/templates/nsis/include/installUtil.nsh b/templates/nsis/include/ins
  
      CheckResult:
        ${if} $R0 == 0
+@@ -240,5 +271,7 @@
+     Goto UninstallLoop
+ 
++  !ifndef EASYWORK_SAFE_INSTALL
+   DoesNotExist:
++  !endif
+     SetErrors
+ FunctionEnd

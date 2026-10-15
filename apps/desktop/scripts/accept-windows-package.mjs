@@ -16,7 +16,7 @@ const env = { ...process.env, EASYWORK_DESKTOP_USER_DATA: userData, DSH_TELEMETR
 for (const name of Object.keys(env)) if (/TOKEN|PASSWORD|SECRET|CSC_|^NODE_OPTIONS$|^NODE_PATH$|^EASYWORK_DSH_HOME$/u.test(name)) delete env[name]
 const startedAt = Date.now()
 const candidate = await _electron.launch({ executablePath: join(root, 'dist/win-unpacked/EasyWork.exe'), args: ['--lang=zh-CN'], env, timeout: 120_000 })
-const mainPid = candidate.process().pid
+const mainPid = await candidate.evaluate(() => process.pid)
 const checks = {}
 try {
   assert.equal(await candidate.evaluate(({ app }) => app.getPath('userData')), userData)
@@ -28,8 +28,11 @@ try {
   checks.noModePicker = true
   await page.getByText(/^(项目|Projects)$/u).first().waitFor()
   checks.projectsEntry = true
-  const text = await page.locator('body').innerText()
-  assert.match(text, /设置|Settings/u); assert.match(text, /插件|Plugins/u)
+  await page.getByRole('button', { name: '登录 EasyWork', exact: true }).click()
+  await page.getByRole('heading', { name: 'EasyWork 账号与模型', exact: true }).waitFor()
+  const settings = page.getByRole('dialog', { name: /^(设置|Settings)$/u })
+  await settings.getByRole('button', { name: /^(内置插件|Built-in plugins)$/u }).waitFor()
+  await settings.getByRole('button', { name: /^(关闭|Close)$/u, exact: true }).click()
   checks.settingsAndPlugins = true
   await page.evaluate(async () => {
     const call = async (endpoint, payload) => {

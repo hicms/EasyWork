@@ -1009,7 +1009,7 @@ __metadata:
 
 "app-builder-lib@patch:app-builder-lib@npm%3A26.15.7#./patches/app-builder-lib@26.15.7.patch::locator=easywork-desktop-workspace%40workspace%3A.":
   version: 26.15.7
-  resolution: "app-builder-lib@patch:app-builder-lib@npm%3A26.15.7#./patches/app-builder-lib@26.15.7.patch::version=26.15.7&hash=a705b5&locator=easywork-desktop-workspace%40workspace%3A."
+  resolution: "app-builder-lib@patch:app-builder-lib@npm%3A26.15.7#./patches/app-builder-lib@26.15.7.patch::version=26.15.7&hash=1f69e2&locator=easywork-desktop-workspace%40workspace%3A."
   dependencies:
     "@electron/asar": "npm:3.4.1"
     "@electron/fuses": "npm:^1.8.0"
@@ -1055,7 +1055,7 @@ __metadata:
   peerDependencies:
     dmg-builder: 26.15.7
     electron-builder-squirrel-windows: 26.15.7
-  checksum: 10c0/591b3d9175e37dfb2131550bb066d6d58ddea0eb4a754f4bb9776b13f346fba00fae775a3961f4c1f9adbf8642c9c8fc8a5fecbacf92ae61ea2b37682aa94b0a
+  checksum: 10c0/39f42c1b4d11e5d5b622b9d1c3669edfb9699a8da354c1923a7ffa96f7a16c1ded64900e447b779726f36e1643685774d016bccfdebc76cc9c5bbc2ffc066b88
   languageName: node
   linkType: hard
 
