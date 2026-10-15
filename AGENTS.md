@@ -60,5 +60,5 @@ This repository owns EasyWork Web and Desktop. Desktop and Web consume the same 
 
 - Directory migrations must update scripts, CI working directories, test globs and deployment contexts together. Source-only moves are incomplete.
 - Required plugin delivery must pass composition, archive dependency closure, installed runtime and actual UI checks. Builds alone are not acceptance.
-- Shared feature changes must trigger Desktop and Web CI. Personal composition must not activate historical enterprise account or collaboration packages.
+- CI is manual-only to control runner costs. A manual CI run must verify both Desktop and Web; do not enable automatic push or pull-request triggers without an explicit user request. Personal composition must not activate historical enterprise account or collaboration packages.
 - Explicitly requested candidate handover requires actual packaged Desktop operation results and actual UI acceptance. This does not require packaging for ordinary local edits. Report missing acceptance explicitly; never call a candidate complete while required plugins or entries are missing.

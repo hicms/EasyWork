@@ -39,6 +39,8 @@ Windows x64 本地打包在 Windows PowerShell 中执行：
 
 脚本默认安装锁定依赖、构建当前源码的 Web/共享插件、运行完整 Desktop 检查、准备官方运行时，并仅生成 `apps/desktop/dist/win-unpacked/` 免安装目录。直接运行其中的 `EasyWork.exe` 即可测试，无需安装，也无需每次启动重新解压。必须保留整个目录及其 `resources`、DLL 等文件，不能单独复制 EXE；需要分享测试包时可压缩整个目录，接收方解压一次后运行。个人数据仍由现有个人 Profile 管理。只有指定 `-Target installer` 才生成 `EasyWork-<版本>-x64-Setup.exe`。依赖已安装时可加 `-SkipInstall`；`-Help` 查看用法。也可执行 `corepack yarn build:win`。临时 Profile 档案用完即清理，准备的运行时复用固定目录，不累积新的候选副本。构建保持无界面，不提交、发布或启动应用；本地包未签名，正式发布仍走现有发行校验流程。Windows 包须在原生 Windows x64 环境构建。
 
+GitHub Actions CI 仅支持手动运行，不会因 push 或 Pull Request 自动触发。需要云端验证时，在仓库的 Actions → CI → Run workflow 中手动启动；一次运行会检查 Desktop 和 Web。日常修改可按需使用本地检查。
+
 Logo 原稿和配色位于 `assets/brand/`。运行 `node scripts/generate-brand-assets.mjs` 同步矢量资源，桌面构建会自动生成各平台图标。
 
 许可证见 [LICENSE](LICENSE)，第三方组件声明见 [THIRD_PARTY_NOTICES.md](apps/desktop/THIRD_PARTY_NOTICES.md)。
