@@ -5,6 +5,7 @@ import { createRequire } from 'node:module'
 import { dirname, extname, join, resolve, sep } from 'node:path'
 import { APP_ORIGIN, APP_SCHEME, type DesktopBootInfo } from './startup-contract.ts'
 import { StartupLog, startupErrorFields } from './startup-log.ts'
+import { brandStartupIndex, readStartupEntry, type StartupEntry } from '../../../packages/bundle/src/startup-branding.mjs'
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -25,6 +26,7 @@ export class CarrierWeb {
   readonly #boot = Promise.withResolvers<DesktopBootInfo>()
   #host: { origin: string, cookie: string } | undefined
   #failure: Error | undefined
+  #startup: Promise<StartupEntry> | undefined
 
   constructor(readonly frontend: string, readonly log?: StartupLog, readonly diagnosing: () => boolean = () => false) {
     // A failed child can exit before the renderer registers its boot request.
@@ -143,13 +145,19 @@ export class CarrierWeb {
     const target = resolve(directory, '.' + (decoded === '/' ? '/index.html' : decoded))
     if (!target.startsWith(directory + sep)) return new Response(null, { status: 403 })
     try {
-      const bytes = await readFile(target)
-      // This is the official Web entry's asynchronous boot contract; installed bytes are untouched.
-      const content = target === join(directory, 'index.html')
-        ? bytes.toString('utf8').replace(/<head(?:\s[^>]*)?>/iu, '$&<script>globalThis.__DSH_BOOT_READY__ = Promise.withResolvers()</script>')
-        : new Uint8Array(bytes)
+      const entry = await (this.#startup ??= readStartupEntry(join(directory, 'index.html')))
+      let content: string | Uint8Array<ArrayBuffer>
+      if (decoded === entry.pathname) content = entry.source
+      else {
+        const bytes = await readFile(target)
+        // Adapt only served bytes before execution; retain the official asynchronous boot contract.
+        content = target === join(directory, 'index.html')
+          ? brandStartupIndex(bytes.toString('utf8'), entry).replace(/<head(?:\s[^>]*)?>/iu, '$&<script>globalThis.__DSH_BOOT_READY__ = Promise.withResolvers()</script>')
+          : new Uint8Array(bytes)
+      }
       return new Response(request.method === 'HEAD' ? null : content, {
-        headers: { 'content-type': MIME[extname(target)] ?? 'application/octet-stream' },
+        headers: { 'content-type': MIME[extname(target)] ?? 'application/octet-stream',
+          ...(decoded === entry.pathname ? { 'cache-control': 'no-store' } : {}) },
       })
     } catch (error) {
       if (['ENOENT', 'ENOTDIR', 'EISDIR'].includes((error as NodeJS.ErrnoException).code ?? '')) return new Response(null, { status: 404 })

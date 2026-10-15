@@ -23,6 +23,10 @@
 
 整体外观通过公开的 `ThemeRuntime.overrideTokens` 应用 `easywork-ui` 共享配色与尺寸。主题层由 Cordis 注入和 effect 管理，停用 bundle 后撤销自身覆盖，恢复此前的主题组合；不写用户的浅色、深色或跟随系统偏好。官方 Sidebar、Conversation、Composer、Settings 和右栏仍由官方包渲染。升级 DSH 时，`apps/web/tests/theme-contract.test.mjs` 核对安装包实际消费的 token 和主题生命周期，并继续执行版本对齐、打包运行与 UI 验收。
 
+Desktop 与 Web 的空会话首页共用 EasyWork Logo 和名称，Logo 通过公开 `conversation.hero.brand.mark` Slot 注入。首页标题与思考状态文案由本包集中维护中英翻译：显示“正在思考…”、“正在思考，已用时 …”及“思考完成”，保留原生耗时与无障碍状态。锁定版本的 LocaleRuntime 没有翻译覆盖层，因此本包只装饰公开的 `bind` 方法来替换有限键；不修改官方词典、语言偏好或会话实现，停用时撤销装饰与自有词典。`apps/web/tests/branding-contract.test.mjs` 核对锁定官方消费者、语言回退和恢复行为。
+
+插件激活前的启动加载页显示“EasyWork / 正在加载插件…”。本包与 Desktop carrier 共用 `startup-branding.mjs`，只在发送给浏览器的官方入口脚本响应中替换这两个字面量；HTML 指向独立的脚本响应地址以避免复用旧缓存，启动页首次创建即使用新文案。官方发布文件、加载进度和失败处理保持原样；Web 路由与 index tap 由 Profile 生命周期管理。`apps/web/tests/startup-branding.test.mjs` 核对当前官方发行包、两端响应和停用恢复。
+
 完成对应 PLAN 任务及 [验收矩阵](../../apps/web/docs/ACCEPTANCE.md) 场景，记录真实测试证据后才更新状态。先验证公开接口，再实现；Host 入口输出激活/清理标记；Client 通过官方 Slots 提供 EasyWork 导航、业务面板及诊断面板。新任务直接进入原生 Conversation，诊断页调用真实 pluginInventory Remote，不提供假业务响应。
 
 本地候选版本 **0.1.0-alpha.46**。build/typecheck 使用包内脚本，安装验证由根 scripts/probe-install.mjs 提供。源码经 TypeScript/TSX 编译后打包，不依赖上游 checkout。

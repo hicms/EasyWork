@@ -39,7 +39,7 @@
     "probe:connectors": "node scripts/probe-connectors.mjs",
     "probe:headless": "node scripts/probe-headless-interface.mjs",
     "probe:library": "node scripts/probe-library-release.mjs",
-    "check:build": "node --test tests/build-workspace.test.mjs tests/library-loading.test.mjs tests/theme-contract.test.mjs tests/connector-process.test.mjs tests/shared-profile-features.test.mjs tests/easywork-models-composition.test.mjs"
+    "check:build": "node --test tests/build-workspace.test.mjs tests/library-loading.test.mjs tests/theme-contract.test.mjs tests/branding-contract.test.mjs tests/startup-branding.test.mjs tests/connector-process.test.mjs tests/shared-profile-features.test.mjs tests/easywork-models-composition.test.mjs"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "4.0.4",

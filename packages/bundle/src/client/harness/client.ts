@@ -1,4 +1,5 @@
 import { installAppearance } from './appearance.js';
+import { installBranding } from './branding.js';
 import { installFreshSessionNavigation } from './fresh-session.js';
 import { communityMarketView, type MarketHost } from '../components/CommunityMarket.js';
 import type { Context } from '@deepseek-ai/cordis';
@@ -34,6 +35,7 @@ const productViews: Readonly<Record<string, string>> = {
 
 export function apply(ctx: Context): void {
   installAppearance(ctx);
+  installBranding(ctx);
   installFreshSessionNavigation(ctx);
   ctx.inject(['market'], scope => {
     if (scope.market.version !== 1) return;

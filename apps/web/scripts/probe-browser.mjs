@@ -100,7 +100,9 @@ export async function probeBrowser(address, sessionCookie, screenshotPath, { ins
 
     await newSession.click();
     await expect.poll(() => new URL(page.url()).searchParams.get('easywork-view')).toBe('conversation');
-    await expect(page.getByText(/探索未至之境|Into the Unknown/, { exact: true }).first()).toBeVisible();
+    await expect(page.getByTestId('easywork-hero-mark')).toBeVisible();
+    await expect(page.getByText('EasyWork', { exact: true })).toHaveCount(2);
+    await expect(page.getByText('EasyWork', { exact: true }).last()).toBeVisible();
 
     await page.goto(`${address}/?diagnostics=1&easywork-view=skills`, { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('easywork-skills')).toBeVisible();
@@ -256,7 +258,9 @@ export async function probeProductWithoutSkills(address, sessionCookie) {
     await sidebarPanel(page, '项目').click();
     await expect(page.getByRole('heading', { name: '让想法，有处安放。', exact: true })).toBeVisible();
     await page.getByText(/新会话|New Session/, { exact: true }).first().click();
-    await expect(page.getByText(/探索未至之境|Into the Unknown/, { exact: true }).first()).toBeVisible();
+    await expect(page.getByTestId('easywork-hero-mark')).toBeVisible();
+    await expect(page.getByText('EasyWork', { exact: true })).toHaveCount(2);
+    await expect(page.getByText('EasyWork', { exact: true }).last()).toBeVisible();
     expect(errors).toEqual([]);
     console.log('PASS: removing Skill keeps EasyWork brand, workbench, native new session, and stale URL recovery');
   } finally {
