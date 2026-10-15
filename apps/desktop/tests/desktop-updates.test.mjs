@@ -135,14 +135,35 @@ test('exit zero without acknowledgement is unsafe; timeout does not kill the pro
   const running = childFixture(); let killed = false; running.kill = () => { killed = true }
   watchRuntimeShutdown(running)
   const timeout = stopRuntimeProcess(running, true)
-    let settled = false
-    void timeout.then(() => { settled = true }, () => { settled = true })
+  let settled = false
+  void timeout.then(() => { settled = true }, () => { settled = true })
   t.mock.timers.tick(8001)
-    await Promise.resolve()
-    assert.equal(settled, false)
+  await Promise.resolve()
+  assert.equal(settled, false)
   assert.equal(killed, false)
   t.mock.timers.tick(12000)
   await assert.rejects(timeout, /暂缓安装/u)
   assert.equal(killed, false)
   assert.equal(await stopRuntimeProcess(child), 'forced')
+})
+
+test('ordinary shutdown allows delayed natural close and only forces cleanup at its deadline', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] })
+  const child = childFixture(); watchRuntimeShutdown(child)
+  const pending = stopRuntimeProcess(child)
+  assert.equal(child.message.requireDrainedProcesses, false)
+  child.emit('message', { type: 'easywork-shutdown-complete' })
+  t.mock.timers.tick(9000)
+  child.emit('close', 0, null)
+  assert.equal(await pending, 'graceful')
+  const stuck = childFixture()
+  stuck.kill = signal => { stuck.signalCode = signal; stuck.emit('exit', null, signal); return true }
+  watchRuntimeShutdown(stuck)
+  let finished = false
+  const timeout = stopRuntimeProcess(stuck).then(result => { finished = true; return result })
+  t.mock.timers.tick(19999)
+  await Promise.resolve()
+  assert.equal(finished, false)
+  t.mock.timers.tick(1)
+  assert.equal(await timeout, 'forced')
 })
