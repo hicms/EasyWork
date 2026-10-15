@@ -118,20 +118,14 @@ try {
     })
     assert.ok(version.includes(DSH_VERSION), 'The installed command must load the archived official CLI')
   }
-  const skipKey = personal.getByRole('button', { name: '稍后配置', exact: true })
   assert.equal(await personal.getByRole('heading', { name: '预览版说明', exact: true }).count(), 0)
-  // Official Desktop uses its native shortcut/settings path rather than Web onboarding.
   const nativeDesktop = await personal.evaluate(() => document.documentElement.dataset.platform !== undefined)
   if (nativeDesktop) {
     assert.equal(await personal.evaluate(() => typeof window.dshDesktop?.keyboard?.subscribe), 'function')
-    await personal.getByRole('button', { name: '账号菜单', exact: true }).click()
-    await personal.getByRole('menuitem', { name: '设置', exact: true }).waitFor()
-    await personal.keyboard.press('Escape')
-  } else {
-    await skipKey.waitFor({ state: 'visible', timeout: 10_000 })
-    await skipKey.click()
-    await skipKey.waitFor({ state: 'hidden', timeout: 10_000 })
   }
+  await personal.getByRole('button', { name: '登录 EasyWork', exact: true }).click()
+  await personal.getByRole('heading', { name: 'EasyWork 账号与模型', exact: true }).waitFor()
+  await personal.keyboard.press('Escape')
   const navigation = personal.getByRole('navigation', { name: /^(全局面板|Global panels)$/u })
   for (const [label, search] of [['专家', '搜索专家'], ['技能', '搜索技能'], ['连接器', '搜索 MCP']]) {
     await navigation.getByRole('button', { name: label, exact: true }).click()

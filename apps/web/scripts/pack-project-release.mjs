@@ -11,6 +11,7 @@ const tag = `v${project.version}`;
 const releaseNotes = join(root, 'RELEASE-NOTES.md');
 const destination = join(root, '.artifacts', `project-${tag}`);
 const packageDirectories = [
+  '../../packages/plugins/models',
   '../../packages/providers/identity-local',
   '../../packages/providers/browser-session',
   '../../packages/plugins/audit',
@@ -79,7 +80,7 @@ await writeFile(join(destination, 'release-manifest.json'), JSON.stringify({
   runtimeOverrides: Object.fromEntries(Object.entries(project.pnpm.overrides).filter(([name]) => name.startsWith('@deepseek-ai/'))),
   packages,
   installation: {
-    defaultPackages: ['easywork-provider-identity-local','easywork-provider-browser-session','easywork-plugin-audit','easywork-plugin-access','easywork-plugin-skills','easywork-plugin-experts','easywork-plugin-connectors','easywork-plugin-library','easywork-bundle'],
+    defaultPackages: ['easywork-plugin-models','easywork-provider-identity-local','easywork-provider-browser-session','easywork-plugin-audit','easywork-plugin-access','easywork-plugin-skills','easywork-plugin-experts','easywork-plugin-connectors','easywork-plugin-library','easywork-bundle'],
     optionalPackages: ['easywork-plugin-office','easywork-plugin-projects','easywork-plugin-activity'],
     enterprisePackages: 'Separate artifacts; not included in this personal collection',
     preservesPreviouslyInstalledOptionalPackages: true,

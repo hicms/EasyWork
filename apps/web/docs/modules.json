@@ -534,5 +534,19 @@
     "requirements": [
       "R12"
     ]
+  },
+  {
+    "path": "../../packages/plugins/models",
+    "title": "EasyWork 账号与模型",
+    "status": "implemented",
+    "directories": [
+      "src",
+      "src/client",
+      "tests"
+    ],
+    "moduleVersion": "0.1",
+    "requirements": [
+      "R16"
+    ]
   }
 ]

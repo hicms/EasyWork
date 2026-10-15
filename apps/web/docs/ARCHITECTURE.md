@@ -2,7 +2,7 @@
 
 产品范围见 [REQUIREMENTS](REQUIREMENTS.md)，实现规则见 [FEATURE-DEVELOPMENT-CONTRACT](FEATURE-DEVELOPMENT-CONTRACT.md)。本文件描述唯一实现与适配边界。
 
-官方 DSH 拥有 Host、Client renderer、Conversation、Workspace、Session、Loader、模型设置、插件管理、Skill runtime 与 Agent loop。个人和企业消费同一精确锁定的官方版本族；完整 Web 清单由 `scripts/official-web-clients.mjs` 从锁定的官方 base/Web 包导出到 `profiles/shared/official-web-clients.json`，保留官方条件与 `!!js` 标签。
+官方 DSH 拥有 Host、Client renderer、Conversation、Workspace、Session、Loader、插件管理、Skill runtime、模型调用基础与 Agent loop。EasyWork 通过共享 `easywork-plugin-models` 接管账号登录、模型设置、输入框选择器和 `/model`。完整 Web 清单仍由 `scripts/official-web-clients.mjs` 从锁定官方包导出，保留官方条件与 `!!js` 标签；自有 Profile patch 单独声明账号/模型替换，运行检查核对这些替换和其他完整官方客户端。
 
 `profiles/shared/easywork-features.json` 声明共同业务包来源。个人和企业复用同一领域插件、业务服务、工具与页面；不同组合只提供实际身份、存储、执行和同步适配。共同来源清单不决定默认安装，交付边界见 [EXTERNAL-PLUGINS](EXTERNAL-PLUGINS.md)。
 
@@ -20,9 +20,9 @@
 | Desktop carrier | 窗口、设备凭据、本机进程、固定后台配置与安装生命周期 |
 | easywork-admin | 独立企业治理后台、登录、组织授权、审计与内部模型 API |
 
-个人 Web 使用完整官方客户端和个人身份，不依赖企业后台。企业 Web 在单 ECS 按账号按需运行独立官方 DSH 进程，同账号多个登录复用；运行安装只读共用，数据、配置、凭据与文件目录属于账号。Profile 不是账号或安全边界，目录隔离和实际资源授权分别检查。
+个人 Web/Desktop 使用同一账号/模型插件连接 `https://ask.vigoai.cn`；模型服务登录只授权远程模型，不改变本地 Home 或业务身份。JWT 保存在官方 Host credential record，通过 Host Connection 返回脱敏账号和目录，浏览器不直接持有 JWT 或请求中转服务。模型目录的名称、厂商、档位、价格倍率、能力和思考参数由服务下发；`ModelAdapter` 通过发布适配器和公开 payload hook 映射三种聊天协议。登录、恢复和目录刷新协调官方默认模型，显式会话选择由官方持久化。退出或 401 撤销本插件凭据与在途调用，保留本地数据。服务尚无刷新令牌接口，过期后重新登录。企业 Web 的历史独立进程适配保持外置范围；Profile 不是账号或安全边界。
 
-企业 Desktop 在本机运行同一官方 DSH，企业身份由同一账号插件提供。企业数据空间与个人分开；管理员通过安装包固定企业后台 origin，后端按真实成员凭据授权。账号包不可变携带、仅企业激活；协作与业务插件外置安装。Web 部署进程不作为 Desktop 本机执行器。
+历史企业身份、成员进程与协作适配保持独立外置，不进入当前个人 Desktop 组合。EasyWork 模型服务账号不提供企业身份或成员空间；Web 部署进程也不作为 Desktop 本机执行器。
 
 后台通过 Spring AI 提供内部模型 API；成员通过官方模型设置手工填写地址、Key、协议和模型。不添加企业模型 provider、自动同步模型配置或复制官方设置页面。管理员访问本组织会话正文使用专用只读授权与访问审计，不获得宿主运维权限。
 

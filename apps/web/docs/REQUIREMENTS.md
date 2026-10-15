@@ -21,10 +21,11 @@
 | R13 | 自动化去重与恢复契约 | `packages/plugins/automations` | planned |
 | R14 | 未实现扩展保持不可加载 | `packages/plugins/applications` | planned |
 | R15 | 共同契约、页面与源码所有权 | `packages/contracts` | infrastructure |
+| R16 | EasyWork 模型服务账号与模型目录 | `packages/plugins/models` | default |
 
-default 表示专家、技能、MCP/连接器、资料库这些自有功能；不表示预装所有用户定义。optional 独立安装，infrastructure 为必要基础依赖，planned 为不可加载骨架。mode-specific 的企业账号在企业 Web 显式组合，在 Desktop 不可变安装中携带并仅企业激活。企业协作、通知和业务应用仍外置独立安装。详见 [交付边界](EXTERNAL-PLUGINS.md)。
+default 包含共享的 EasyWork 模型服务账号、模型目录，以及专家、技能、MCP/连接器、资料库这些自有功能；不表示预装所有用户定义。账号/模型插件连接 ask-service，登录只授权远程模型，JWT 不进入浏览器或会话，退出保留本地数据。模型 UI、`/model` 和默认选择通过公开接口接入官方运行时。optional 独立安装，infrastructure 为必要基础依赖，planned 为不可加载骨架。历史企业账号与协作保持外置范围，详见 [交付边界](EXTERNAL-PLUGINS.md)。
 
-企业 Web 部署在单 ECS，按账号按需启动官方进程，同账号多登录复用；运行安装共用只读基础，账号数据、配置、凭据与文件分开。Desktop 企业模式在本机执行官方 DSH，以真实成员凭据访问管理员固定后台。管理员打包配置只含 enterprise.backendUrl，不能含账号、密码或任何 Key。
+历史企业 Web 的成员进程适配保持独立外置，当前个人 Desktop 不提供企业模式。模型服务登录不创建成员进程、不切换数据空间；安装包配置不能含账号、密码或任何 Key。
 
 企业后台独立拥有组织、成员、权限、审计与 Spring AI 内部模型 API。成员通过完整官方模型设置页手工填写内部地址、Key、协议与模型；个人模型仍可配置。普通成员不能查看他人会话，组织管理员的正文读取必须明确授权、只读并留审计；组织管理员不获得宿主运维权限。
 

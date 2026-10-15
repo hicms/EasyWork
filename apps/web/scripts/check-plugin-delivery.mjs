@@ -10,7 +10,7 @@ const manifests=new Map();
 for(const directory of directories){try{const manifest=JSON.parse(await readFile(join(base,directory,'package.json'),'utf8'));manifests.set(manifest.name,{manifest,directory});}catch(error){if(error.code!=='ENOENT')throw error;}}
 return manifests;
 }
-export const defaults=['easywork-provider-identity-local','easywork-provider-browser-session','easywork-plugin-audit','easywork-plugin-access','easywork-plugin-skills','easywork-plugin-experts','easywork-plugin-connectors','easywork-plugin-library','easywork-bundle'];
+export const defaults=['easywork-plugin-models','easywork-provider-identity-local','easywork-provider-browser-session','easywork-plugin-audit','easywork-plugin-access','easywork-plugin-skills','easywork-plugin-experts','easywork-plugin-connectors','easywork-plugin-library','easywork-bundle'];
 const allowed=new Set([...defaults,'easywork-contracts','easywork-ui','easywork-plugin-workbench']);
 export async function auditDefaultPluginDelivery(){
 const manifests=await readOwnedManifests();

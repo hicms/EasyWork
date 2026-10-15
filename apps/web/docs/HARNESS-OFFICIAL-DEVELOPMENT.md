@@ -9,7 +9,7 @@
 | 会话右栏 | rightbar.session、sidebar.right.*、ctx.sidebarRight | 当前 Session 的资源和成果 |
 | 临时浮层 | shell.overlay 或页面所属局部层 | 选择器、确认与暂时提示 |
 
-EasyWork 不复制 Workspace、Session 列表、Conversation、Composer、模型设置、插件管理或执行状态。左栏使用新稳定 list id，与 main keyed entry 配对，不占用已有 single/keyed owner。右栏属于确定 Session，tab 身份由 kind/address 决定；注册 tab definition 与 keyed pane 正文，通过公开 Resource provider 交接数据。
+EasyWork 不复制 Workspace、Session 列表、Conversation、Composer、插件管理或执行状态。账号与模型是明确的产品扩展：`easywork-plugin-models` 的 Profile patch 停用官方账号/模型提供方及界面，通过公开 `settings.section`、`settings.launcher`、`conversation.input.model` 和 Command UI 接管入口。`ModelAdapter` 复用发布包适配、凭据和 Session 选择接口；不修改 DSH 源码。左栏使用新稳定 list id，与 main keyed entry 配对，不占用其他 single/keyed owner。右栏属于确定 Session，tab 身份由 kind/address 决定；注册 tab definition 与 keyed pane 正文，通过公开 Resource provider 交接数据。
 
 全局外观由 `easywork-ui` 提供同一份明暗主题令牌，`easywork-bundle` 通过官方 `ctx.theme.overrideTokens` 注册，并由 `ctx.effect` 释放。用户的 `light`、`dark`、`system` 偏好仍由官方设置拥有；移除 EasyWork 覆盖只恢复此前的主题叠加结果，不重写用户配置。业务页面复用共享控件、字体、间距和表面样式；官方侧栏、会话、设置与右栏继续使用自己的布局和行为，不依赖其编译后 CSS 类名或 DOM 层级。
 
@@ -25,4 +25,4 @@ service、Remote、registry、监听、timer、watcher、连接、子进程与�
 
 当前技能管理采用公开 Client Connection 的 exact Fetch 适配生成器的外部 workspace 兼容限制；JSON 与 streaming route 各自有界、中止传播、稳定错误与清理，不复制成通用私有协议。其他一元业务协议优先官方 Typert 生成 Remote，Host 签名为唯一来源；lookup 提供身份解析而非权限。
 
-每次变更核对官方 owner、公开入口、交接数据、生命周期和有限验收。需要新增能力时先验证公开包，未实现骨架不声明加载入口。原生输入、附件、权限、模型、Session、Skill、MCP 与文件执行继续由官方拥有。相关无密钥行为、typecheck、build 和独立安装检查完成后，再分别判定真实模型、界面及平台运行。
+每次变更核对官方 owner、公开入口、交接数据、生命周期和有限验收。需要新增能力时先验证公开包，未实现骨架不声明加载入口。原生输入、附件、权限、模型调用基础、Session、Skill、MCP 与文件执行继续由官方拥有。EasyWork 模型目录由 ask-service 下发，账号 JWT 不进入浏览器状态、设置文档或会话日志。相关无密钥行为、typecheck、build 和独立安装检查完成后，再分别判定真实模型、界面及平台运行。

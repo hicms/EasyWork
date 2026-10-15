@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "ES2022", "module": "NodeNext", "moduleResolution": "NodeNext",
+    "jsx": "react", "strict": true, "skipLibCheck": true, "declaration": true,
+    "outDir": "dist", "rootDir": "src", "types": ["node"],
+    "rewriteRelativeImportExtensions": true, "noEmitOnError": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

@@ -31,6 +31,7 @@ if (typeof expectedHarness !== 'string' || expectedHarness.length === 0) {
 }
 const packages = new Map(manifest.packages.map(item => [item.name, item]));
 const defaultInstallOrder = [
+  'easywork-plugin-models',
   'easywork-provider-identity-local',
   'easywork-provider-browser-session',
   'easywork-plugin-audit',

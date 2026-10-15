@@ -1,0 +1,33 @@
+# EasyWork owns account/model presentation and server-backed web access.
+- id: deepseek-account
+  disabled: true
+- id: account-controller
+  disabled: true
+- id: llm-deepseek
+  disabled: true
+- id: llm-deepseek-account
+  disabled: true
+- id: llm-pi-ai
+  disabled: true
+- id: ui-settings-account
+  disabled: true
+- id: ui-settings-models
+  disabled: true
+- id: ui-model-selection
+  disabled: true
+- id: web-search-deepseek
+  disabled: true
+- id: web
+  config:
+    searchProvider: easywork
+    fetchProvider: easywork
+- id: web-fetch-http
+  disabled: true
+- id: tool-web
+  config:
+    search: true
+    fetch: true
+    searchTimeoutMs: 60000
+- insert:
+    - id: easywork-models
+      name: easywork-plugin-models

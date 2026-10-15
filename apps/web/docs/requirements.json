@@ -410,6 +410,28 @@
         "A00",
         "EC01"
       ]
+    },
+    {
+      "id": "R16",
+      "title": "EasyWork 模型服务账号与模型目录",
+      "sourceOwner": "../../packages/plugins/models",
+      "entryPoints": [
+        "personal-web",
+        "personal-desktop"
+      ],
+      "delivery": "default",
+      "dataBoundary": "JWT 只保存在官方 Host 凭据记录；密码不保存；登录模型服务不改变本地 Home 与数据身份。",
+      "contract": "Desktop/Web 共用账号、目录、ModelAdapter 和公开 Session 选择接口；Profile 替换官方账号/模型入口，不修改 DSH 源码。",
+      "checks": [
+        "../../packages/plugins/models/tests/account.test.ts",
+        "../../packages/plugins/models/tests/adapter.test.ts",
+        "tests/easywork-models-composition.test.mjs"
+      ],
+      "acceptance": [
+        "M01",
+        "M02",
+        "M03"
+      ]
     }
   ]
 }

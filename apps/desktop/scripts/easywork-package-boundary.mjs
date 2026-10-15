@@ -4,6 +4,7 @@ export const PRODUCT_PACKAGES = Object.freeze([
   'easywork-plugin-connectors',
   'easywork-plugin-experts',
   'easywork-plugin-library',
+  'easywork-plugin-models',
   'easywork-plugin-projects',
   'easywork-plugin-skills',
 ])
@@ -22,6 +23,7 @@ export const CATALOG_PACKAGES = Object.freeze({
 })
 
 export const RELEASE_PACKAGES = Object.freeze([
+  'easywork-plugin-models',
   'easywork-contracts',
   'easywork-ui',
   'easywork-provider-identity-local',
@@ -37,6 +39,7 @@ export const RELEASE_PACKAGES = Object.freeze([
 ])
 
 export const PACKAGE_DIRECTORIES = Object.freeze({
+  'easywork-plugin-models': '../../packages/plugins/models',
   'easywork-contracts': '../../packages/contracts',
   'easywork-ui': '../../packages/ui',
   'easywork-provider-identity-local': '../../packages/providers/identity-local',

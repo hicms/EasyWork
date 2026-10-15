@@ -64,9 +64,8 @@ try {
   if (!match) throw new Error('Official Web did not advertise its Client boot graph')
   const graph = JSON.parse(match[1])
   const ids = new Set(graph.entries.map(entry => entry.id))
-  for (const client of release.officialWeb.clients.filter(row => !row.conditional)) {
-    if (!ids.has(client.package)) throw new Error('Unconditional official Web client missing at runtime: ' + client.package)
-  }
+  const { verifyEasyWorkClientGraph } = await import('../../../scripts/easywork-model-policy.mjs')
+  verifyEasyWorkClientGraph(release.officialWeb.clients, ids)
   for (const name of [...PRODUCT_PACKAGES, 'easywork-bundle']) if (!ids.has(name)) throw new Error('Owned client missing at runtime: ' + name + '; owned graph=' + [...ids].filter(row => row.startsWith('easywork-')).join(',') + '; ' + scrub(output).slice(-6000))
   const owned = [...ids].filter(name => name.startsWith('easywork-')).sort()
   if (JSON.stringify(owned) !== JSON.stringify([...PRODUCT_PACKAGES, 'easywork-bundle'].sort())) throw new Error('Unexpected default owned client inventory')

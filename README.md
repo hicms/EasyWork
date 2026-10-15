@@ -2,6 +2,8 @@
 
 EasyWork 是基于官方 DeepSeek Harness 的个人 AI 工作台，包含 Web 和 Electron 桌面端，共享项目、资料库、专家、技能和连接器功能。
 
+Desktop 和 Web 共用 EasyWork 账号与模型服务。在“账号与模型”中登录 [模型服务](https://ask.vigoai.cn) 后，使用服务下发的模型目录；会话内可搜索、切换模型和调整思考参数。账号 JWT 保存在 Host 凭据记录中，退出账号保留本地会话、文件和已安装插件。接入说明见[账号与模型插件](packages/plugins/models/README.md)。
+
 此仓库是 EasyWork 的源码起点，尚未发布 EasyWork 安装包。官方运行时版本由 [upstream.json](upstream.json) 锁定；桌面端只承载已发布的官方运行时。
 
 需要 Node.js `^22.19.0` 或 `>=24.0.0`，并启用 Corepack。

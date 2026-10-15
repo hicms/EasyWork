@@ -6,7 +6,7 @@ This package builds the Electron application and contains one bundled personal r
 
 ## Personal workspace
 
-Opening the app prepares and starts the existing personal Home/Profile automatically, without a mode picker or enterprise login. Keep the full official settings, model configuration, plugin manager, sidebar, and right panel. Personal data and explicitly installed plugins remain in the writable Profile.
+Opening the app prepares and starts the existing personal Home/Profile automatically, without a mode picker or enterprise login. The shared EasyWork account/model plugin signs in to `https://ask.vigoai.cn` and displays its model catalog. Its `ModelAdapter` uses the published DSH runtime; JWTs remain in Host credential records. Other official settings, the plugin manager, conversation, sidebar and right panel keep their official owners. Signing out preserves local data and explicitly installed plugins.
 
 The main window loads the packaged official page before the local Host is ready and continues in that same document. Closing the window hides it while preserving background tasks, sessions, drafts and page state. Reopen through the Windows/Linux tray, the macOS Dock or another app launch. Application → Quit EasyWork, or Quit EasyWork in the tray, stops the Host and exits.
 

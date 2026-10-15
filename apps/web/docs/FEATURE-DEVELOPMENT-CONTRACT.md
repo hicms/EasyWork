@@ -5,6 +5,7 @@
 | 内容 | 唯一所有者 |
 | --- | --- |
 | Host、Client、Agent、模型与工具基础 | 精确锁定的官方 DSH |
+| 模型服务账号、模型目录与选择界面 | packages/plugins/models；ModelAdapter 复用官方发布适配器 |
 | 业务数据、服务、页面、工具与业务授权 | packages/plugins/<domain> |
 | 身份、存储、运行与同步差异 | 有明确契约的 provider/adapter |
 | 跨插件领域契约 | packages/contracts |
