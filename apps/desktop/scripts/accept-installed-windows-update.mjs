@@ -75,6 +75,15 @@ const launch = async (expected, intercept = true) => {
   const page = await running.firstWindow({ timeout: 180_000 })
   await page.waitForURL('easywork-app://app/**')
   await page.getByText(/^(新会话|New conversation|New chat)$/u).first().waitFor({ timeout: 180_000 })
+  await running.evaluate((_, file) => {
+    const fs = process.getBuiltinModule('node:fs')
+    const host = process._getActiveHandles().find(handle => handle.constructor.name === 'ChildProcess' && handle.connected)
+    if (!host) throw new Error('Cannot observe installed Host shutdown')
+    const record = data => fs.appendFileSync(file, JSON.stringify({ time: new Date().toISOString(), appPid: process.pid, hostPid: host.pid, ...data }) + '\n')
+    host.stderr.on('data', chunk => record({ stderr: String(chunk).replace(/([?&](?:token|key|secret)=)[^\s&]+/giu, '$1[redacted]') }))
+    host.on('message', message => { if (message?.type === 'easywork-shutdown-complete') record({ event: message.type }) })
+    host.on('close', (code, signal) => record({ event: 'close', code, signal }))
+  }, join(output, 'host-shutdown.jsonl'))
   return { page, pid }
 }
 const quit = async pid => {
@@ -139,8 +148,26 @@ try {
   ;({ page, pid } = await launch(baseline.version))
   await page.getByText('新版本就绪', { exact: true }).waitFor({ timeout: 120_000 })
   const installingAt = Date.now(), closed = running.waitForEvent('close', { timeout: 40_000 })
+  // Observe only this runner-owned installation, from outside the Host's Windows Job.
+  const observer = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', `
+$until = [DateTime]::UtcNow.AddSeconds(12)
+while ([DateTime]::UtcNow -lt $until) {
+  $all = @(Get-CimInstance Win32_Process)
+  $ids = [Collections.Generic.HashSet[uint32]]::new()
+  foreach ($item in $all) { if ($item.ExecutablePath -and $item.ExecutablePath.StartsWith($env:EASYWORK_ACCEPTANCE_DIRECTORY, [StringComparison]::OrdinalIgnoreCase)) { [void]$ids.Add($item.ProcessId) } }
+  do {
+    $added = $false
+    foreach ($item in $all) { if ($ids.Contains($item.ParentProcessId) -and $ids.Add($item.ProcessId)) { $added = $true } }
+  } while ($added)
+  $owned = @($all | Where-Object { $ids.Contains($_.ProcessId) } | Select-Object ProcessId, ParentProcessId, ExecutablePath, @{Name='Role'; Expression={ if ($_.CommandLine -match '--easywork-browser-worker-port=') { 'browser-worker' } elseif ($_.CommandLine -match '--type=([a-z-]+)') { $Matches[1] } else { 'main-or-tool' } }})
+  @{ time = [DateTime]::UtcNow.ToString('o'); processes = $owned } | ConvertTo-Json -Depth 4 -Compress | Add-Content -LiteralPath $env:EASYWORK_ACCEPTANCE_PROCESS_LOG
+  Start-Sleep -Milliseconds 200
+}
+`], { windowsHide: true, env: { ...env, EASYWORK_ACCEPTANCE_DIRECTORY: appDirectory + '\\', EASYWORK_ACCEPTANCE_PROCESS_LOG: join(output, 'shutdown-processes.jsonl') }, stdio: 'ignore' })
+  const observed = new Promise((resolve, reject) => { observer.once('error', reject); observer.once('close', resolve) })
+  await waitFor(() => existsSync(join(output, 'shutdown-processes.jsonl')), 'first owned-process snapshot', 10_000)
   await page.getByRole('button', { name: '重启升级', exact: true }).click()
-  await closed; running = undefined
+  await closed; running = undefined; await observed
   assert(logs().some(row => row.pid === pid && row.event === 'host.stopped' && row.result === 'graceful'))
   await waitFor(() => installedVersion() === candidate.version, 'B installed')
   const restart = await waitFor(() => logs().find(row => row.pid !== pid && Date.parse(row.time) >= installingAt && row.event === 'startup.complete'), 'B automatically relaunched and rendered')

@@ -11,6 +11,11 @@ on:
         description: Draft acceptance-vVERSION candidate tag
         type: string
         required: true
+      scenario:
+        description: Acceptance scenarios (use all before publishing)
+        type: choice
+        default: all
+        options: [all, delta, missing-cache, corrupt-blockmap, offline]
 
 permissions:
   contents: read
@@ -31,7 +36,7 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        scenario: [delta, missing-cache, corrupt-blockmap, offline]
+        scenario: ${{ fromJSON(inputs.scenario == 'all' && '["delta","missing-cache","corrupt-blockmap","offline"]' || format('["{0}"]', inputs.scenario)) }}
     steps:
       - uses: actions/checkout@v6
         with:
