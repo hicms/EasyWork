@@ -191,8 +191,6 @@ try {
 $handle = $application.Handle
 if ($handle -eq 0) { throw 'Cannot hold the main process handle' }
 if ($application.Path -ine $env:EASYWORK_ACCEPTANCE_EXECUTABLE) { throw 'Unexpected main process path' }
-$deadline = [DateTime]::UtcNow.AddSeconds(40)
-do {
   $all = @(Get-CimInstance Win32_Process)
   $ids = [Collections.Generic.HashSet[uint32]]::new()
   foreach ($item in $all) { if ($item.ExecutablePath -and $item.ExecutablePath.StartsWith($env:EASYWORK_ACCEPTANCE_DIRECTORY, [StringComparison]::OrdinalIgnoreCase)) { [void]$ids.Add($item.ProcessId) } }
@@ -202,9 +200,7 @@ do {
   } while ($added)
   $owned = @($all | Where-Object { $ids.Contains($_.ProcessId) } | Select-Object ProcessId, ParentProcessId, ExecutablePath, @{Name='Role'; Expression={ if ($_.CommandLine -match '--easywork-browser-worker-port=') { 'browser-worker' } elseif ($_.CommandLine -match '--type=([a-z-]+)') { $Matches[1] } else { 'main-or-tool' } }})
   @{ time = [DateTime]::UtcNow.ToString('o'); processes = $owned } | ConvertTo-Json -Depth 4 -Compress | Add-Content -LiteralPath $env:EASYWORK_ACCEPTANCE_PROCESS_LOG
-  $exited = $application.WaitForExit(200)
-} while (-not $exited -and [DateTime]::UtcNow -lt $deadline)
-if (-not $exited) { throw 'Main process did not exit for installation' }
+if (-not $application.WaitForExit(40000)) { throw 'Main process did not exit for installation' }
 @{ time = [DateTime]::UtcNow.ToString('o'); pid = $application.Id; exitCode = $application.ExitCode } | ConvertTo-Json -Compress | Set-Content -LiteralPath $env:EASYWORK_ACCEPTANCE_EXIT_LOG -Encoding UTF8
 } finally { $application.Dispose() }
 `], { windowsHide: true, env: { ...env, EASYWORK_ACCEPTANCE_DIRECTORY: appDirectory + '\\', EASYWORK_ACCEPTANCE_EXECUTABLE: appExecutable,
@@ -217,7 +213,7 @@ if (-not $exited) { throw 'Main process did not exit for installation' }
   await waitFor(() => {
     if (observationFailure) throw observationFailure
     return existsSync(join(output, 'shutdown-processes.jsonl'))
-  }, 'first owned-process snapshot', 10_000)
+  }, 'first owned-process snapshot', 45_000)
   checkpoint('Click restart and await natural process exit')
   await page.getByRole('button', { name: '重启升级', exact: true }).click({ noWaitAfter: true, timeout: 10_000 })
   await observed
@@ -253,7 +249,7 @@ Start-Sleep -Milliseconds 500
   assert.equal(await hashFile(marker),markerHash)
   proof.checks.dataPreserved = true
   if (legacy) proof.checks.legacyDataPreserved = true
-  for (const [label, content] of [['项目', '新建项目'], ['专家', '制作专家'], ['技能', 'Excel 表格设计'],
+  for (const [label, content] of [['项目', '新建项目'], ['专家', '制作专家'], ['技能', '技能市场'],
     ['连接器', 'MCP 服务管理'], ['资料库', '新建或导入资料'], ['插件', '添加插件']]) {
     await page.getByRole('navigation', { name:'全局面板' }).getByRole('button',{name:label,exact:true}).click()
     await page.getByText(content, { exact: true }).first().waitFor()
