@@ -54,6 +54,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           BASELINE_TAG: ${{ inputs.baseline }}
           CANDIDATE_TAG: ${{ inputs.candidate }}
+          UPDATE_SCENARIO: ${{ matrix.scenario }}
         run: |
           foreach ($tag in @($env:BASELINE_TAG, $env:CANDIDATE_TAG)) {
             if ($tag -notmatch '^acceptance-v\d+\.\d+\.\d+-alpha\.\d+$') { throw 'Invalid acceptance tag' }
@@ -62,6 +63,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           gh release download $env:CANDIDATE_TAG --repo hicms/EasyWork --dir "$env:RUNNER_TEMP/easywork-update/B"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if ($env:UPDATE_SCENARIO -eq 'delta') {
+            gh release download acceptance-v2.0.6-alpha.5 --repo hicms/EasyWork --pattern '*Setup.exe' --pattern acceptance.json --dir "$env:RUNNER_TEMP/easywork-update/legacy"
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
       - name: Install A and exercise actual automatic update to B
         env:
           DSH_TELEMETRY_DISABLED: '1'

@@ -25,6 +25,14 @@ assert(['delta', 'missing-cache', 'corrupt-blockmap', 'offline'].includes(scenar
 const baselineDirectory = join(root, 'A'), candidateDirectory = join(root, 'B')
 const baseline = readReleaseManifest(join(baselineDirectory, 'release.json'), mode)
 const candidate = readReleaseManifest(join(candidateDirectory, 'release.json'), mode)
+const legacyDirectory = join(root, 'legacy')
+const legacy = scenario === 'delta' ? JSON.parse(readFileSync(join(legacyDirectory, 'acceptance.json'), 'utf8')) : undefined
+if (legacy) {
+  assert.equal(legacy.version, '2.0.6-alpha.5'); assert.equal(legacy.sourceCommit, 'e86ed553b9a88daed87be95f82b437abde76993c')
+  const file = join(legacyDirectory, `EasyWork-${legacy.version}-x64-Setup.exe`)
+  assert.equal(statSync(file).size, 272156747)
+  assert.equal(await hashFile(file, 'sha256', 'hex'), 'd76cbbc92f40a8ca28d51fe17f6c18b0738e2bb6cfc84aa30214fb6e6f060103')
+}
 assert(newerVersion(candidate.version, baseline.version)); assert.equal(candidate.updaterCacheDirName, baseline.updaterCacheDirName)
 assert.match(baseline.updaterCacheDirName, /^[a-zA-Z\d._-]+$/u)
 for (const [release, directory] of [[baseline, baselineDirectory], [candidate, candidateDirectory]]) {
@@ -70,10 +78,13 @@ const launch = async (expected, intercept = true) => {
   running = await _electron.launch({ executablePath: appExecutable, env, args: ['--lang=zh-CN'], timeout: 180_000 })
   assert.equal(await running.evaluate(({ app }) => app.getVersion()), expected)
   const identity = JSON.parse(extractFile(join(appDirectory, 'resources/app.asar'), 'package.json'))
-  const release = expected === baseline.version ? baseline : candidate
-  assert.equal(identity.easyworkSourceCommit, release.sourceCommit); assert.equal(identity.easyworkUpdateTarget, 'nsis-acceptance')
-  const profile = JSON.parse(readFileSync(join(appDirectory, 'resources/easywork-runtime/package-cache/release-manifest.json'), 'utf8'))
-  assert.equal(profile.sourceCommit, release.sourceCommit); assert.equal(profile.sourceDirty, false)
+  const release = expected === legacy?.version ? legacy : expected === baseline.version ? baseline : candidate
+  if (release !== legacy) assert.equal(identity.easyworkSourceCommit, release.sourceCommit)
+  assert.equal(identity.easyworkUpdateTarget, release === legacy ? 'disabled' : 'nsis-acceptance')
+  if (release !== legacy) {
+    const profile = JSON.parse(readFileSync(join(appDirectory, 'resources/easywork-runtime/package-cache/release-manifest.json'), 'utf8'))
+    assert.equal(profile.sourceCommit, release.sourceCommit); assert.equal(profile.sourceDirty, false)
+  }
   assert.equal(await running.evaluate(({ app }) => app.getPath('userData')), home)
   const pid = await running.evaluate(() => process.pid)
   if (intercept) await running.evaluate(({ session }, url) => {
@@ -97,24 +108,41 @@ const launch = async (expected, intercept = true) => {
   }, join(output, 'host-shutdown.jsonl'))
   return { page, pid }
 }
-const quit = async pid => {
+const quit = async (pid, requireGraceful = true) => {
   const close = running.waitForEvent('close', { timeout: 30_000 })
   await running.evaluate(({ app }) => { setImmediate(() => app.quit()) }); await close
-  assert(logs().some(row => row.pid === pid && row.event === 'host.stopped' && row.result === 'graceful'))
+  if (requireGraceful) assert(logs().some(row => row.pid === pid && row.event === 'host.stopped' && row.result === 'graceful'))
   running = undefined
 }
-try {
-  checkpoint('Install baseline')
-  const installer = join(baselineDirectory, `EasyWork-${baseline.version}-x64-Setup.exe`)
-  await new Promise((resolve, reject) => {
+const install = installer => new Promise((resolve, reject) => {
     const child = spawn(installer, ['/S', '/currentuser', `/D=${appDirectory}`], {
       argv0: `"${installer}"`, windowsVerbatimArguments: true, windowsHide: true, env, stdio: 'inherit',
     })
     const timeout = setTimeout(() => reject(new Error('Initial installation timed out')), 240_000)
     child.once('error', reject); child.once('close', code => { clearTimeout(timeout); code === 0 ? resolve() : reject(new Error(`Initial installer exited ${code}`)) })
-  })
+})
+const createRetainedData = page => page.evaluate(async () => {
+  localStorage.setItem('easywork-update-acceptance', 'preserve across restart')
+  const response = await fetch('/api/easywork-projects', { method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({endpoint:'create',payload:{name:'Automatic update acceptance'}}) })
+  const result = await response.json(); if (!result.ok) throw new Error('Cannot create test project'); return result.value.project.id
+})
+try {
+  let projectId
+  const marker = join(home, 'update-acceptance.txt'), markerText = 'Preserve this local file through manual and automatic upgrades.\n'
+  if (legacy) {
+    checkpoint('Install previously published updater-disabled version')
+    await install(join(legacyDirectory, `EasyWork-${legacy.version}-x64-Setup.exe`))
+    const previous = await launch(legacy.version, false)
+    projectId = await createRetainedData(previous.page); writeFileSync(marker, markerText)
+    await quit(previous.pid, false) // The old release predates the graceful-worker fix.
+    proof.legacyQuitResult = logs().find(row => row.pid === previous.pid && row.event === 'host.stopped')?.result
+  }
+  checkpoint('Install baseline over any existing legacy installation')
+  await install(join(baselineDirectory, `EasyWork-${baseline.version}-x64-Setup.exe`))
   assert.equal(installedVersion(), baseline.version); assert(existsSync(join(appDirectory, 'Uninstall EasyWork.exe')))
   proof.checks.normalInstallation = true
+  if (legacy) { assert.equal(readFileSync(marker, 'utf8'), markerText); proof.checks.legacyToBaseline = true }
   const cachedInstaller = join(process.env.LOCALAPPDATA, baseline.updaterCacheDirName, CURRENT_APP_INSTALLER_FILE_NAME)
   assert(existsSync(cachedInstaller), 'Normal installation must seed the differential installer cache')
   assert.equal(await hashFile(cachedInstaller), baseline.installerSha512)
@@ -122,13 +150,7 @@ try {
   server = await startUpdateAcceptanceServer({ candidate, candidateDirectory, baseline, baselineDirectory,
     scenario: scenario === 'missing-cache' ? 'delta' : scenario })
   let { page, pid } = await launch(baseline.version)
-  const projectId = await page.evaluate(async () => {
-    localStorage.setItem('easywork-update-acceptance', 'preserve across restart')
-    const response = await fetch('/api/easywork-projects', { method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({endpoint:'create',payload:{name:'Automatic update acceptance'}}) })
-    const result = await response.json(); if (!result.ok) throw new Error('Cannot create test project'); return result.value.project.id
-  })
-  const marker = join(home, 'update-acceptance.txt'); writeFileSync(marker, 'Preserve this local file through A -> B.\n')
+  if (!legacy) { projectId = await createRetainedData(page); writeFileSync(marker, markerText) }
   const markerHash = await hashFile(marker)
   if (scenario === 'offline') {
     await expect.poll(() => page.evaluate(() => window.easyworkUpdates.get()), { timeout: 60_000 }).toMatchObject({ state: 'error' })
@@ -226,6 +248,7 @@ Start-Sleep -Milliseconds 500
   assert.equal(data.id,projectId); assert.equal(data.name,'Automatic update acceptance'); assert.equal(data.preference,'preserve across restart')
   assert.equal(await hashFile(marker),markerHash)
   proof.checks.dataPreserved = true
+  if (legacy) proof.checks.legacyDataPreserved = true
   for (const [label, content] of [['项目', '新建项目'], ['专家', '制作专家'], ['技能', 'Excel 表格设计'],
     ['连接器', 'MCP 服务管理'], ['资料库', '新建或导入资料'], ['插件', '添加插件']]) {
     await page.getByRole('navigation', { name:'全局面板' }).getByRole('button',{name:label,exact:true}).click()
