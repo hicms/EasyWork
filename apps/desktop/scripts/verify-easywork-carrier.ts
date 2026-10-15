@@ -159,6 +159,12 @@ export async function afterPack(context: PackContext): Promise<void> {
     { encoding: 'utf8', timeout: 30_000 })
   if (native.error || native.status !== 0) throw new Error('Packaged Node cannot load the official native plugin dependency: ' + String(native.error ?? native.stderr))
   process.stdout.write(native.stdout)
+  const imageCheck = fileURLToPath(new URL('./verify-image-runtime.mjs', import.meta.url))
+  const images = spawnSync(process.execPath, ['--expose-internals', imageCheck, profile], {
+    env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }, windowsHide: true, encoding: 'utf8', timeout: 30_000,
+  })
+  if (images.error || images.status !== 0) throw new Error('Packaged image admission failed: ' + String(images.error ?? images.stderr))
+  process.stdout.write(images.stdout)
   const pnpm = join(runtime, 'primary-runtime', 'dependencies', 'pnpm', 'bin', 'pnpm.cjs')
   if (primary.pnpm !== '11.7.0' || !existsSync(pnpm)) throw new Error('Packaged official pnpm CLI is missing or has another version')
   // Probe the bundled CLI outside the caller's Yarn/pnpm project configuration.

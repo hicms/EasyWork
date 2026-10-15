@@ -203,11 +203,11 @@
     "asarUnpack": [
       "build/app-icon*.png",
       "build/tray-icon*.png",
-      "profiles/easywork/**/*.{node,dll,exe,pyd,dylib,so}",
-      "profiles/easywork/**/*.so.*",
-      "profiles/easywork/**/spawn-helper",
-      "profiles/easywork/**/bin/rg",
-      "profiles/easywork/**/libreoffice-kit-*/**/*"
+      "build/easywork-runtime/profiles/easywork/**/*.{node,dll,exe,pyd,dylib,so}",
+      "build/easywork-runtime/profiles/easywork/**/*.so.*",
+      "build/easywork-runtime/profiles/easywork/**/spawn-helper",
+      "build/easywork-runtime/profiles/easywork/**/bin/rg",
+      "build/easywork-runtime/profiles/easywork/**/libreoffice-kit-*/**/*"
     ]
   }
 }

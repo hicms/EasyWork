@@ -1,13 +1,15 @@
 import assert from 'node:assert/strict'
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import fs from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join, normalize } from 'node:path'
+import { join, normalize, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import test from 'node:test'
 import { startStartupTrace } from '../src/startup-trace.mjs'
 import { archivedRuntimeProfile, runtimeProfileDirectory, packagedHostExecutable } from '../src/runtime-layout.ts'
-import { createPackageWithOptions, extractFile, statFile } from '@electron/asar'
+import { extractFile, statFile } from '@electron/asar'
+import { AsarPackager } from 'app-builder-lib/out/asar/asarUtil.js'
+import { FileMatcher } from 'app-builder-lib/out/fileMatcher.js'
 
 async function fixture(t) {
   const root = await mkdtemp(join(tmpdir(), 'easywork-startup-test-'))
@@ -17,7 +19,11 @@ async function fixture(t) {
 
 test('archive preserves published bytes, exposes native resources and ships one Profile', async t => {
   const { root } = await fixture(t)
-  const source = join(root, 'source'), profile = join(source, 'profiles', 'easywork')
+  const config = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
+  const source = join(root, 'source')
+  const profileMapping = config.build.files.find(entry => entry.to === 'profiles/easywork')
+  const modulesMapping = config.build.files.find(entry => entry.to === 'profiles/easywork/node_modules')
+  const profile = join(source, profileMapping.from)
   const runtime = join(root, 'resources', 'easywork-runtime'), archive = join(root, 'resources', 'app.asar')
   await mkdir(runtime, { recursive: true })
   const files = {
@@ -26,14 +32,34 @@ test('archive preserves published bytes, exposes native resources and ships one 
     'node_modules/@deepseek-ai/dsh/lib/profile-boot.js': 'export const official = true',
     'node_modules/native/addon.node': 'native bytes',
     'node_modules/native/helper.exe': 'executable bytes',
+    'node_modules/@img/sharp-win32-x64/lib/sharp-win32-x64.node': 'image addon bytes',
+    'node_modules/@img/sharp-win32-x64/lib/libvips-42.dll': 'image library bytes',
     'node_modules/@deepseek-ai/libreoffice-kit-win32-x64/share/config.json': '{"nativeResource":true}',
   }
   for (const [path, content] of Object.entries(files)) {
     await mkdir(join(profile, path, '..'), { recursive: true })
     await writeFile(join(profile, path), content)
   }
-  const config = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
-  await createPackageWithOptions(source, archive, { unpack: '{' + config.build.asarUnpack.map(pattern => '**/' + pattern).join(',') + '}' })
+  // Exercise the builder's source-path matching and the real Profile relocation.
+  // A direct asar fixture rooted at the destination hides broken unpack globs.
+  const destination = join(root, 'app')
+  const fileSets = [{ src: source, destination, files: [], metadata: new Map() }]
+  for (const mapping of [profileMapping, modulesMapping]) {
+    const matcher = new FileMatcher(join(source, mapping.from), join(destination, mapping.to), value => value, mapping.filter)
+    const filter = matcher.createFilter()
+    const metadata = new Map()
+    for (const name of Object.keys(files)) {
+      const file = join(profile, name), info = await stat(file)
+      if (file.startsWith(matcher.from + sep)) {
+        if (filter(file, info)) metadata.set(file, info)
+      }
+    }
+    fileSets.push({ src: matcher.from, destination: matcher.to, files: [...metadata.keys()], metadata })
+  }
+  const unpackPattern = new FileMatcher(source, destination, value => value, config.build.asarUnpack).createFilter()
+  await new AsarPackager({ info: { getWorkspaceRoot: async () => source } }, {
+    defaultDestination: destination, resourcePath: join(root, 'resources'), options: config.build.asar, unpackPattern,
+  }).pack(fileSets)
   assert.equal(runtimeProfileDirectory(runtime), join(archive, 'profiles', 'easywork'))
   assert.equal(archivedRuntimeProfile(runtimeProfileDirectory(runtime)), true)
   for (const [path, content] of Object.entries(files)) assert.equal(extractFile(archive, join('profiles/easywork', path)).toString(), content)
