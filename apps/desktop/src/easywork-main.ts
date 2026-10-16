@@ -16,7 +16,7 @@ import { watchRuntimeShutdown, stopRuntimeProcess } from './runtime-shutdown.ts'
 import { StartupLog, startupErrorFields } from './startup-log.ts'
 import { runtimeProfileDirectory } from './runtime-layout.ts'
 import { syncWindowChrome, windowChromeOptions } from './window-chrome.ts'
-import { installWindowMenu } from './window-menu.ts'
+import { installContextMenu, installWindowMenu } from './window-menu.ts'
 import { isWindowLanguage } from './window-chrome-contract.ts'
 import { installKeyboard } from './keyboard.ts'
 import { installDesktopUpdates } from './desktop-updates.ts'
@@ -41,6 +41,7 @@ let loadingArc = 0
 let finishPlugins: (() => void) | undefined
 let heartbeat: ReturnType<typeof setInterval> | undefined
 let stopRuntimeOutput: (() => void) | undefined
+let getWindowLanguage: (() => string) | undefined
 let updates: ReturnType<typeof installDesktopUpdates>
 let workspaceStartup: Promise<void> | undefined
 let shutdownReason: 'quit' | 'update' | undefined
@@ -187,6 +188,7 @@ async function openWindow(): Promise<void> {
   })
   window = page
   syncWindowChrome(page)
+  installContextMenu(page, () => getWindowLanguage?.() ?? app.getLocale())
   keyboard!.attach(page)
   windowHidden = false
   log!.write('window.created')
@@ -419,7 +421,7 @@ async function startPersonalWorkspace(): Promise<void> {
 }
 
 function installMenu(): void {
-  installWindowMenu({ currentWindow: () => window, restore: restoreWindow, assertSender: assertStartupSender,
+  getWindowLanguage = installWindowMenu({ currentWindow: () => window, restore: restoreWindow, assertSender: assertStartupSender,
     updates: language => updates?.menu(language) ?? [],
     languageChanged: language => { updates?.setLanguage(language) },
     edit: (keyCode, modifiers) => { keyboard!.sendEditingKey(keyCode, modifiers) },
