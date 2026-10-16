@@ -11,7 +11,7 @@ import { CURRENT_APP_INSTALLER_FILE_NAME } from 'builder-util-runtime'
 import { NsisUpdater } from 'electron-updater'
 import { ElectronHttpExecutor } from 'electron-updater/out/electronHttpExecutor.js'
 import { GenericProvider } from 'electron-updater/out/providers/GenericProvider.js'
-import { startUpdateAcceptanceServer } from '../scripts/update-acceptance-server.mjs'
+import { startUpdateAcceptanceServer } from './acceptance/update-acceptance-server.mjs'
 
 test('pinned NSIS engine reuses ranges and verifies reconstructed bytes, with real full-download fallbacks', async t => {
   const directory = await mkdtemp(join(tmpdir(), 'easywork-delta-bytes-'))

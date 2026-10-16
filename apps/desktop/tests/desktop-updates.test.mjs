@@ -48,8 +48,6 @@ test('check automatically downloads once; explicit restart waits for safe close 
   assert.equal(f.calls[0].useMultipleRangeRequest, false)
   assert.equal(f.updater.previousBlockmapBaseUrlOverride, releaseDownloadUrl('2.1.0-alpha.1'))
   assert.equal(f.updater.allowDowngrade, false)
-  await f.controller.download()
-  assert.equal(f.controller.state, 'downloaded')
   const install = f.controller.install()
   assert.equal(install, f.controller.install())
   assert.equal(f.controller.state, 'verifying')
@@ -66,7 +64,7 @@ test('check automatically downloads once; explicit restart waits for safe close 
 
 test('unsafe shutdown blocks installation and preserves an explicit failure', async () => {
   const f = fixture(async () => { throw new Error('unacknowledged') })
-  await f.controller.check(); await f.controller.download(); await f.controller.install()
+  await f.controller.check(); await f.controller.install()
   assert.equal(f.controller.state, 'error')
   assert.equal(f.calls.some(call => Array.isArray(call) && call[0] === 'install'), false)
   assert.match(f.errors[0].message, /unacknowledged/u)
@@ -75,7 +73,7 @@ test('unsafe shutdown blocks installation and preserves an explicit failure', as
 test('ordinary quit during verification never starts update shutdown', async () => {
   let stops = 0
   const f = fixture(async () => { stops++ })
-  await f.controller.check(); await f.controller.download()
+  await f.controller.check()
   const verify = deferred(); f.updater.validateCandidate = () => verify.promise
   const pending = f.controller.install(); f.controller.suspend(); verify.resolve()
   await pending; assert.equal(stops, 0)

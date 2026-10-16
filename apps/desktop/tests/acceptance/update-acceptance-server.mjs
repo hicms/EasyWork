@@ -3,7 +3,7 @@ import { createReadStream } from 'node:fs'
 import { readFile, stat } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import { join } from 'node:path'
-import { releaseTag } from '../src/update-policy.ts'
+import { releaseTag } from '../../src/update-policy.ts'
 
 export async function startUpdateAcceptanceServer({ candidate, candidateDirectory, baseline, baselineDirectory, scenario }) {
   if (!['delta', 'missing-blockmap', 'corrupt-blockmap', 'offline'].includes(scenario)) throw new Error('Unknown acceptance scenario')

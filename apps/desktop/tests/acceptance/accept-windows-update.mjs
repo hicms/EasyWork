@@ -3,9 +3,9 @@ import assert from 'node:assert/strict'
 import { createRequire } from 'node:module'
 import { existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
-import { readReleaseManifest } from '../../../scripts/desktop-release-policy.mjs'
-import { hashFile } from './verify-update-artifacts.mjs'
-import { newerVersion } from '../src/update-policy.ts'
+import { readReleaseManifest } from '../../../../scripts/desktop-release-policy.mjs'
+import { hashFile } from '../../scripts/verify-update-artifacts.mjs'
+import { newerVersion } from '../../src/update-policy.ts'
 import { startUpdateAcceptanceServer } from './update-acceptance-server.mjs'
 
 if (process.platform !== 'win32' || !process.argv.includes('--confirm-isolated-vm')) {
@@ -32,7 +32,7 @@ for (const [release, directory] of [[candidate, candidateDirectory], [baseline, 
     if (statSync(join(directory, asset.name)).size !== asset.size || await hashFile(join(directory, asset.name), 'sha256', 'hex') !== asset.sha256) throw new Error('Acceptance asset differs from the signed candidate: ' + asset.name)
   }
 }
-const require = createRequire(new URL('../../web/package.json', import.meta.url))
+const require = createRequire(new URL('../../../web/package.json', import.meta.url))
 const { _electron } = require('@playwright/test')
 const server = verificationOnly ? undefined : await startUpdateAcceptanceServer({ candidate, candidateDirectory, baseline, baselineDirectory, scenario })
 const env = { ...process.env }
@@ -67,7 +67,7 @@ try {
   process.stdin.on('data', input)
   console.log(verificationOnly
     ? 'Verified installed B version and the original test Home. Inspect retained conversations, credentials, files, settings, plugins and UI; capture evidence before closing. Ctrl+C ends observation. This tool does not assert data preservation.'
-    : 'In the isolated VM, choose Application → Check for updates, then Download. Exercise the requested scenario; choose Restart and update only when ready. Type online then Enter to restore an offline fixture. Ctrl+C ends observation. Close any automatically relaunched B, then rerun this command with --verify-installed to inspect B in this same Home.')
+    : 'In the isolated VM, updates download automatically. Exercise the requested scenario; choose Restart and update only when ready. Type online then Enter to restore an offline fixture and choose Check for updates. Ctrl+C ends observation. Close any automatically relaunched B, then rerun this command with --verify-installed to inspect B in this same Home.')
   await Promise.race([running.waitForEvent('close', { timeout: 0 }), new Promise(resolve => process.once('SIGINT', resolve))])
 } finally {
   process.stdin.off('data', input); process.stdin.pause()

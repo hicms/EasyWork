@@ -15,7 +15,7 @@ export function installDesktopUpdates(operations: {
   prepareInstall(): Promise<void>
   installerStarted(): void
   installFailed(): void
-  log(event: string): void
+  log(event: string, error?: unknown): void
 }): { menu(language: string): MenuItemConstructorOptions[]; setLanguage(language: string): void; startup(language: string): void; suspend(): void } | undefined {
   let controller: DesktopUpdateController | undefined
   let suspended = false
@@ -32,9 +32,9 @@ export function installDesktopUpdates(operations: {
   try {
     releaseTag(version, mode)
     const runtime = createRequire(import.meta.url)('./desktop-updater.cjs') as { createUpdater: typeof createUpdater }
-    updater = runtime.createUpdater(join(process.resourcesPath, 'app-update.yml'), () => controller?.state === 'installing', operations.installerStarted, mode)
-  } catch {
-    operations.log('update.unavailable')
+    updater = runtime.createUpdater(join(process.resourcesPath, 'app-update.yml'), operations.installerStarted, mode)
+  } catch (error) {
+    operations.log('update.unavailable', error)
     return
   }
   // Avoid logs containing feed responses or signed download URLs.
@@ -65,8 +65,8 @@ export function installDesktopUpdates(operations: {
       const state = snapshot()
       if (state && page && !page.isDestroyed()) page.webContents.send(UPDATE_IPC.changed, state)
     },
-    error() {
-      operations.log('update.' + update.state)
+    error(error, phase) {
+      operations.log(`update.${phase}-failed`, error)
       if (suspended || (!manual && !installing)) return
       void dialog.showMessageBox({ type: 'error', title: 'EasyWork',
         message: zh() ? '更新未完成，请稍后重试。' : 'Update did not complete. Please retry later.',
@@ -101,7 +101,7 @@ export function installDesktopUpdates(operations: {
     menu(lang) {
       language = lang
       return [
-        { label: zh() ? '检查更新…' : 'Check for updates…', enabled: !suspended && ['idle', 'error', 'available'].includes(update.state), click: () => { void check() } },
+        { label: zh() ? '检查更新…' : 'Check for updates…', enabled: !suspended && ['idle', 'error'].includes(update.state), click: () => { void check() } },
         ...(update.state === 'downloading' ? [{ label: `${zh() ? '正在下载更新' : 'Downloading update'} ${Math.floor(update.percent)}%`, enabled: false }] : []),
         { label: zh() ? '重启升级' : 'Restart and update', enabled: !suspended && update.state === 'downloaded', click: () => { void restart() } },
       ]

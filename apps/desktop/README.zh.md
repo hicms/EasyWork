@@ -35,7 +35,7 @@ Desktop 不提供企业登录、账号认证桥接、成员空间或公司专用
 公开前验证 A→B 时，请使用可丢弃的 Windows 虚拟机，先正常安装已签名的基线 A，再将精确的签名草稿 B 和基线 A 制品集（各含 `release.json`）下载到不同目录。已有 Web Playwright 依赖后，明确运行：
 
 ```powershell
-node apps/desktop/scripts/accept-windows-update.mjs --confirm-isolated-vm --app="C:\Users\tester\AppData\Local\Programs\EasyWork\EasyWork.exe" --home="C:\tests\fresh-home" --output="C:\tests\results" --baseline="C:\tests\A" --candidate="C:\tests\B" --scenario=delta
+node apps/desktop/tests/acceptance/accept-windows-update.mjs --confirm-isolated-vm --app="C:\Users\tester\AppData\Local\Programs\EasyWork\EasyWork.exe" --home="C:\tests\fresh-home" --output="C:\tests\results" --baseline="C:\tests\A" --candidate="C:\tests\B" --scenario=delta
 ```
 
 该工具使用全新的测试 Home 打开已安装 A，只把当前受检进程中的 GitHub 发现请求和 updater 会话重定向到本机测试服务。应用版本、签名制品和签名校验保持原样，产品更新源不变。请先在测试 Home 中创建有代表性的本地数据，结束任务，再点击真实更新提示或菜单中的重启操作。工具记录完成的载荷字节与 Range 请求。请关闭安装器自动重新打开的 B：Windows Shell 重启应用时可能不会继承 A 进程中的测试 Home 设置。然后保持 `--app`、`--home` 等全部参数不变，在原命令末尾追加 `--verify-installed` 再运行。该模式复用原测试 Home，断言 B 的实际版本和用户数据路径，记录 `installed-observation.json`，并打开 B 供人工检查数据与 UI。只在这个已核实的 Home 中比较数据；截图、数据保留和进程退出仍须实际核对。每个场景前恢复虚拟机快照。分别使用 `missing-blockmap`、`corrupt-blockmap`、`offline`；离线场景中输入 `online` 并回车恢复服务，再重试检查。测试缓存缺失时，只在可丢弃虚拟机中移除 A 的缓存（`release.json` 指定的 `%LOCALAPPDATA%\<updaterCacheDirName>`），再运行 delta 场景；真正差量测试必须保留缓存。该工具不代表场景已通过，不自动审批证据；只有选择真实的重启操作才安装。
@@ -44,7 +44,7 @@ node apps/desktop/scripts/accept-windows-update.mjs --confirm-isolated-vm --app=
 
 没有 Windows 签名证书时，可明确执行 `corepack yarn build:win --target=installer --acceptance-updates --skip-install` 构建启用更新的验收安装包，要求干净的默认分支源码和 alpha 版本。不需要 Windows TESTSIGNING；Windows 可能将未签名应用标为未知发布者。此模式只接受 `acceptance-vVERSION` 预发布版，使用 HTTPS GitHub 元数据、精确大小和 SHA-512 校验，不验证 Authenticode 发布者身份。签名发行通道仍强制验签。两个模式使用相同的安全退出与 NSIS 安装器；普通未签名打包仍禁用更新。
 
-构建后，明确执行 `node apps/desktop/scripts/accept-windows-package.mjs --local --unsigned-updates`，再执行 `node apps/desktop/scripts/stage-unsigned-windows-release.mjs`。`dist/acceptance/VERSION` 中的制品包括 Setup、blockmap、`alpha.yml`、`release.json` 和绑定源码/包身份的 UI 证据。基线 A 和候选 B 均保持为 Release 草稿，用两个标签和 `scenario=all` 手动触发 **Windows update acceptance**。它在可丢弃的 Windows runner 中核对制品与源码，安装 A，点击真实更新提示，静默安装 B，观察自动重新打开并检查项目、文件及浏览器偏好保留。差量场景先安装已发布且禁用更新器的 alpha.5，在其中创建数据，再覆盖安装 A；同一批数据必须一直保留到 B。四个场景覆盖差量下载、缓存缺失、损坏 blockmap 和断网重试；同一手动工作流同时运行 Desktop 与 Web 检查。全部场景通过后，才公开已验收的字节，不重建替换。此结果不代表已验证签名发布者、真实账号凭据或任意外部插件保留。禁用更新器的旧版（包括 alpha.5）需要先手动安装一次 A；之后请保留历史 Setup/blockmap，供差量更新使用。
+构建后，明确执行 `node apps/desktop/tests/acceptance/accept-windows-package.mjs --local --unsigned-updates`，再执行 `node apps/desktop/scripts/stage-unsigned-windows-release.mjs`。`dist/acceptance/VERSION` 中的制品包括 Setup、blockmap、`alpha.yml`、`release.json` 和绑定源码/包身份的 UI 证据。基线 A 和候选 B 均保持为 Release 草稿，用两个标签和 `scenario=all` 手动触发 **Windows update acceptance**。它在可丢弃的 Windows runner 中核对制品与源码，安装 A，点击真实更新提示，静默安装 B，观察自动重新打开并检查项目、文件及浏览器偏好保留。四个场景覆盖差量下载、缓存缺失、损坏 blockmap 和断网重试；同一手动工作流针对 B 的源码提交运行 Desktop 与 Web 检查，并单独记录验收工具提交。全部场景通过后，才公开已验收的字节，不重建替换。此结果不代表已验证签名发布者、真实账号凭据或任意外部插件保留。禁用更新器的旧版（包括 alpha.5）需要先手动安装一次 A；之后请保留历史 Setup/blockmap，供差量更新使用。
 
 ## 开发与验证
 

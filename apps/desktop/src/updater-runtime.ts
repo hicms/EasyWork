@@ -18,7 +18,7 @@ class CoordinatedNsisUpdater extends NsisUpdater {
   private candidate: Candidate | undefined
   private checkedFile: FileIdentity | undefined
   private readonly installerStarted: () => void
-  constructor(publishers: string[], mode: UpdateMode, canQuit: () => boolean, installerStarted: () => void) {
+  constructor(publishers: string[], mode: UpdateMode, installerStarted: () => void) {
     // Passing an AppAdapter to v26's constructor disables its HTTP executor.
     super()
     this.installerStarted = installerStarted
@@ -26,9 +26,6 @@ class CoordinatedNsisUpdater extends NsisUpdater {
     this.verifyUpdateCodeSignature = mode === 'unsigned-acceptance'
       ? async () => null
       : (_names, path) => verifyWindowsUpdateSignature(this.trustedPublishers, path)
-    const quit = this.app.quit.bind(this.app)
-    // Only the controller's explicit install state may authorize our final quit.
-    this.app.quit = () => { if (canQuit()) quit() }
   }
 
   override async downloadUpdate(cancellationToken?: Parameters<NsisUpdater['downloadUpdate']>[0]): Promise<string[]> {
@@ -82,7 +79,7 @@ class CoordinatedNsisUpdater extends NsisUpdater {
   }
 }
 
-export function createUpdater(configPath: string, canQuit: () => boolean, installerStarted: () => void, mode: UpdateMode = 'signed'): CoordinatedNsisUpdater {
+export function createUpdater(configPath: string, installerStarted: () => void, mode: UpdateMode = 'signed'): CoordinatedNsisUpdater {
   const config = load(readFileSync(configPath, 'utf8')) as Record<string, unknown>
   const [owner, repo] = UPDATE_REPOSITORY.split('/')
   const publishers = typeof config.publisherName === 'string' ? [config.publisherName] : config.publisherName
@@ -93,11 +90,10 @@ export function createUpdater(configPath: string, canQuit: () => boolean, instal
     || typeof config.updaterCacheDirName !== 'string' || !config.updaterCacheDirName) {
     throw new Error('更新配置缺少受信任的签名发布者或缓存目录')
   }
-  const updater = new CoordinatedNsisUpdater(validPublishers ? publishers as string[] : [], mode, canQuit, installerStarted)
+  const updater = new CoordinatedNsisUpdater(validPublishers ? publishers as string[] : [], mode, installerStarted)
   updater.updateConfigPath = configPath
   updater.autoDownload = false
   updater.autoInstallOnAppQuit = false
-  updater.autoRunAppAfterInstall = true
   updater.disableWebInstaller = true
   updater.disableDifferentialDownload = false
   return updater

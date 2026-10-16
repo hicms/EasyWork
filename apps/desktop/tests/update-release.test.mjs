@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import fs from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
@@ -12,9 +13,8 @@ import { dump, load } from 'js-yaml'
 import { buildBlockMap } from 'app-builder-lib/out/targets/blockmap/blockmap.js'
 import { signedWindowsConfig } from '../scripts/release-win.mjs'
 import { unsignedWindowsConfig } from '../scripts/windows-installer.mjs'
-import { hashFile, verifyUpdateArtifacts } from '../scripts/verify-update-artifacts.mjs'
+import { hashFile, verifyUpdateArtifacts, verifyUiAcceptance } from '../scripts/verify-update-artifacts.mjs'
 import { ACCEPTANCE_CHECKS, BOOTSTRAP_CHECKS, findRelease, listReleases, verifyAcceptance, verifyBootstrapHistory, verifyReleaseSource } from '../../../scripts/desktop-release-policy.mjs'
-import { startUpdateAcceptanceServer } from '../scripts/update-acceptance-server.mjs'
 import { createUpdater } from '../src/updater-runtime.ts'
 import { verifyWindowsUpdateSignature } from '../src/windows-update-signature.ts'
 import { verifyLinkedBuilderPatch } from '../scripts/verify-builder-patch.mjs'
@@ -36,18 +36,13 @@ test('actual pinned updater checks cached identities before Host shutdown', asyn
     },
   })
   t.after(() => { hook.deregister(); delete globalThis.easyworkTestQuits })
-  let canQuit = true
   let authorized = 0
-  const updater = createUpdater(config, () => canQuit, () => { authorized++ })
+  const updater = createUpdater(config, () => { authorized++ })
   assert(updater.httpExecutor, 'An explicit AppAdapter would accidentally disable the v26 executor')
   assert.equal(updater.autoDownload, false)
   assert.equal(updater.autoInstallOnAppQuit, false)
   assert.equal(updater.disableDifferentialDownload, false)
   assert.equal(updater.disableWebInstaller, true)
-  const queued = new Promise(resolve => setImmediate(() => { updater.app.quit(); resolve() }))
-  canQuit = false
-  await queued; assert.equal(globalThis.easyworkTestQuits, 0)
-  canQuit = true; updater.app.quit(); assert.equal(globalThis.easyworkTestQuits, 1)
   // Model upstream's cached download path, which bypasses its signature hook.
   const parent = Object.getPrototypeOf(Object.getPrototypeOf(updater))
   const descriptor = Object.getOwnPropertyDescriptor(parent, 'downloadUpdate')
@@ -119,8 +114,8 @@ test('actual pinned updater checks cached identities before Host shutdown', asyn
     else delete parent.downloadUpdate
   }
   await writeFile(config, dump({ provider: 'github', owner: 'hicms', repo: 'EasyWork', updaterCacheDirName: 'cache' }))
-  assert.throws(() => createUpdater(config, () => true, () => {}), /签名发布者/u)
-  const acceptance = createUpdater(config, () => true, () => {}, 'unsigned-acceptance')
+  assert.throws(() => createUpdater(config, () => {}), /签名发布者/u)
+  const acceptance = createUpdater(config, () => {}, 'unsigned-acceptance')
   assert.equal(await acceptance.verifyUpdateCodeSignature([], installer), null)
   await writeFile(installer, bytes)
   acceptance.updateInfoAndProvider = { info }
@@ -132,7 +127,7 @@ test('actual pinned updater checks cached identities before Host shutdown', asyn
     await assert.rejects(acceptance.validateCandidate(info.version), /SHA-512/u)
   } finally { parent.downloadUpdate = originalDownload }
   await writeFile(config, dump({ provider: 'github', owner: 'other', repo: 'EasyWork', updaterCacheDirName: 'cache' }))
-  assert.throws(() => createUpdater(config, () => true, () => {}, 'unsigned-acceptance'))
+  assert.throws(() => createUpdater(config, () => {}, 'unsigned-acceptance'))
   const build = unsignedWindowsConfig('2.1.0-alpha.1', true)
   assert.equal(build.extraMetadata.easyworkUpdateTarget, 'nsis-acceptance')
   assert.equal(build.nsis.differentialPackage, true)
@@ -140,28 +135,40 @@ test('actual pinned updater checks cached identities before Host shutdown', asyn
   assert.throws(() => unsignedWindowsConfig('2.1.0', true))
 })
 
-test('signing rejects a stale linked builder before accessing templates or building', async t => {
-  const directory = await mkdtemp(join(tmpdir(), 'easywork-builder-lock-'))
-  t.after(() => rm(directory, { recursive: true, force: true }))
-  await mkdir(join(directory, 'node_modules'))
-  await writeFile(join(directory, 'yarn.lock'), dump({ 'app-builder-lib@patch:test': { resolution: 'app-builder-lib@patch:test::version=26.15.7&hash=123abc&locator=root' } }))
-  await writeFile(join(directory, 'node_modules/.yarn-state.yml'), dump({ 'app-builder-lib@patch:test::version=26.15.7&hash=456def&locator=root': { locations: ['node_modules/app-builder-lib'] } }))
-  assert.throws(() => verifyLinkedBuilderPatch(directory, join(directory, 'missing-templates')), /patch differs from yarn.lock/u)
+test('signing rejects a stale linked builder before accessing templates or building', t => {
+  const read = fs.readFileSync
+  t.mock.method(fs, 'readFileSync', (file, ...args) => {
+    if (String(file).endsWith('yarn.lock')) return dump({ 'app-builder-lib@patch:test': { resolution: 'app-builder-lib@patch:test::version=26.15.7&hash=123abc&locator=root' } })
+    if (String(file).endsWith('.yarn-state.yml')) return dump({ 'app-builder-lib@patch:test::version=26.15.7&hash=456def&locator=root': { locations: ['node_modules/app-builder-lib'] } })
+    assert(!String(file).includes('templates'), 'A stale builder must fail before accessing templates')
+    return read(file, ...args)
+  })
+  assert.throws(() => verifyLinkedBuilderPatch(), /patch differs from yarn.lock/u)
 })
 
-test('runtime Authenticode verification fails closed on unavailable tooling and invalid signer results', async () => {
+test('runtime Authenticode verification fails closed on unavailable tooling and invalid signer results', async t => {
   const path = "C:\\cache\\it's` safe\\Setup.exe"
   const valid = { Status: 0, Path: path, Publisher: 'Publisher', Timestamped: true }
-  let command
-  assert.equal(await verifyWindowsUpdateSignature(['Publisher'], path, async text => { command = text; return JSON.stringify(valid) }), null)
+  const systemRoot = process.env.SystemRoot
+  process.env.SystemRoot = 'C:\\Windows'
+  t.after(() => { if (systemRoot === undefined) delete process.env.SystemRoot; else process.env.SystemRoot = systemRoot })
+  let command, failure, output = JSON.stringify(valid)
+  t.mock.method(childProcess, 'execFile', (_executable, args, _options, callback) => {
+    command = Buffer.from(args.at(-1), 'base64').toString('utf16le')
+    callback(failure, output, '')
+  })
+  assert.equal(await verifyWindowsUpdateSignature(['Publisher'], path), null)
   assert(command.includes("-LiteralPath 'C:\\cache\\it''s` safe\\Setup.exe'"))
-  assert.match(await verifyWindowsUpdateSignature(['Publisher'], path, async () => { throw new Error('PowerShell unavailable') }), /could not be completed/u)
+  failure = new Error('PowerShell unavailable')
+  assert.match(await verifyWindowsUpdateSignature(['Publisher'], path), /could not be completed/u)
+  failure = undefined
   for (const result of ['invalid JSON', '{}', ...[
     { Status: 1 }, { Path: 'C:\\other.exe' }, { Path: undefined }, { Publisher: 'Wrong' }, { Publisher: 'publisher' }, { Timestamped: false },
   ].map(change => JSON.stringify({ ...valid, ...change }))]) {
-    assert.notEqual(await verifyWindowsUpdateSignature(['Publisher'], path, async () => result), null)
+    output = result
+    assert.notEqual(await verifyWindowsUpdateSignature(['Publisher'], path), null)
   }
-  assert.notEqual(await verifyWindowsUpdateSignature([], path, async () => JSON.stringify(valid)), null)
+  assert.notEqual(await verifyWindowsUpdateSignature([], path), null)
 })
 
 test('formal signing is explicit and refuses secret gaps, wrong channels and tool overrides', () => {
@@ -196,6 +203,20 @@ test('final byte verifier catches post-sign changes and incorrect hashes', async
   await writeFile(join(f.directory, f.installer), Buffer.alloc(96_000, 32))
   await assert.rejects(verifyUpdateArtifacts(f.directory, f.version), /final installer bytes/u)
 })
+test('release staging rejects UI evidence from another version or ASAR', async t => {
+  const directory = await mkdtemp(join(tmpdir(), 'easywork-ui-evidence-'))
+  t.after(() => rm(directory, { recursive: true, force: true }))
+  const asar = join(directory, 'app.asar'), version = '2.1.0-alpha.2'
+  await writeFile(asar, 'candidate ASAR bytes')
+  const ui = { ok: true, userDataIsolated: true, version, asarSha512: await hashFile(asar) }
+  const save = value => writeFile(join(directory, 'ui-acceptance.json'), JSON.stringify(value))
+  await save(ui)
+  assert.deepEqual(await verifyUiAcceptance(directory, version, asar), ui)
+  for (const change of [{ version: '2.1.0-alpha.1' }, { asarSha512: 'older ASAR' }, { ok: false }, { userDataIsolated: false }]) {
+    await save({ ...ui, ...change })
+    await assert.rejects(verifyUiAcceptance(directory, version, asar), /current packaged application/u)
+  }
+})
 test('blockmap and channel mismatches fail even when installer hash is correct', async t => {
   const f = await fixture(t), map = join(f.directory, `${f.installer}.blockmap`)
   const original = await readFile(map)
@@ -206,24 +227,17 @@ test('blockmap and channel mismatches fail even when installer hash is correct',
   await assert.rejects(verifyUpdateArtifacts(f.directory, f.version), /Mixed channel/u)
 })
 
-test('isolated acceptance fixture restores discovery after an offline simulation', async t => {
-  const f = await fixture(t), candidate = { version: f.version, channel: 'alpha', assets: [{ name: f.installer }, { name: `${f.installer}.blockmap` }, { name: 'alpha.yml' }] }
-  const options = { candidate, baseline: { ...candidate, version: '2.1.0-alpha.1' }, candidateDirectory: f.directory, baselineDirectory: f.directory }
-  const offline = await startUpdateAcceptanceServer({ ...options, scenario: 'offline' })
-  t.after(() => offline.close())
-  await assert.rejects(fetch(offline.url + '/repos/hicms/EasyWork/releases'))
-  offline.online()
-  assert.equal((await (await fetch(offline.url + '/repos/hicms/EasyWork/releases')).json())[0].tag_name, `v${f.version}`)
-})
-
-test('source gate requires reachability and version already present in the selected commit', () => {
-  const calls = [], options = { commit: 'a'.repeat(40), version: '2.1.0', channel: 'latest', defaultBranch: 'main', root: '.',
-    git(args) { calls.push(args); return args[0] === 'show' ? '{"version":"2.1.0"}' : '' } }
+test('source gate requires reachability and version already present in the selected commit', t => {
+  const calls = [], options = { commit: 'a'.repeat(40), version: '2.1.0', channel: 'latest', defaultBranch: 'main', root: '.' }
+  const git = t.mock.method(childProcess, 'execFileSync', (command, args) => {
+    assert.equal(command, 'git'); calls.push(args); return args[0] === 'show' ? '{"version":"2.1.0"}' : ''
+  })
   assert.equal(verifyReleaseSource(options).tag, 'v2.1.0')
   assert.deepEqual(calls[0], ['merge-base', '--is-ancestor', options.commit, 'refs/remotes/origin/main'])
   assert.throws(() => verifyReleaseSource({ ...options, commit: 'main' }), /full commit/u)
-  assert.throws(() => verifyReleaseSource({ ...options, git() { throw new Error('not an ancestor') } }), /ancestor/u)
   assert.throws(() => verifyReleaseSource({ ...options, version: '2.1.1' }), /already be committed/u)
+  git.mock.mockImplementation(() => { throw new Error('not an ancestor') })
+  assert.throws(() => verifyReleaseSource(options), /ancestor/u)
 })
 
 test('publish acceptance binds every real check to exact source and installer', () => {
@@ -260,6 +274,12 @@ test('bootstrap cannot assert unperformed differential checks or bypass an earli
 test('manual release preserves source, acceptance and signing gates', async () => {
   const workflow = load(await readFile(new URL('../../../.github/workflows/release-windows.yml', import.meta.url), 'utf8'))
   const ci = load(await readFile(new URL('../../../.github/workflows/ci.yml', import.meta.url), 'utf8'))
+  const acceptance = load(await readFile(new URL('../../../.github/workflows/accept-windows-update.yml', import.meta.url), 'utf8'))
+  assert.deepEqual(Object.keys(acceptance.on), ['workflow_dispatch'])
+  assert.equal(acceptance.jobs.checks.needs, 'source')
+  assert.equal(acceptance.jobs.checks.with.revision, '${{ needs.source.outputs.commit }}')
+  assert.deepEqual(acceptance.jobs['installed-update'].needs, ['source', 'checks'])
+  assert(acceptance.jobs['installed-update'].steps.some(step => step.env?.EXPECTED_CANDIDATE_COMMIT === '${{ needs.source.outputs.commit }}'))
   assert.deepEqual(Object.keys(workflow.on), ['workflow_dispatch'])
   assert.deepEqual(Object.keys(ci.on).sort(), ['workflow_call', 'workflow_dispatch'])
   assert.equal(workflow.permissions.contents, 'read')
@@ -272,7 +292,7 @@ test('manual release preserves source, acceptance and signing gates', async () =
   const checkStep = windowsSteps[updateChecks]
   assert.equal(checkStep.if, undefined, 'Updater regressions must not be conditional')
   assert.equal(checkStep['continue-on-error'], undefined, 'Updater failures must stop the release')
-  assert(workflow.jobs.windows.steps.some(step => step.run === 'node apps/desktop/scripts/accept-windows-package.mjs'))
+  assert(workflow.jobs.windows.steps.some(step => step.run === 'node apps/desktop/tests/acceptance/accept-windows-package.mjs'))
   assert.equal(workflow.jobs.publish.environment, 'desktop-release-publish')
   assert(workflow.jobs.publish.steps.some(step => step.with?.['run-id'] === '${{ inputs.candidate_run }}'))
   assert(ci.jobs['desktop-check']); assert(ci.jobs['web-check'])

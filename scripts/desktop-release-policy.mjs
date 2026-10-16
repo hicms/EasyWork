@@ -1,8 +1,9 @@
-import { execFileSync } from 'node:child_process'
+import childProcess from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { updateChannel } from '../apps/desktop/src/update-policy.ts'
 
-export function verifyReleaseSource({ commit, version, channel, defaultBranch, root, git = args => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim() }) {
+export function verifyReleaseSource({ commit, version, channel, defaultBranch, root }) {
+  const git = args => childProcess.execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim()
   if (!/^[a-f0-9]{40}$/u.test(commit ?? '')) throw new Error('Release source must be a full commit SHA')
   if (updateChannel(version) !== channel) throw new Error('Release channel must match version')
   if (!defaultBranch || /[\s~^:?*\[\\]/u.test(defaultBranch)) throw new Error('Invalid default branch')

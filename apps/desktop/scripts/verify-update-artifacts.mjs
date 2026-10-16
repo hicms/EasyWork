@@ -14,6 +14,14 @@ export async function hashFile(path, algorithm = 'sha512', encoding = 'base64') 
   return hash.digest(encoding)
 }
 
+/** UI evidence belongs to the version and ASAR that were actually exercised. */
+export async function verifyUiAcceptance(directory, version, asarPath) {
+  const ui = JSON.parse(await readFile(join(directory, 'ui-acceptance.json'), 'utf8'))
+  if (ui.ok !== true || ui.userDataIsolated !== true || ui.version !== version
+    || ui.asarSha512 !== await hashFile(asarPath)) throw new Error('UI acceptance does not match the current packaged application')
+  return ui
+}
+
 export async function verifyUpdateArtifacts(directory, version) {
   const channel = updateChannel(version)
   const installer = `EasyWork-${version}-x64-Setup.exe`

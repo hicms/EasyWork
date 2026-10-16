@@ -8,7 +8,7 @@ import { load } from 'js-yaml'
 import { verifyReleaseSource, readReleaseManifest } from '../../../scripts/desktop-release-policy.mjs'
 import { releaseTag, UPDATE_REPOSITORY } from '../src/update-policy.ts'
 import { verifyWindowsInstaller } from './verify-win-installer.ts'
-import { hashFile, verifyUpdateArtifacts } from './verify-update-artifacts.mjs'
+import { hashFile, verifyUpdateArtifacts, verifyUiAcceptance } from './verify-update-artifacts.mjs'
 
 const root = resolve(import.meta.dirname, '..'), dist = join(root, 'dist')
 const git = args => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim()
@@ -33,9 +33,7 @@ assert.equal(config.provider, 'github'); assert.equal(`${config.owner}/${config.
 assert.equal(config.publisherName, undefined)
 assert.match(config.updaterCacheDirName, /^[a-zA-Z\d._-]+$/u)
 const uiDirectory = join(dist, 'acceptance-ui')
-const ui = JSON.parse(readFileSync(join(uiDirectory, 'ui-acceptance.json'), 'utf8'))
-assert.equal(ui.ok, true); assert.equal(ui.userDataIsolated, true); assert.equal(ui.version, version)
-assert.equal(ui.asarSha512, receipt.asarSha512)
+const ui = await verifyUiAcceptance(uiDirectory, version, join(dist, 'win-unpacked/resources/app.asar'))
 assert(Date.parse(ui.testedAt) >= Date.parse(receipt.builtAt))
 const output = join(dist, 'acceptance', version)
 if (existsSync(output)) throw new Error('Refusing to replace an existing staged acceptance version')

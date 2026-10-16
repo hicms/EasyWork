@@ -1,7 +1,5 @@
-import { execFile } from 'node:child_process'
+import childProcess from 'node:child_process'
 import { win32 } from 'node:path'
-
-type SignatureCommand = (command: string) => Promise<string>
 
 export async function runSignatureCommand(command: string): Promise<string> {
   const systemRoot = process.env.SystemRoot
@@ -10,7 +8,7 @@ export async function runSignatureCommand(command: string): Promise<string> {
   // PS 5.1 sends first-use module progress as CLIXML on stderr even on success.
   command = "$ProgressPreference = 'SilentlyContinue'\n$ErrorActionPreference = 'Stop'\n" + command
   return new Promise((resolve, reject) => {
-    execFile(executable, ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(command, 'utf16le').toString('base64')], {
+    childProcess.execFile(executable, ['-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(command, 'utf16le').toString('base64')], {
       windowsHide: true, timeout: 30_000, encoding: 'utf8', maxBuffer: 64 * 1024,
       env: { ...process.env, PSModulePath: '' },
     }, (error, stdout, stderr) => {
@@ -21,7 +19,7 @@ export async function runSignatureCommand(command: string): Promise<string> {
 }
 
 /** Unlike the upstream fallback, unavailable PowerShell never means a valid signature. */
-export async function verifyWindowsUpdateSignature(publishers: string[], path: string, run: SignatureCommand = runSignatureCommand): Promise<string | null> {
+export async function verifyWindowsUpdateSignature(publishers: string[], path: string): Promise<string | null> {
   if (!win32.isAbsolute(path) || !publishers.length || publishers.some(name => !name.trim())) return 'Missing trusted publisher or installer path'
   const literalPath = path.replaceAll("'", "''")
   const command = `
@@ -37,7 +35,7 @@ if ($null -eq $signature.SignerCertificate) { throw 'Missing signer certificate'
 } | ConvertTo-Json -Compress
 `
   try {
-    const signature = JSON.parse((await run(command)).replace(/^\uFEFF/u, '').trim()) as Record<string, unknown>
+    const signature = JSON.parse((await runSignatureCommand(command)).replace(/^\uFEFF/u, '').trim()) as Record<string, unknown>
     if (signature.Status !== 0 || signature.Timestamped !== true || typeof signature.Path !== 'string'
       || win32.normalize(signature.Path).toLowerCase() !== win32.normalize(path).toLowerCase()
       || typeof signature.Publisher !== 'string' || !publishers.includes(signature.Publisher)) return 'Installer signature, timestamp, path or publisher is invalid'

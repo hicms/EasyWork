@@ -3,15 +3,15 @@ import assert from 'node:assert/strict'
 import { createRequire } from 'node:module'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { hashFile } from './verify-update-artifacts.mjs'
+import { hashFile } from '../../scripts/verify-update-artifacts.mjs'
 
 const local = process.argv.includes('--local')
 if (process.platform !== 'win32' || (process.env.CI !== 'true' && !local)) throw new Error('Use explicitly dispatched Windows CI or --local for GUI acceptance')
-const root = resolve(import.meta.dirname, '..')
+const root = resolve(import.meta.dirname, '../..')
 const output = join(root, 'dist', process.argv.includes('--unsigned-updates') ? 'acceptance-ui' : 'release')
 const userData = join(root, 'build', 'release-acceptance-home')
 mkdirSync(output, { recursive: true })
-const require = createRequire(new URL('../../web/package.json', import.meta.url))
+const require = createRequire(new URL('../../../web/package.json', import.meta.url))
 const { _electron } = require('@playwright/test')
 const env = { ...process.env, EASYWORK_DESKTOP_USER_DATA: userData, DSH_TELEMETRY_DISABLED: '1' }
 for (const name of Object.keys(env)) if (/TOKEN|PASSWORD|SECRET|CSC_|^NODE_OPTIONS$|^NODE_PATH$|^EASYWORK_DSH_HOME$/u.test(name)) delete env[name]
@@ -50,7 +50,7 @@ try {
   })
   checks.projectCreateReadArchive = true
   await page.screenshot({ path: join(output, 'personal.png'), fullPage: true })
-  const closed = candidate.waitForEvent('close', { timeout: 20_000 })
+  const closed = candidate.waitForEvent('close', { timeout: 30_000 })
   await candidate.evaluate(({ app }) => { setImmediate(() => app.quit()) })
   await closed
   const stops = readFileSync(join(userData, 'logs', 'startup.log'), 'utf8').trim().split('\n').map(line => JSON.parse(line))

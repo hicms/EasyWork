@@ -545,7 +545,7 @@ if (worker !== undefined) {
         },
         installerStarted: () => { quitting = true; tray?.destroy(); tray = undefined },
         installFailed: () => { cancelQuit(new Error('更新已暂缓，请重新启动 EasyWork 后重试。')) },
-        log: event => { log!.write(event) },
+        log: (event, error) => { log!.write(event, error === undefined ? {} : startupErrorFields(error)) },
       })
       installMenu(); workspaceStartup = startPersonalWorkspace(); await workspaceStartup
     }).catch(cause => {

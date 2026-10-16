@@ -1,6 +1,6 @@
 /** Desktop-only capability; Web and disabled builds return no update state. */
 export interface DesktopUpdateSnapshot {
-  state: 'idle' | 'checking' | 'available' | 'downloading' | 'downloaded' | 'verifying' | 'stopping' | 'installing' | 'error';
+  state: 'idle' | 'checking' | 'downloading' | 'downloaded' | 'verifying' | 'stopping' | 'installing' | 'error';
   version: string | undefined;
 }
 export interface DesktopUpdateBridge {
