@@ -14,7 +14,7 @@ const root = resolve(import.meta.dirname, '..'), dist = join(root, 'dist')
 const git = args => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim()
 const sourceCommit = git(['rev-parse', 'HEAD'])
 const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version
-const defaultBranch = git(['symbolic-ref', 'refs/remotes/origin/HEAD']).replace('refs/remotes/origin/', '')
+const defaultBranch = process.env.DEFAULT_BRANCH ?? git(['symbolic-ref', 'refs/remotes/origin/HEAD']).replace('refs/remotes/origin/', '')
 verifyReleaseSource({ commit: sourceCommit, version, channel: 'alpha', defaultBranch, root })
 assert.equal(git(['status', '--porcelain', '--untracked-files=normal']), '', 'Release requires clean committed source')
 const tag = releaseTag(version, 'unsigned-acceptance')

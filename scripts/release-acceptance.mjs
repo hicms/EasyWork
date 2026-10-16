@@ -3,6 +3,8 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { execFileSync } from 'node:child_process'
+import { verifyTrackedBilingualRecords } from './bilingual-docs.mjs'
+import { selectBaseline } from './resolve-unsigned-baseline.mjs'
 
 const root = resolve(import.meta.dirname, '..')
 const repository = 'hicms/EasyWork'
@@ -66,6 +68,15 @@ export function dispatch(options, run = args => execFileSync('gh', args, { cwd: 
   const inputs = releaseInputs({ commit, version: manifest.version })
   const args = buildWorkflowArgs({ commit, version: inputs.version })
   if (options.dryRun) { console.log(`gh ${args.join(' ')}`); return { args, dryRun: true } }
+  const remoteCommit = git(['ls-remote', 'origin', `refs/heads/${branch}`]).split(/\s/u)[0]
+  if (commit !== remoteCommit) throw new Error('Remote main has changed; synchronize the release source before dispatching')
+  verifyTrackedBilingualRecords(root)
+  const releases = JSON.parse(execFileSync('gh', ['api', '--paginate', '--slurp', `repos/${repository}/releases?per_page=100`], {
+    cwd: root, encoding: 'utf8',
+  })).flat()
+  const baseline = selectBaseline(releases, inputs.version)
+  if (!baseline) throw new Error(`No published unsigned alpha baseline exists before ${inputs.version}`)
+  console.log(`Releasing ${inputs.version}; update baseline: ${baseline}`)
   const dispatchedAt = Date.now()
   run(args)
   if (options.wait) {

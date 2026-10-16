@@ -54,7 +54,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     if (git(['status', '--porcelain', '--untracked-files=normal'])) throw new Error('Acceptance updates require clean committed source')
     sourceCommit = git(['rev-parse', 'HEAD'])
     verifyReleaseSource({ commit: sourceCommit, version, channel: 'alpha', root: desktopRoot,
-      defaultBranch: git(['symbolic-ref', 'refs/remotes/origin/HEAD']).replace('refs/remotes/origin/', '') })
+      defaultBranch: process.env.DEFAULT_BRANCH ?? git(['symbolic-ref', 'refs/remotes/origin/HEAD']).replace('refs/remotes/origin/', '') })
     const profile = JSON.parse(readFileSync(join(desktopRoot, 'build/easywork-runtime/package-cache/release-manifest.json'), 'utf8'))
     if (profile.sourceCommit !== sourceCommit || profile.sourceDirty !== false) throw new Error('Prepared Profile must match clean release source')
     config.extraMetadata.easyworkSourceCommit = sourceCommit

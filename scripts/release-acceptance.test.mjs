@@ -1,6 +1,17 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { buildWorkflowArgs, parseOptions, releaseInputs } from './release-acceptance.mjs'
+import { selectBaseline } from './resolve-unsigned-baseline.mjs'
+
+test('release preflight rejects an already published version and selects the newest older baseline', () => {
+  const releases = ['2.0.6-alpha.9', '2.0.6-alpha.16'].map(version => ({
+    tag_name: `acceptance-v${version}`, draft: false, prerelease: true,
+  }))
+  releases.push({ tag_name: 'acceptance-v2.0.6-alpha.17', draft: true, prerelease: true })
+  assert.equal(selectBaseline(releases, '2.0.6-alpha.18'), 'acceptance-v2.0.6-alpha.16')
+  assert.throws(() => selectBaseline(releases, '2.0.6-alpha.16'), /already published/u)
+  assert.equal(selectBaseline(releases, '2.0.6-alpha.8'), undefined)
+})
 
 test('unsigned release accepts only alpha versions and sends the committed source', () => {
   const commit = 'a'.repeat(40)

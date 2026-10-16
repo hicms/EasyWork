@@ -52,8 +52,11 @@ jobs:
       - name: Resolve the newest published unsigned baseline
         id: baseline
         env:
+          GH_TOKEN: ${{ github.token }}
           RELEASE_VERSION: ${{ inputs.version }}
-        run: echo "baseline=$(node scripts/resolve-unsigned-baseline.mjs)" >> "$GITHUB_OUTPUT"
+        run: |
+          baseline=$(node scripts/resolve-unsigned-baseline.mjs)
+          echo "baseline=$baseline" >> "$GITHUB_OUTPUT"
 
   checks:
     needs: source
@@ -68,6 +71,7 @@ jobs:
     permissions:
       contents: read
     env:
+      DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       EASYWORK_RELEASE_DIRECTORY: ${{ github.workspace }}/apps/desktop/build/easywork-profile-release
     steps:
       - uses: actions/checkout@v6
