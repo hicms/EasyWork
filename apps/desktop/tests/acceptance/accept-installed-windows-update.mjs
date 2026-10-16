@@ -223,10 +223,47 @@ Start-Sleep -Milliseconds 500
   assert.equal(data.id,projectId); assert.equal(data.name,'Automatic update acceptance'); assert.equal(data.preference,'preserve across restart')
   assert.equal(await hashFile(marker),markerHash)
   proof.checks.dataPreserved = true
-  for (const [label, content] of [['项目', '新建项目'], ['专家', '制作专家'], ['技能', '技能市场'],
-    ['连接器', 'MCP 服务管理'], ['资料库', '新建或导入资料'], ['插件', '添加插件']]) {
+  proof.requiredViewContent = {}
+  for (const [label, selector] of [['项目', '.wd-projects'], ['专家', '[data-testid="easywork-experts"]'],
+    ['技能', '[data-testid="easywork-skills"]'], ['连接器', '[data-testid="easywork-connectors"]'],
+    ['资料库', '.wd-library'], ['插件', '[data-plugin-panel]']]) {
     await page.getByRole('navigation', { name:'全局面板' }).getByRole('button',{name:label,exact:true}).click()
-    await page.getByText(content, { exact: true }).first().waitFor()
+    const panel = page.locator(selector)
+    await expect(panel).toBeVisible()
+    if (label === '项目') {
+      await expect(panel.locator('.wd-project-table').getByText('Automatic update acceptance', { exact: true })).toBeVisible()
+    } else if (label === '专家') {
+      await expect(panel.getByRole('button', { name: '刷新', exact: true })).toBeEnabled()
+      await expect(panel.locator('.skeleton')).toHaveCount(0)
+      for (const name of ['需求分析顾问', '文档评审顾问', '工作复盘顾问']) {
+        await expect(panel.getByRole('button', { name: `查看专家 ${name}`, exact: true })).toBeVisible()
+      }
+    } else if (label === '技能') {
+      await expect(panel.getByRole('button', { name: '刷新', exact: true })).toBeEnabled()
+      await expect(panel.locator('.counts')).not.toContainText('正在读取')
+      for (const name of ['easywork-skill-creator', 'easywork-expert-manager', 'easywork-ppt-design',
+        'easywork-word-design', 'easywork-excel-design', 'easywork-web-design']) {
+        await expect(panel.getByRole('button', { name: `查看技能 ${name}`, exact: true })).toBeVisible()
+      }
+      await expect(panel.getByText('技能目录暂时不可用，已安装的技能仍可使用。', { exact: true })).toHaveCount(0)
+    } else if (label === '连接器') {
+      await expect(panel.getByRole('button', { name: '刷新状态', exact: true })).toBeEnabled()
+      const example = panel.locator('.connector-card').filter({ has: page.getByRole('button', { name: '查看连接器 EasyWork MCP 示例', exact: true }) })
+      await expect(example).toBeVisible()
+      await expect(example.locator('.status-line')).toHaveText('已连接')
+      await expect(example.getByText('2 个工具', { exact: true })).toBeVisible()
+    } else if (label === '资料库') {
+      await expect(panel.getByText('正在读取资料…', { exact: true })).toHaveCount(0)
+      await expect(panel.locator('.wd-library-results button').or(panel.getByText('还没有资料', { exact: true })).first()).toBeVisible()
+    } else {
+      await expect(panel).toHaveAttribute('aria-busy', 'false')
+      await expect(panel.locator('[data-plugin-loading]')).toHaveCount(0)
+      await expect(panel.locator('[data-plugin-package], [data-plugin-item]').first()).toBeVisible()
+    }
+    await expect(panel.locator('[role="alert"], .error, [data-package-meta-error], [data-plugin-status="problem"], [data-state="failed"]')).toHaveCount(0)
+    const screenshot = `installed-B-${Object.keys(proof.requiredViewContent).length + 1}.png`
+    await page.screenshot({ path: join(output, screenshot) })
+    proof.requiredViewContent[label] = { screenshot, text: await panel.innerText() }
   }
   await page.getByRole('button',{name:'登录 EasyWork',exact:true}).click()
   await page.getByRole('heading',{name:'EasyWork 账号与模型',exact:true}).waitFor()
