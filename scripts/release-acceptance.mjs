@@ -64,7 +64,7 @@ export function dispatch(options, run = args => execFileSync('gh', args, { cwd: 
   const commit = git(['rev-parse', 'HEAD'])
   if (commit !== git(['rev-parse', 'origin/main'])) throw new Error('HEAD must equal origin/main; push the committed release source first')
   const inputs = releaseInputs({ commit, version: manifest.version })
-  const args = buildWorkflowArgs(inputs)
+  const args = buildWorkflowArgs({ commit, version: inputs.version })
   if (options.dryRun) { console.log(`gh ${args.join(' ')}`); return { args, dryRun: true } }
   const dispatchedAt = Date.now()
   run(args)
