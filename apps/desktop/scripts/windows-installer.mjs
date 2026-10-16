@@ -44,6 +44,7 @@ export async function prepareInstallerSafety() {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   if (process.platform !== 'win32' || process.arch !== 'x64') throw new Error('Unsigned acceptance installer requires native Windows x64')
+  process.chdir(desktopRoot)
   const safety = await prepareInstallerSafety()
   const { version } = JSON.parse(readFileSync(join(desktopRoot, 'package.json'), 'utf8'))
   const updates = process.argv.includes('--updates')
