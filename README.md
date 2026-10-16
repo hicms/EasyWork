@@ -43,6 +43,15 @@ GitHub Actions CI 仅支持手动运行，不会因 push 或 Pull Request 自动
 
 Windows x64 NSIS 安装版会自动检查本渠道更新并在后台下载，准备好后在右下角显示“新版本就绪”。点击“重启升级”即可静默安装并重新打开；普通退出不安装。验收完整升级流程时，先手动安装 Release 说明指定的基线版，再通过提示升级到下一版本。旧版 alpha.5 没有更新器，需要这一次手动安装。验收包未签名，首次安装可能提示未知发布者，不需要开启 Windows 测试模式。签名发行使用独立的 **Windows release** 手动工作流；渠道、构建与验收要求见 [Desktop 更新与发布](apps/desktop/README.zh.md#windows-更新与手动发布)。
 
+没有签名证书时，使用未签名验收渠道的一键入口。先把新版本写入 `apps/desktop/package.json`（必须是新的 `x.y.z-alpha.n`），提交并推送到 `main`，确认工作区干净，然后执行：
+
+```powershell
+corepack yarn release:acceptance --dry-run
+corepack yarn release:acceptance
+```
+
+脚本会校验当前提交已推送到 `main`，触发 GitHub Actions 的 Windows x64 构建、实际界面验收、四个 A→B 更新场景和制品校验，并在成功后自动公开 `acceptance-v<版本>` 预发布版；默认会等待工作流结束并打印 Release 地址。它不读取或要求 `WIN_CSC_*` 证书配置。客户端必须是同一未签名验收渠道的安装版，才会收到该版本更新。签名发布仍使用下面的 `release:windows` 流程。
+
 ### Windows 签名发布流程
 
 发布入口为 [scripts/release-windows.mjs](scripts/release-windows.mjs)，在仓库根目录执行。需要安装 GitHub CLI（`gh`），用有权触发本仓库工作流的账号执行 `gh auth login`。先在 GitHub Settings → Environments → `desktop-release-signing` 配置 secrets `WIN_CSC_LINK`（签名证书）、`WIN_CSC_KEY_PASSWORD`（证书密码），以及变量 `EASYWORK_WIN_PUBLISHER`（与证书发布者名称完全一致）。保留 `desktop-release-publish` 环境的部署保护；缺少签名配置时，正式发布会停止。

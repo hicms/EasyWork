@@ -22,6 +22,16 @@ export const ACCEPTANCE_CHECKS = [
 export const BOOTSTRAP_CHECKS = ['normalInstallation', 'installedRuntime', 'requiredPluginUi', 'updateMenu',
   'dataPreserved', 'ordinaryQuitDoesNotInstall', 'noOwnedProcessRemains', 'installerFailureRepair']
 
+export const UNSIGNED_ACCEPTANCE_SCENARIOS = {
+  delta: ['differentialDownload'],
+  'missing-cache': ['missingCacheFullDownload'],
+  'corrupt-blockmap': ['corruptDeltaFullDownload'],
+  offline: ['offlineRetry', 'differentialDownload'],
+}
+
+const UNSIGNED_COMMON_CHECKS = ['normalInstallation', 'ordinaryQuitDoesNotInstall', 'aToB',
+  'automaticRelaunch', 'dataPreserved', 'installedRuntime', 'requiredPluginViews', 'gracefulQuit']
+
 export async function listReleases(api) {
   const releases = []
   for (let page = 1; ; page++) {
@@ -62,6 +72,28 @@ export function verifyAcceptance(evidence, release) {
   if (evidence.mode === 'bootstrap') {
     for (const check of ACCEPTANCE_CHECKS.filter(name => !BOOTSTRAP_CHECKS.includes(name))) {
       if (evidence.checks?.[check] === true || !evidence.unperformed?.includes(check)) throw new Error(`Bootstrap must record unperformed check: ${check}`)
+    }
+  }
+  return evidence.evidenceUrl
+}
+
+export function verifyUnsignedAcceptance(evidence, release) {
+  if (evidence.mode !== 'unsigned-acceptance' || evidence.sourceCommit !== release.sourceCommit
+    || evidence.installerSha512 !== release.installerSha512 || evidence.version !== release.version
+    || evidence.channel !== 'alpha') throw new Error('Unsigned acceptance must bind to the exact alpha candidate')
+  if (!/^https:\/\/github\.com\/hicms\/EasyWork\/actions\/runs\/[1-9]\d*$/u.test(evidence.evidenceUrl ?? '')) {
+    throw new Error('Unsigned acceptance requires the completed GitHub Actions run URL')
+  }
+  for (const [scenario, required] of Object.entries(UNSIGNED_ACCEPTANCE_SCENARIOS)) {
+    const proof = evidence.scenarios?.[scenario]
+    if (!proof || proof.ok !== true || proof.sourceCommit !== release.sourceCommit
+      || proof.acceptanceCommit !== release.sourceCommit || proof.version !== release.version
+      || proof.installerSha512 !== release.installerSha512) throw new Error(`Missing unsigned acceptance: ${scenario}`)
+    for (const check of [...UNSIGNED_COMMON_CHECKS, ...required]) {
+      if (proof.checks?.[check] !== true) throw new Error(`Missing unsigned acceptance: ${scenario}.${check}`)
+    }
+    if (!proof.requiredViewContent || Object.keys(proof.requiredViewContent).length !== 6) {
+      throw new Error(`Unsigned acceptance did not inspect all required views: ${scenario}`)
     }
   }
   return evidence.evidenceUrl

@@ -1,5 +1,5 @@
 /** Minimal personal Electron carrier for the bundled EasyWork release Profile. */
-import { app, BrowserWindow, dialog, ipcMain, Menu, protocol, session, shell, Tray, type IpcMainInvokeEvent } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, Menu, Notification, protocol, session, shell, Tray, type IpcMainInvokeEvent } from 'electron'
 import { spawn, type ChildProcess } from 'node:child_process'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join } from 'node:path'
@@ -21,6 +21,7 @@ import { isWindowLanguage } from './window-chrome-contract.ts'
 import { installKeyboard } from './keyboard.ts'
 import { installDesktopUpdates } from './desktop-updates.ts'
 import { ShutdownCoordinator } from './shutdown-coordinator.ts'
+import { showUpdateStartedNotification } from './update-status-notification.ts'
 
 const PROFILE_NAME = 'easywork'
 
@@ -547,7 +548,13 @@ if (worker !== undefined) {
           if (shutdownReason === 'quit') throw new Error('应用正在退出，请重新启动后更新')
           await shutdown.request('update')
         },
-        installerStarted: () => { quitting = true; tray?.destroy(); tray = undefined },
+        installerStarted: () => {
+          showUpdateStartedNotification(getWindowLanguage?.() ?? app.getLocale(), {
+            isSupported: () => Notification.isSupported(),
+            create: options => new Notification(options),
+          })
+          quitting = true; tray?.destroy(); tray = undefined
+        },
         installFailed: () => { cancelQuit(new Error('更新已暂缓，请重新启动 EasyWork 后重试。')) },
         log: (event, error) => { log!.write(event, error === undefined ? {} : startupErrorFields(error)) },
       })

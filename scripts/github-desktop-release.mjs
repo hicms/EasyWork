@@ -2,15 +2,16 @@
 import { createHash } from 'node:crypto'
 import { createReadStream, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { findRelease, listReleases, readReleaseManifest, verifyAcceptance, verifyBootstrapHistory } from './desktop-release-policy.mjs'
-import { UPDATE_REPOSITORY } from '../apps/desktop/src/update-policy.ts'
+import { findRelease, listReleases, readReleaseManifest, verifyAcceptance, verifyBootstrapHistory, verifyUnsignedAcceptance } from './desktop-release-policy.mjs'
+import { releaseTag, UPDATE_REPOSITORY } from '../apps/desktop/src/update-policy.ts'
 
 const env = process.env
 const root = resolve(env.RELEASE_DIRECTORY ?? 'release')
-const release = readReleaseManifest(join(root, 'release.json'))
+const releaseMode = env.RELEASE_MODE ?? 'signed'
+const release = readReleaseManifest(join(root, 'release.json'), releaseMode)
 if (env.GITHUB_REPOSITORY !== UPDATE_REPOSITORY || release.sourceCommit !== env.RELEASE_COMMIT
   || release.version !== env.RELEASE_VERSION || release.channel !== env.RELEASE_CHANNEL) throw new Error('Release provenance mismatch')
-const tag = `v${release.version}`
+const tag = releaseTag(release.version, releaseMode)
 const base = `https://api.github.com/repos/${UPDATE_REPOSITORY}`
 const headers = { Authorization: `Bearer ${env.GH_TOKEN}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' }
 async function api(path, options = {}, optional = false) {
@@ -29,13 +30,16 @@ assets.push({ name: 'release.json', size: statSync(join(root, 'release.json')).s
 for (const asset of assets) {
   if (statSync(join(root, asset.name)).size !== asset.size || await digest(join(root, asset.name)) !== asset.sha256) throw new Error(`Candidate asset changed: ${asset.name}`)
 }
-const mode = env.RELEASE_OPERATION
-if (!['draft', 'publish'].includes(mode)) throw new Error('Invalid release operation')
+const operation = env.RELEASE_OPERATION
+if (!['draft', 'publish'].includes(operation)) throw new Error('Invalid release operation')
 const history = await listReleases(api)
-if (mode === 'publish') {
+if (operation === 'publish') {
   const acceptance = JSON.parse(env.RELEASE_ACCEPTANCE ?? '{}')
-  verifyAcceptance(acceptance, release)
-  if (acceptance.mode === 'bootstrap') verifyBootstrapHistory(history, release.channel)
+  if (releaseMode === 'unsigned-acceptance') verifyUnsignedAcceptance(acceptance, release)
+  else {
+    verifyAcceptance(acceptance, release)
+    if (acceptance.mode === 'bootstrap') verifyBootstrapHistory(history, release.channel)
+  }
   writeFileSync(join(root, 'acceptance.json'), JSON.stringify(acceptance, null, 2) + '\n')
   assets.push({ name: 'acceptance.json', size: statSync(join(root, 'acceptance.json')).size, sha256: await digest(join(root, 'acceptance.json')) })
 }
@@ -48,10 +52,12 @@ if (ref && (ref.object?.type !== 'commit' || ref.object.sha !== release.sourceCo
 let remote = findRelease(history, tag)
 if (remote && (!remote.draft || remote.target_commitish !== release.sourceCommit || remote.prerelease !== (release.channel === 'alpha'))) throw new Error('Refusing to replace or retarget an existing release')
 if (!remote) {
-  if (mode !== 'draft') throw new Error('Create and accept the draft before publishing')
+  if (operation !== 'draft') throw new Error('Create and accept the draft before publishing')
   remote = await api('/releases', { method: 'POST', body: JSON.stringify({ tag_name: tag, target_commitish: release.sourceCommit,
     name: `EasyWork ${release.version}`, draft: true, prerelease: release.channel === 'alpha',
-    body: 'Windows x64 NSIS candidate. Includes signed Setup, matching blockmap and channel metadata. Actual update acceptance is required before publication.',
+    body: releaseMode === 'unsigned-acceptance'
+      ? 'Windows x64 NSIS unsigned acceptance release. This channel is for explicitly accepted pre-release updates and may show an unknown publisher on Windows.'
+      : 'Windows x64 NSIS candidate. Includes signed Setup, matching blockmap and channel metadata. Actual update acceptance is required before publication.',
   }) })
 }
 for (const asset of assets) {
@@ -60,7 +66,7 @@ for (const asset of assets) {
     if (existing.size !== asset.size || existing.digest !== `sha256:${asset.sha256}`) throw new Error(`Immutable asset differs: ${asset.name}`)
     continue
   }
-  if (mode === 'publish' && asset.name !== 'acceptance.json') throw new Error('Publish refuses an incomplete draft')
+  if (operation === 'publish' && asset.name !== 'acceptance.json') throw new Error('Publish refuses an incomplete draft')
   const upload = new URL(remote.upload_url.replace(/\{.*$/u, ''))
   if (upload.origin !== 'https://uploads.github.com') throw new Error('Unexpected asset upload host')
   upload.searchParams.set('name', asset.name)
@@ -72,7 +78,7 @@ for (const asset of assets) {
 remote = await api(`/releases/${remote.id}`)
 if (remote.assets.length !== assets.length || assets.some(asset => !remote.assets.some(candidate => candidate.name === asset.name
   && candidate.size === asset.size && candidate.digest === `sha256:${asset.sha256}`))) throw new Error('Remote draft is incomplete or changed')
-if (mode === 'publish') {
+if (operation === 'publish') {
   await api(`/releases/${remote.id}`, { method: 'PATCH', body: JSON.stringify({ draft: false, prerelease: release.channel === 'alpha', make_latest: release.channel === 'latest' ? 'true' : 'false' }) })
 }
-console.log(`${mode === 'publish' ? 'Published' : 'Complete draft'}: ${remote.html_url}`)
+console.log(`${operation === 'publish' ? 'Published' : 'Complete draft'}: ${remote.html_url}`)

@@ -28,6 +28,8 @@ Desktop 不提供企业登录、账号认证桥接、成员空间或公司专用
 
 本地可用根目录脚本代替手工填写工作流参数：`corepack yarn release:windows` 会从干净且已推送的 `main` 触发 `draft`；正式公开前使用 `corepack yarn release:windows --operation=publish --candidate-run=RUN_ID --acceptance-file=PATH`。脚本只负责触发工作流，签名、实际验收和发布门禁仍由 GitHub Actions 执行。
 
+没有签名证书时，使用根目录的 `corepack yarn release:acceptance`。它只接受干净且已推送的 `main` 和新的 alpha 版本，自动触发 `Unsigned Windows acceptance release`：Windows runner 构建未签名 NSIS、运行实际界面验收、校验 Setup/blockmap/更新清单，再用最近的 unsigned 基线执行差量下载、缓存缺失、损坏 blockmap 和断网重试四个真实 A→B 场景，最后公开 `acceptance-vVERSION` 预发布版。命令默认等待完成并打印 Release 地址，也可用 `--no-wait` 只触发工作流；`--dry-run` 只显示将执行的 `gh` 命令。这个入口不读取证书 secrets，客户端必须已经安装同一 `unsigned-acceptance` 渠道的版本。
+
 保留 GitHub environments `desktop-release-signing`、`desktop-release-publish` 及其已配置的部署保护。工作流不要求第二位维护者，也不额外强制审批人或禁止自行审批设置。签名环境需要 secrets `WIN_CSC_LINK`（electron-builder 接受的 PKCS#12 证书）、`WIN_CSC_KEY_PASSWORD`，以及与证书发布者名称精确一致的变量 `EASYWORK_WIN_PUBLISHER`。缺少签名配置会阻止正式发行，本地未签名 `package-win.ts` 路径独立保留。两个安装包入口都会在构建前检查实际链接的 builder 补丁与 `yarn.lock` 一致，并包含所需 NSIS 保护；依赖树过期时，须在获准发行构建前明确执行 `corepack yarn install --immutable` 同步。Builder 在签名之后生成更新元数据；之后不得修改或再次签名 Setup。
 
 正式安装包把更新目标绑定到当前可执行文件所在的安装目录，短暂等待该目录的进程自然退出；无法确定进程归属或查询失败时停止安装，不会终止其他 EasyWork 安装的进程。移除旧文件使用本次签名的新卸载器，执行相同的目录和进程检查，不运行已安装的旧卸载器。启动、移除文件和校验锁定的 7za 解压器出错都会停止安装。安装原地替换，**不支持自动回滚**。若安装失败，请关闭 EasyWork，重新运行完整的已签名 Setup 修复。个人 Home、会话、凭据、文件和显式安装的插件不属于安装包替换内容。
@@ -48,7 +50,7 @@ node apps/desktop/tests/acceptance/accept-windows-update.mjs --confirm-isolated-
 
 没有 Windows 签名证书时，可明确执行 `corepack yarn build:win --target=installer --acceptance-updates --skip-install` 构建启用更新的验收安装包，要求干净的默认分支源码和 alpha 版本。不需要 Windows TESTSIGNING；Windows 可能将未签名应用标为未知发布者。此模式只接受 `acceptance-vVERSION` 预发布版，使用 HTTPS GitHub 元数据、精确大小和 SHA-512 校验，不验证 Authenticode 发布者身份。签名发行通道仍强制验签。两个模式使用相同的安全退出与 NSIS 安装器；普通未签名打包仍禁用更新。
 
-构建后，明确执行 `node apps/desktop/tests/acceptance/accept-windows-package.mjs --local --unsigned-updates`，再执行 `node apps/desktop/scripts/stage-unsigned-windows-release.mjs`。`dist/acceptance/VERSION` 中的制品包括 Setup、blockmap、`alpha.yml`、`release.json` 和绑定源码/包身份的 UI 证据。基线 A 和候选 B 均保持为 Release 草稿，用两个标签和 `scenario=all` 手动触发 **Windows update acceptance**。它在可丢弃的 Windows runner 中核对制品与源码，安装 A，点击真实更新提示，静默安装 B，观察自动重新打开并检查项目、文件及浏览器偏好保留。四个场景覆盖差量下载、缓存缺失、损坏 blockmap 和断网重试；同一手动工作流针对 B 的源码提交运行 Desktop 与 Web 检查，并单独记录验收工具提交。全部场景通过后，才公开已验收的字节，不重建替换。此结果不代表已验证签名发布者、真实账号凭据或任意外部插件保留。禁用更新器的旧版（包括 alpha.5）需要先手动安装一次 A；之后请保留历史 Setup/blockmap，供差量更新使用。
+手工调试或复核时，可执行 `node apps/desktop/tests/acceptance/accept-windows-package.mjs --local --unsigned-updates`，再执行 `node apps/desktop/scripts/stage-unsigned-windows-release.mjs`。`dist/acceptance/VERSION` 中的制品包括 Setup、blockmap、`alpha.yml`、`release.json` 和绑定源码/包身份的 UI 证据。上面的 `release:acceptance` 会自动创建草稿、用两个标签运行 **Windows update acceptance** 的四个场景，并在证据完整后公开已验收的字节；不需要手工填写候选运行号或验收 JSON。此结果不代表已验证签名发布者、真实账号凭据或任意外部插件保留。禁用更新器的旧版（包括 alpha.5）需要先手动安装一次 A；之后请保留历史 Setup/blockmap，供差量更新使用。
 
 ## 开发与验证
 

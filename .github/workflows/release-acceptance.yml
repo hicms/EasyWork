@@ -1,0 +1,238 @@
+name: Unsigned Windows acceptance release
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_commit:
+        description: Full commit SHA from the default branch
+        type: string
+        required: true
+      version:
+        description: Committed alpha Desktop version (x.y.z-alpha.n)
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: unsigned-windows-acceptance-release
+  cancel-in-progress: false
+
+env:
+  DSH_TELEMETRY_DISABLED: '1'
+
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      commit: ${{ steps.source.outputs.commit }}
+      version: ${{ steps.source.outputs.version }}
+      artifact: ${{ steps.source.outputs.artifact }}
+      baseline: ${{ steps.baseline.outputs.baseline }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Verify immutable source and alpha version
+        id: source
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          RELEASE_COMMIT: ${{ inputs.source_commit }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_CHANNEL: alpha
+        run: node scripts/desktop-release-gate.mjs
+      - name: Resolve the newest published unsigned baseline
+        id: baseline
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: echo "baseline=$(node scripts/resolve-unsigned-baseline.mjs)" >> "$GITHUB_OUTPUT"
+
+  checks:
+    needs: source
+    uses: ./.github/workflows/ci.yml
+    with:
+      revision: ${{ needs.source.outputs.commit }}
+
+  windows:
+    needs: [source, checks]
+    runs-on: windows-2022
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    env:
+      EASYWORK_RELEASE_DIRECTORY: ${{ github.workspace }}/apps/desktop/build/easywork-profile-release
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.source.outputs.commit }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - run: corepack enable
+      - run: corepack yarn install --immutable
+      - working-directory: apps/web
+        run: corepack pnpm install --frozen-lockfile
+      - name: Verify updater and release checks
+        run: corepack yarn check:updates
+      - name: Build the shared Profile and unsigned updater package
+        shell: pwsh
+        run: |
+          corepack yarn workspace dsh-plugin-desktop build
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Push-Location apps/web
+          corepack pnpm build
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Pop-Location
+          node apps/desktop/scripts/pack-easywork-profile.mjs apps/web $env:EASYWORK_RELEASE_DIRECTORY
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          corepack yarn workspace dsh-plugin-desktop prepare:easywork-runtime
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          corepack yarn workspace dsh-plugin-desktop prepare:easywork-primary-runtime
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          corepack yarn workspace dsh-plugin-desktop prepare:easywork-command
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node apps/desktop/scripts/windows-installer.mjs --updates
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node apps/desktop/tests/acceptance/accept-windows-package.mjs --unsigned-updates
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node apps/desktop/scripts/stage-unsigned-windows-release.mjs
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ needs.source.outputs.artifact }}
+          path: apps/desktop/dist/acceptance/${{ needs.source.outputs.version }}/*
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
+          overwrite: false
+
+  draft:
+    needs: [source, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.source.outputs.commit }}
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v6
+        with:
+          name: ${{ needs.source.outputs.artifact }}
+          path: release
+      - name: Create the immutable unsigned acceptance draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_MODE: unsigned-acceptance
+          RELEASE_OPERATION: draft
+          RELEASE_COMMIT: ${{ needs.source.outputs.commit }}
+          RELEASE_VERSION: ${{ needs.source.outputs.version }}
+          RELEASE_CHANNEL: alpha
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          RELEASE_DIRECTORY: ${{ github.workspace }}/release
+        run: node scripts/github-desktop-release.mjs
+
+  acceptance:
+    needs: [source, draft]
+    permissions:
+      contents: write
+    runs-on: windows-2022
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        scenario: [delta, missing-cache, corrupt-blockmap, offline]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.source.outputs.commit }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - run: corepack enable
+      - run: corepack yarn install --immutable
+      - working-directory: apps/web
+        run: corepack pnpm install --frozen-lockfile
+      - name: Download the exact baseline and draft candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASELINE_TAG: ${{ needs.source.outputs.baseline }}
+          CANDIDATE_TAG: acceptance-v${{ needs.source.outputs.version }}
+        shell: pwsh
+        run: |
+          foreach ($tag in @($env:BASELINE_TAG, $env:CANDIDATE_TAG)) {
+            if ($tag -notmatch '^acceptance-v\d+\.\d+\.\d+-alpha\.\d+$') { throw 'Invalid acceptance tag' }
+          }
+          gh release download $env:BASELINE_TAG --repo $env:GITHUB_REPOSITORY --dir "$env:RUNNER_TEMP/easywork-update/A"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          gh release download $env:CANDIDATE_TAG --repo $env:GITHUB_REPOSITORY --dir "$env:RUNNER_TEMP/easywork-update/B"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Run the real installed A to B update scenario
+        env:
+          DSH_TELEMETRY_DISABLED: '1'
+          UPDATE_SCENARIO: ${{ matrix.scenario }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          EXPECTED_CANDIDATE_COMMIT: ${{ needs.source.outputs.commit }}
+        run: node apps/desktop/tests/acceptance/accept-installed-windows-update.mjs
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: windows-update-${{ matrix.scenario }}
+          path: ${{ runner.temp }}/easywork-update/evidence
+          if-no-files-found: warn
+          retention-days: 30
+
+  publish:
+    needs: [source, windows, draft, acceptance]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.source.outputs.commit }}
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v6
+        with:
+          name: ${{ needs.source.outputs.artifact }}
+          path: release
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: windows-update-*
+          path: evidence
+      - name: Collect hash-bound acceptance evidence and publish the draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          RELEASE_MODE: unsigned-acceptance
+          RELEASE_OPERATION: publish
+          RELEASE_COMMIT: ${{ needs.source.outputs.commit }}
+          RELEASE_VERSION: ${{ needs.source.outputs.version }}
+          RELEASE_CHANNEL: alpha
+          RELEASE_DIRECTORY: ${{ github.workspace }}/release
+          ACCEPTANCE_EVIDENCE_DIRECTORY: ${{ github.workspace }}/evidence
+          ACCEPTANCE_OUTPUT: ${{ github.workspace }}/acceptance.json
+          RELEASE_EVIDENCE_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          export RELEASE_INSTALLER_SHA512="$(node -e "console.log(JSON.parse(require('fs').readFileSync('release/release.json','utf8')).installerSha512)")"
+          node scripts/collect-unsigned-acceptance.mjs
+          export RELEASE_ACCEPTANCE="$(cat acceptance.json)"
+          node scripts/github-desktop-release.mjs

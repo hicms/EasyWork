@@ -33,7 +33,7 @@ export function DesktopUpdateNotice() {
   const restart = () => { setError(false); void bridge.restart().catch(() => setError(true)); };
   return <><style>{styles}</style><aside className="ew-update-notice" role="status" aria-live="polite" aria-label={zh ? '应用更新' : 'Application update'}>
     <span className="ew-update-symbol" aria-hidden="true">↥</span>
-    <span className="ew-update-title" title={snapshot.version}>{error ? (zh ? '请重试升级' : 'Please retry') : busy ? (zh ? '正在重启…' : 'Restarting…') : (zh ? '新版本就绪' : 'Update ready')}</span>
+    <span className="ew-update-title" title={snapshot.version}>{error ? (zh ? '请重试升级' : 'Please retry') : snapshot.state === 'installing' ? (zh ? '正在安装更新…' : 'Installing update…') : busy ? (zh ? '正在准备重启…' : 'Preparing restart…') : (zh ? '新版本就绪' : 'Update ready')}</span>
     <button type="button" disabled={!!busy} onClick={() => { void bridge.releaseNotes().catch(() => setError(true)); }}>{zh ? '更新日志' : 'Release notes'}</button>
     <button type="button" className="ew-update-restart" disabled={!!busy} title={zh ? '请先保存工作并结束运行中的任务' : 'Save your work and finish running tasks first'} onClick={restart}>{zh ? '重启升级' : 'Restart and update'}</button>
     <button type="button" className="ew-update-close" disabled={!!busy} aria-label={zh ? '稍后更新' : 'Update later'} onClick={() => setDismissed(snapshot.version)}>×</button>
