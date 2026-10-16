@@ -24,6 +24,8 @@ Desktop 不提供企业登录、账号认证桥接、成员空间或公司专用
 
 **Windows release** 工作流仅手动触发。请从默认分支发起，填写完整源提交 SHA、该提交中已写入的 Desktop 版本和对应渠道。`draft` 验证提交可从默认分支到达，并在同一 SHA 运行 Desktop 与 Web CI。原生 Windows x64 构建只准备一次 Profile/运行时，只生成 NSIS，签名应用、卸载器和 Setup，再验证带时间戳的发布者签名、最终 SHA-512 和重新计算的 blockmap。现有外壳、归档依赖闭包、原生命令注册、fuse 和 packaged-runtime 门禁继续保留。另在隔离 Home 中启动免安装目录的实际 Windows 界面，检查个人启动、项目操作并截图。完整且校验通过的制品才上传到 Release 草稿；客户端不能发现草稿。
 
+本地可用根目录脚本代替手工填写工作流参数：`corepack yarn release:windows` 会从干净且已推送的 `main` 触发 `draft`；正式公开前使用 `corepack yarn release:windows --operation=publish --candidate-run=RUN_ID --acceptance-file=PATH`。脚本只负责触发工作流，签名、实际验收和发布门禁仍由 GitHub Actions 执行。
+
 保留 GitHub environments `desktop-release-signing`、`desktop-release-publish` 及其已配置的部署保护。工作流不要求第二位维护者，也不额外强制审批人或禁止自行审批设置。签名环境需要 secrets `WIN_CSC_LINK`（electron-builder 接受的 PKCS#12 证书）、`WIN_CSC_KEY_PASSWORD`，以及与证书发布者名称精确一致的变量 `EASYWORK_WIN_PUBLISHER`。缺少签名配置会阻止正式发行，本地未签名 `package-win.ts` 路径独立保留。两个安装包入口都会在构建前检查实际链接的 builder 补丁与 `yarn.lock` 一致，并包含所需 NSIS 保护；依赖树过期时，须在获准发行构建前明确执行 `corepack yarn install --immutable` 同步。Builder 在签名之后生成更新元数据；之后不得修改或再次签名 Setup。
 
 正式安装包把更新目标绑定到当前可执行文件所在的安装目录，短暂等待该目录的进程自然退出；无法确定进程归属或查询失败时停止安装，不会终止其他 EasyWork 安装的进程。移除旧文件使用本次签名的新卸载器，执行相同的目录和进程检查，不运行已安装的旧卸载器。启动、移除文件和校验锁定的 7za 解压器出错都会停止安装。安装原地替换，**不支持自动回滚**。若安装失败，请关闭 EasyWork，重新运行完整的已签名 Setup 修复。个人 Home、会话、凭据、文件和显式安装的插件不属于安装包替换内容。
