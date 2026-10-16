@@ -43,6 +43,31 @@ GitHub Actions CI 仅支持手动运行，不会因 push 或 Pull Request 自动
 
 Windows x64 NSIS 安装版会自动检查本渠道更新并在后台下载，准备好后在右下角显示“新版本就绪”。点击“重启升级”即可静默安装并重新打开；普通退出不安装。验收完整升级流程时，先手动安装 Release 说明指定的基线版，再通过提示升级到下一版本。旧版 alpha.5 没有更新器，需要这一次手动安装。验收包未签名，首次安装可能提示未知发布者，不需要开启 Windows 测试模式。签名发行使用独立的 **Windows release** 手动工作流；渠道、构建与验收要求见 [Desktop 更新与发布](apps/desktop/README.zh.md#windows-更新与手动发布)。
 
+### Windows 签名发布流程
+
+发布入口为 [scripts/release-windows.mjs](scripts/release-windows.mjs)，在仓库根目录执行。需要安装 GitHub CLI（`gh`），用有权触发本仓库工作流的账号执行 `gh auth login`。先在 GitHub Settings → Environments → `desktop-release-signing` 配置 secrets `WIN_CSC_LINK`（签名证书）、`WIN_CSC_KEY_PASSWORD`（证书密码），以及变量 `EASYWORK_WIN_PUBLISHER`（与证书发布者名称完全一致）。保留 `desktop-release-publish` 环境的部署保护；缺少签名配置时，正式发布会停止。
+
+1. 在 `apps/desktop/package.json` 设置未发布的新版本：`x.y.z-alpha.n` 对应 alpha 渠道，`x.y.z` 对应稳定渠道。将版本和待发布修改提交、推送到 `main`，确保工作区干净，并执行 `git fetch origin` 更新远端引用。
+2. 先预览参数，再触发候选构建：
+
+   ```powershell
+   corepack yarn release:windows --dry-run
+   corepack yarn release:windows
+   ```
+
+   脚本从当前提交读取版本并推导渠道，要求 `HEAD` 等于 `origin/main`。命令提交任务后即返回；到 Actions → **Windows release** 查看运行结果。工作流通过 Desktop/Web 检查、Windows 签名打包和隔离 Home 的 UI 验收后，才创建 Release 草稿。草稿不会触发客户端更新。
+
+3. 记录成功的 draft 运行号 `RUN_ID`（运行页面 URL 中 `/actions/runs/` 后的数字），完成该候选所需的实际安装与更新验收，并准备与 `release.json` 中源码、版本、渠道和安装包摘要一致的验收 JSON。具体检查项、证据格式及首次发布规则见 [Desktop 更新与发布](apps/desktop/README.zh.md#windows-更新与手动发布)。将证据保存在忽略的验收输出目录或仓库外，避免造成工作区未提交改动。
+4. 保持本地 `main` 为生成该候选的同一提交，使用真实运行号和证据路径替换占位值后公开发布：
+
+   ```powershell
+   corepack yarn release:windows --operation=publish --candidate-run=RUN_ID --acceptance-file=PATH
+   ```
+
+   发布工作流会复核验收证据和远端制品摘要，再公开原草稿；不会重新构建或覆盖已公开制品。须确认工作流成功且 Release 已公开，才算发版完成。查看入口帮助可执行 `corepack yarn release:windows --help`。
+
+启用更新器的安装版只会接收同一渠道、同一签名模式中版本号更高的公开版本，自动检查和下载后仍需点击“重启升级”。未签名验收版不会自动切换到签名发行版；免安装目录、portable 和普通未签名本地包不启用自动更新。
+
 Logo 原稿和配色位于 `assets/brand/`。运行 `node scripts/generate-brand-assets.mjs` 同步矢量资源，桌面构建会自动生成各平台图标。
 
 许可证见 [LICENSE](LICENSE)，第三方组件声明见 [THIRD_PARTY_NOTICES.md](apps/desktop/THIRD_PARTY_NOTICES.md)。
