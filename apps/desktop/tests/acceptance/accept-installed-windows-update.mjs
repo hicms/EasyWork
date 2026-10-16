@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { execFileSync, spawn } from 'node:child_process'
 import { createRequire } from 'node:module'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { join, parse, resolve } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
 import { extractFile, uncache } from '@electron/asar'
 import { CURRENT_APP_INSTALLER_FILE_NAME } from 'builder-util-runtime'
@@ -43,6 +43,7 @@ const require = createRequire(new URL('../../../web/package.json', import.meta.u
 const { _electron, expect } = require('@playwright/test')
 const proof = { sourceCommit: candidate.sourceCommit, baseline: baseline.version, version: candidate.version,
   acceptanceCommit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+  paths: { appDirectory, home, appVolume: parse(appDirectory).root, homeVolume: parse(home).root },
   installerSha512: candidate.installerSha512, scenario, checks: {}, dataScope: ['project', 'local file', 'browser preference'] }
 let running, server
 const checkpoint = phase => {
@@ -113,6 +114,8 @@ const createRetainedData = page => page.evaluate(async () => {
 try {
   const marker = join(home, 'update-acceptance.txt'), markerText = 'Preserve this local file through automatic upgrades.\n'
   checkpoint('Install baseline')
+  assert.notEqual(proof.paths.appVolume.toLowerCase(), proof.paths.homeVolume.toLowerCase(),
+    'Installed acceptance must cover different application and Home volumes')
   await install(join(baselineDirectory, `EasyWork-${baseline.version}-x64-Setup.exe`))
   assert.equal(installedVersion(), baseline.version); assert(existsSync(join(appDirectory, 'Uninstall EasyWork.exe')))
   proof.checks.normalInstallation = true
@@ -242,7 +245,7 @@ Start-Sleep -Milliseconds 500
       await expect(panel.getByRole('button', { name: '刷新', exact: true })).toBeEnabled()
       await expect(panel.locator('.counts')).not.toContainText('正在读取')
       for (const name of ['easywork-skill-creator', 'easywork-expert-manager', 'easywork-ppt-design',
-        'easywork-word-design', 'easywork-excel-design', 'easywork-web-design']) {
+        'easywork-word-design', 'easywork-excel-design', 'easywork-web-design', 'office-docx', 'office-pptx', 'office-xlsx']) {
         await expect(panel.getByRole('button', { name: `查看技能 ${name}`, exact: true })).toBeVisible()
       }
       await expect(panel.getByText('技能目录暂时不可用，已安装的技能仍可使用。', { exact: true })).toHaveCount(0)

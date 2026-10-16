@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { copyFile, lstat, mkdir, open, readFile, readdir, realpath, rename, rm, stat, unlink, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
-import { basename, dirname, extname, join, relative, resolve, sep } from 'node:path';
+import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { Context, Service } from '@deepseek-ai/cordis';
 import { isSkillName, type SkillDefinition, type SkillSummary } from '@deepseek-ai/dsh-skill';
 import { parse } from 'yaml';
@@ -55,7 +55,7 @@ async function snapshotFiles(directory: string, signal?: AbortSignal): Promise<{
 
 function inside(root: string, target: string): boolean {
   const part = relative(resolve(root), resolve(target));
-  return part === '' || (!part.startsWith(`..${sep}`) && part !== '..' && !part.startsWith(sep));
+  return part === '' || (!isAbsolute(part) && !part.startsWith(`..${sep}`) && part !== '..' && !part.startsWith(sep));
 }
 
 function frontmatter(document: string): Record<string, unknown> {

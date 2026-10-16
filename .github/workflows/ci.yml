@@ -101,7 +101,7 @@ jobs:
           node ../../scripts/verify-product-names.mjs
           corepack pnpm build
           corepack pnpm check:build
-          node --experimental-test-module-mocks --test tests/browser-session-shutdown.test.mjs
+          node --experimental-test-module-mocks --test tests/browser-session-shutdown.test.mjs tests/skill-management-paths.test.mjs
           corepack pnpm --filter easywork-plugin-models test
           corepack pnpm exec playwright install chromium --with-deps
           corepack pnpm --filter easywork-plugin-models test:ui
