@@ -32,10 +32,9 @@ export async function prepareInstallerSafety() {
   process.env.EASYWORK_NSIS_7ZA = await getPath7za()
   process.env.EASYWORK_NSIS_PROCESS_CHECK = Buffer.from(readFileSync(new URL('./installer-process-check.ps1', import.meta.url), 'utf8'), 'utf16le').toString('base64')
   const extractorDirectory = dirname(dirname(process.env.EASYWORK_NSIS_7ZA))
-  const manifest = JSON.parse(readFileSync(join(desktopRoot, 'package.json'), 'utf8'))
   return {
     nsis: { include: 'scripts/release-installer.nsh', deleteAppDataOnUninstall: false },
-    extraResources: [...manifest.build.extraResources,
+    extraResources: [
       { from: join(extractorDirectory, 'LICENSE.txt'), to: 'licenses/7zip-LICENSE.txt' },
       { from: join(extractorDirectory, 'COPYING'), to: 'licenses/7zip-COPYING.txt' },
     ],
