@@ -268,11 +268,13 @@ async function showStartupError(message: string): Promise<void> {
 }
 
 function runtimeEnvironment(home: string): NodeJS.ProcessEnv {
+  const workspaceRoot = process.env.EASYWORK_WORKSPACE_ROOT?.trim()
   return {
     ...process.env,
     DSH_HOME: home,
     DSH_AGENTS_HOME: join(home, 'agents'),
     DSH_BUNDLED_PRIMARY_RUNTIME: bundledPrimaryRuntime(),
+    EASYWORK_WORKSPACE_ROOT: workspaceRoot || join(app.getPath('documents'), 'EasyWork'),
     DSH_ELECTRON_EXECUTABLE: process.execPath,
     EASYWORK_ELECTRON_APP_PATH: app.isPackaged ? undefined : app.getAppPath(),
     ELECTRON_RUN_AS_NODE: '1',

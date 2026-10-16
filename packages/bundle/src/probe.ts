@@ -6,12 +6,16 @@ import type {} from '@deepseek-ai/dsh-attachment';
 import type {} from '@deepseek-ai/dsh-system-prompt';
 import { registerBrowserView } from './browser-view.js';
 import { registerStartupBranding } from './startup.js';
+import { initializeEasyWorkDefaultWorkspace } from './workspace-default.js';
+
+type WorkspaceContext = Context & { workspaceRegistry: Parameters<typeof initializeEasyWorkDefaultWorkspace>[0] };
 
 /** Product diagnostics only. Feature packages are installed as separate Profile layers. */
 export const name = 'easywork-installation-probe';
-export const inject = ['connection', 'tools', 'agents', 'attachments', 'systemPrompt'];
+export const inject = ['connection', 'tools', 'agents', 'attachments', 'systemPrompt', 'workspaceRegistry'];
 
-export function apply(ctx: Context): void {
+export async function apply(ctx: Context): Promise<void> {
+  await initializeEasyWorkDefaultWorkspace((ctx as WorkspaceContext).workspaceRegistry);
   registerStartupBranding(ctx);
   registerBrowserView(ctx);
   ctx.effect(() => ctx.systemPrompt.section({
