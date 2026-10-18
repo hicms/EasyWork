@@ -67,7 +67,7 @@ test('actual pinned updater checks cached identities before Host shutdown', asyn
       let stopped = 0, recovered = 0
       const controller = new DesktopUpdateController(updater, {
         currentVersion: '2.1.0-alpha.1', discover: async () => info.version, changed: () => {}, error: () => {},
-        prepareInstall: async () => { stopped++ }, installFailed: () => { recovered++ },
+        installStarting: () => {}, installAborted: () => {}, prepareInstall: async () => { stopped++ }, installFailed: () => { recovered++ },
       })
       controller.state = 'downloaded'; controller.version = mutation === 'wrong-version' ? '2.1.0-alpha.3' : info.version
       await controller.install()
@@ -85,7 +85,7 @@ test('actual pinned updater checks cached identities before Host shutdown', asyn
       })
       const controller = new DesktopUpdateController(updater, {
         currentVersion: '2.1.0-alpha.1', discover: async () => info.version, changed: () => {}, error: error => errors.push(error),
-        prepareInstall: async () => { stopped++ }, installFailed: () => { recovered++ },
+        installStarting: () => {}, installAborted: () => {}, prepareInstall: async () => { stopped++ }, installFailed: () => { recovered++ },
       })
       controller.state = 'downloaded'; controller.version = info.version
       globalThis.easyworkTestQuits = 0
