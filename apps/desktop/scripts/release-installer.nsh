@@ -12,11 +12,40 @@
 !define EASYWORK_SAFE_INSTALL
 !define EASYWORK_NSIS_PROCESS_CHECK "$%EASYWORK_NSIS_PROCESS_CHECK%"
 Var EasyWorkCheckedDirectory
+!ifndef BUILD_UNINSTALLER
+  Var EasyWorkUpdateBanner
+!endif
 
 !macro customInit
   ; Every installer instance, including elevated ones, must release the old
   ; directory before the fresh uninstaller removes it. installSection restores it.
   SetOutPath $TEMP
+  ; The carrier has already quit, so a silent update would otherwise show nothing until
+  ; relaunch. An elevated inner instance runs while the outer one keeps its window.
+  ${if} ${isUpdated}
+  ${andIf} ${Silent}
+  ${AndIfNot} ${UAC_IsInnerInstance}
+    ReadEnvStr $R8 EASYWORK_UPDATE_LANGUAGE
+    ; The stock banner dialog clips longer second lines.
+    ${if} $R8 == "en"
+      Banner::show /set 76 "Updating EasyWork" "It reopens when done."
+    ${else}
+      Banner::show /set 76 "正在更新 EasyWork" "完成后将自动重新打开，请稍候"
+    ${endif}
+    ; Stay above other windows without taking focus (SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE).
+    Banner::getWindow
+    Pop $R8
+    System::Call 'user32::SetWindowPos(p R8, p -1, i 0, i 0, i 0, i 0, i 0x13)'
+    StrCpy $EasyWorkUpdateBanner 1
+  ${endif}
+!macroend
+
+!macro customInstall
+  ; Files, registry and shortcuts are complete; the relaunched window replaces this notice.
+  ${if} $EasyWorkUpdateBanner == 1
+    Banner::destroy
+    StrCpy $EasyWorkUpdateBanner ""
+  ${endif}
 !macroend
 
 !macro easyworkValidateTarget

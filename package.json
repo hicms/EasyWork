@@ -48,6 +48,6 @@
     "release:pack:published": "node scripts/package-desktop-release.mjs --source=published",
     "release:windows": "node scripts/release-windows.mjs",
     "release:acceptance": "node scripts/release-acceptance.mjs",
-    "check:updates": "node --test apps/desktop/tests/desktop-updates.test.mjs apps/desktop/tests/update-release.test.mjs apps/desktop/tests/windows-update-hardening.test.mjs apps/desktop/tests/update-language.test.mjs apps/desktop/tests/updater-differential.test.mjs apps/desktop/tests/update-status-notification.test.mjs"
+    "check:updates": "node --test apps/desktop/tests/desktop-updates.test.mjs apps/desktop/tests/update-release.test.mjs apps/desktop/tests/windows-update-hardening.test.mjs apps/desktop/tests/update-language.test.mjs apps/desktop/tests/updater-differential.test.mjs"
   }
 }

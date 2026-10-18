@@ -89,7 +89,7 @@ export function installDesktopUpdates(operations: {
   async function restart(): Promise<void> {
     if (suspended || installing || update.state !== 'downloaded') return
     installing = true
-    try { await update.install() } finally { installing = false }
+    try { await update.install(language) } finally { installing = false }
   }
   ipcMain.handle(UPDATE_IPC.check, event => { operations.assertSender(event); return check() })
   ipcMain.handle(UPDATE_IPC.restart, event => { operations.assertSender(event); return restart() })

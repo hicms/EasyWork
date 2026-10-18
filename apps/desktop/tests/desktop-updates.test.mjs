@@ -14,7 +14,7 @@ function fixture(prepareInstall = async () => {}, mode = 'signed') {
     checkForUpdates: async () => ({ updateInfo: { version: '2.1.0-alpha.2' } }),
     downloadUpdate: async () => { calls.push('download'); updater.emit('update-downloaded', {}) },
     validateCandidate: async version => { calls.push(['verify', version]) },
-    launchAndQuit: async () => { calls.push(['install']) },
+    launchAndQuit: async language => { calls.push(['install', language]) },
   })
   const controller = new DesktopUpdateController(updater, {
     currentVersion: '2.1.0-alpha.1', mode, discover: async () => '2.1.0-alpha.2', changed: () => {},
@@ -48,13 +48,13 @@ test('check automatically downloads once; explicit restart waits for safe close 
   assert.equal(f.calls[0].useMultipleRangeRequest, false)
   assert.equal(f.updater.previousBlockmapBaseUrlOverride, releaseDownloadUrl('2.1.0-alpha.1'))
   assert.equal(f.updater.allowDowngrade, false)
-  const install = f.controller.install()
-  assert.equal(install, f.controller.install())
+  const install = f.controller.install('en-US')
+  assert.equal(install, f.controller.install('en-US'))
   assert.equal(f.controller.state, 'verifying')
   assert.equal(f.calls.filter(call => Array.isArray(call) && call[0] === 'install').length, 0)
   stop.resolve(); await install
-  assert.deepEqual(f.calls.at(-1), ['install'])
-  await f.controller.install()
+  assert.deepEqual(f.calls.at(-1), ['install', 'en-US'])
+  await f.controller.install('en-US')
   assert.equal(f.calls.filter(call => Array.isArray(call) && call[0] === 'install').length, 1)
   const acceptance = fixture(undefined, 'unsigned-acceptance')
   await acceptance.controller.check()

@@ -72,7 +72,7 @@ export class DesktopUpdateController {
     if (!this.suspended) this.setState('downloaded')
   }
 
-  install(): Promise<void> {
+  install(language: string): Promise<void> {
     if (this.installPending) return this.installPending
     if (this.suspended || this.state !== 'downloaded') return Promise.resolve()
     this.setState('verifying')
@@ -83,7 +83,7 @@ export class DesktopUpdateController {
       stopping = true
       await this.operations.prepareInstall()
       this.setState('installing')
-      await this.updater.launchAndQuit()
+      await this.updater.launchAndQuit(language)
     }).catch(error => {
       if (stopping) this.operations.installFailed()
       this.fail(error)

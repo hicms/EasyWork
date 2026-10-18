@@ -68,12 +68,12 @@ class CoordinatedNsisUpdater extends NsisUpdater {
     }
   }
 
-  async launchAndQuit(): Promise<void> {
+  async launchAndQuit(language: string): Promise<void> {
     const candidate = this.candidate
     if (!candidate || !this.checkedFile || !sameFile(this.checkedFile, await stat(candidate.path))) {
       throw new Error('Verified installer is no longer available; download it again')
     }
-    await launchWindowsInstaller(candidate.path, dirname(process.execPath))
+    await launchWindowsInstaller(candidate.path, dirname(process.execPath), language)
     this.installerStarted()
     this.app.quit()
   }

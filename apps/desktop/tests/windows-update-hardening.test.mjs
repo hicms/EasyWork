@@ -22,7 +22,7 @@ test('actual Windows command line leaves NSIS /D last and unquoted even with spa
   await writeFile(probe, '[Console]::Write([Environment]::CommandLine)')
   const target = "C:\\Users\\it's` safe\\Local Programs\\EasyWork"
   const executable = join(process.env.SystemRoot, 'System32/WindowsPowerShell/v1.0/powershell.exe')
-  const command = windowsInstallerCommand('C:\\cache space\\Setup.exe', target)
+  const command = windowsInstallerCommand('C:\\cache space\\Setup.exe', target, 'en-US')
   const output = await new Promise((resolve, reject) => {
     const child = childProcess.spawn(executable, ['-NoProfile', '-NonInteractive', '-File', `"${probe}"`, ...command.args], {
       ...command.options, argv0: `"${executable}"`, detached: false, stdio: ['ignore', 'pipe', 'pipe'],
@@ -34,6 +34,8 @@ test('actual Windows command line leaves NSIS /D last and unquoted even with spa
   assert(output.endsWith(` /S --updated --force-run /D=${target}`), output)
   assert(!output.includes('"/D='), output)
   assert.equal(command.options.env.EASYWORK_UPDATE_INSTALL_DIRECTORY, target)
+  assert.equal(command.options.env.EASYWORK_UPDATE_LANGUAGE, 'en')
+  assert.equal(windowsInstallerCommand('C:\\Setup.exe', target, 'zh-CN').options.env.EASYWORK_UPDATE_LANGUAGE, 'zh')
 })
 
 test('installer process predicate ignores other installations and blocks unknown or same-target processes', { skip: process.platform !== 'win32' }, async () => {

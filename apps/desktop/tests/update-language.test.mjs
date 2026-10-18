@@ -19,10 +19,11 @@ test('acceptance startup downloads without a modal; trusted UI reads state and n
   t.after(() => { Object.defineProperty(process, 'platform', platform); process.execPath = executable; process.resourcesPath = resources })
   let finishDownload
   const download = new Promise(resolve => { finishDownload = resolve })
-  let checks = 0, installs = 0, retry
+  let checks = 0, retry
+  const launches = []
   const updater = Object.assign(new EventEmitter(), { setFeedURL() {},
     checkForUpdates: async () => { checks++; return { updateInfo: { version: '2.1.0-alpha.2' } } }, downloadUpdate: () => download,
-    validateCandidate: async () => {}, launchAndQuit: async () => { installs++ } })
+    validateCandidate: async () => {}, launchAndQuit: async language => { launches.push(language) } })
   const dialogs = [], states = [], links = [], logs = [], handlers = new Map(), trusted = {}
   let offline = true
   const networkError = Object.assign(new Error('private network response'), { code: 'ECONNRESET' })
@@ -85,9 +86,13 @@ test('acceptance startup downloads without a modal; trusted UI reads state and n
   assert.equal(handlers.get(UPDATE_IPC.get)(trusted).state, 'downloaded')
   await handlers.get(UPDATE_IPC.notes)(trusted)
   assert.deepEqual(links, ['https://github.com/hicms/EasyWork/releases/tag/acceptance-v2.1.0-alpha.2'])
+  // The installer's progress window follows the latest UI language, not the zh-CN OS locale.
+  updates.setLanguage('en-US')
+  await handlers.get(UPDATE_IPC.restart)(trusted)
+  assert.deepEqual(launches, ['en-US'])
   updates.suspend(); retry()
   await handlers.get(UPDATE_IPC.restart)(trusted)
-  assert.equal(installs, 0); assert.equal(checks, 1)
+  assert.deepEqual(launches, ['en-US']); assert.equal(checks, 1)
   assert.equal(clear.mock.callCount(), 1)
   assert.equal(handlers.get(UPDATE_IPC.get)(trusted), undefined)
 })
