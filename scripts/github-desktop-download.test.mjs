@@ -14,7 +14,7 @@ const FAKE_GITHUB = `
 import { createHash } from 'node:crypto'
 import { readFileSync, writeFileSync } from 'node:fs'
 const file = process.env.FAKE_GITHUB_STATE
-const reply = (status, value) => ({ ok: status < 400, status, json: async () => value })
+const reply = (status, value) => ({ ok: status < 400, status, json: async () => value, text: async () => JSON.stringify(value) })
 globalThis.fetch = async (input, init = {}) => {
   const url = new URL(String(input)), method = init.method ?? 'GET'
   const state = JSON.parse(readFileSync(file, 'utf8'))

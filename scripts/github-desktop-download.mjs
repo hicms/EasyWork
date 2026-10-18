@@ -32,7 +32,7 @@ const base = `https://api.github.com/repos/${UPDATE_REPOSITORY}`
 const headers = () => ({ Authorization: `Bearer ${process.env.GH_TOKEN}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' })
 async function api(path, options = {}) {
   const response = await fetch(`${base}${path}`, { signal: AbortSignal.timeout(60_000), ...options, headers: { ...headers(), 'Content-Type': 'application/json' } })
-  if (!response.ok) throw new Error(`GitHub request failed (${response.status}): ${path}`)
+  if (!response.ok) throw new Error(`GitHub request failed (${response.status}): ${path} ${await response.text()}`)
   return response.status === 204 ? undefined : response.json()
 }
 async function digest(path) {
