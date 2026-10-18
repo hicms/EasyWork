@@ -299,6 +299,7 @@ test('manual release preserves source, acceptance and signing gates', async () =
   assert.equal(refreshWorkflow.jobs.refresh.permissions.contents, 'write')
   const refreshStep = refreshWorkflow.jobs.refresh.steps.find(step => step.run === 'node scripts/github-desktop-download.mjs')
   assert.equal(refreshStep.env.RELEASE_COMMIT, '${{ inputs.source_commit }}')
+  assert.equal(refreshStep.env.DOWNLOAD_COMMIT, '${{ github.sha }}')
   assert.equal(refreshStep['continue-on-error'], undefined)
   assert.deepEqual(Object.keys(workflow.on), ['workflow_dispatch'])
   assert.deepEqual(Object.keys(ci.on).sort(), ['workflow_call', 'workflow_dispatch'])

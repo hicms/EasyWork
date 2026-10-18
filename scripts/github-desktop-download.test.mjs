@@ -57,6 +57,7 @@ globalThis.fetch = async (input, init = {}) => {
 `
 
 const commit = 'b'.repeat(40)
+const head = '9'.repeat(40)
 const version = '2.0.6-alpha.19'
 const installerName = `EasyWork-${version}-x64-Setup.exe`
 
@@ -82,12 +83,12 @@ function fixture(context, { sourceDraft = false, sourceDigest, sourceTarget = co
   return { release, state, fake, sha256, read: () => JSON.parse(readFileSync(state, 'utf8')) }
 }
 
-function refresh(fixture) {
+function refresh(fixture, downloadCommit = head) {
   return execFileSync(process.execPath, ['--import', pathToFileURL(fixture.fake).href,
     fileURLToPath(new URL('./github-desktop-download.mjs', import.meta.url))], {
     encoding: 'utf8', stdio: 'pipe', windowsHide: true,
     env: { ...process.env, GH_TOKEN: 'token', GITHUB_REPOSITORY: 'hicms/EasyWork', RELEASE_COMMIT: commit,
-      RELEASE_VERSION: version, RELEASE_DIRECTORY: fixture.release, FAKE_GITHUB_STATE: fixture.state },
+      RELEASE_VERSION: version, RELEASE_DIRECTORY: fixture.release, FAKE_GITHUB_STATE: fixture.state, DOWNLOAD_COMMIT: downloadCommit },
   })
 }
 
@@ -114,7 +115,8 @@ test('first refresh publishes a Latest download release containing only the acce
   assert.equal(download.prerelease, false)
   assert.equal(download.make_latest, 'true')
   assert.deepEqual(download.assets.map(asset => [asset.name, asset.digest]), [[DOWNLOAD_ASSET, `sha256:${github.sha256}`]])
-  assert.equal(state.refs[DOWNLOAD_TAG], commit)
+  assert.equal(state.refs[DOWNLOAD_TAG], head)
+  assert.equal(download.target_commitish, head)
   assert.match(download.body, /2\.0\.6-alpha\.19/u)
   assert.match(download.body, /releases\/tag\/acceptance-v2\.0\.6-alpha\.19/u)
   assert(!state.calls.some(call => call.startsWith('PATCH /git/refs')))
@@ -140,7 +142,7 @@ test('refresh replaces the installer only after the new upload and leaves Latest
   const download = downloadRelease(state)
   assert.deepEqual(download.assets.map(asset => [asset.name, asset.digest]), [[DOWNLOAD_ASSET, `sha256:${github.sha256}`]])
   assert.equal(download.make_latest, 'false')
-  assert.equal(state.refs[DOWNLOAD_TAG], commit)
+  assert.equal(state.refs[DOWNLOAD_TAG], head)
 })
 
 test('refresh refuses unpublished, retargeted or different installers without touching downloads', context => {
@@ -153,4 +155,7 @@ test('refresh refuses unpublished, retargeted or different installers without to
   writeFileSync(join(github.release, installerName), 'tampered')
   assert.throws(() => refresh(github), error => /Candidate asset changed/u.test(error.stderr))
   assert.deepEqual(github.read().calls, [])
+  const untagged = fixture(context)
+  assert.throws(() => refresh(untagged, ''), error => /DOWNLOAD_COMMIT/u.test(error.stderr))
+  assert.deepEqual(untagged.read().calls, [])
 })

@@ -55,6 +55,9 @@ async function refresh() {
   const release = readReleaseManifest(join(root, 'release.json'), 'unsigned-acceptance')
   if (env.GITHUB_REPOSITORY !== UPDATE_REPOSITORY || release.sourceCommit !== env.RELEASE_COMMIT
     || release.version !== env.RELEASE_VERSION) throw new Error('Release provenance mismatch')
+  // The workflow token can only tag the running branch head once later commits change workflow files.
+  const tagCommit = env.DOWNLOAD_COMMIT
+  if (!/^[a-f0-9]{40}$/u.test(tagCommit ?? '')) throw new Error('DOWNLOAD_COMMIT must be a full commit SHA')
   const installer = release.assets.find(asset => asset.name === `EasyWork-${release.version}-x64-Setup.exe`)
   const path = join(root, installer.name)
   if (statSync(path).size !== installer.size || await digest(path) !== installer.sha256) throw new Error(`Candidate asset changed: ${installer.name}`)
@@ -69,7 +72,7 @@ async function refresh() {
   }
   const name = `EasyWork ${release.version} 下载 / Download`
   let target = findRelease(history, DOWNLOAD_TAG)
-    ?? await api('/releases', { method: 'POST', body: JSON.stringify({ tag_name: DOWNLOAD_TAG, target_commitish: release.sourceCommit, name, draft: true, prerelease: false }) })
+    ?? await api('/releases', { method: 'POST', body: JSON.stringify({ tag_name: DOWNLOAD_TAG, target_commitish: tagCommit, name, draft: true, prerelease: false }) })
   for (const stale of target.assets.filter(asset => asset.name === STAGED_ASSET)) await api(`/releases/assets/${stale.id}`, { method: 'DELETE' })
   const previous = target.assets.find(asset => asset.name === DOWNLOAD_ASSET)
   const uploadName = previous ? STAGED_ASSET : DOWNLOAD_ASSET
@@ -82,9 +85,9 @@ async function refresh() {
     await api(`/releases/assets/${uploaded.id}`, { method: 'PATCH', body: JSON.stringify({ name: DOWNLOAD_ASSET }) })
   }
   // Publishing a draft creates the tag; a published release keeps its tag until moved explicitly.
-  if (!target.draft) await api(`/git/refs/tags/${DOWNLOAD_TAG}`, { method: 'PATCH', body: JSON.stringify({ sha: release.sourceCommit, force: true }) })
+  if (!target.draft) await api(`/git/refs/tags/${DOWNLOAD_TAG}`, { method: 'PATCH', body: JSON.stringify({ sha: tagCommit, force: true }) })
   await api(`/releases/${target.id}`, { method: 'PATCH', body: JSON.stringify({ name, body: description(release.version, tag),
-    target_commitish: release.sourceCommit, draft: false, prerelease: false, make_latest: stableReleaseExists(history) ? 'false' : 'true' }) })
+    target_commitish: tagCommit, draft: false, prerelease: false, make_latest: stableReleaseExists(history) ? 'false' : 'true' }) })
   target = await api(`/releases/${target.id}`)
   if (target.draft || target.assets.length !== 1 || target.assets[0].name !== DOWNLOAD_ASSET || !matches(target.assets[0])) {
     throw new Error('Download release is incomplete')

@@ -53,4 +53,5 @@ jobs:
           RELEASE_COMMIT: ${{ inputs.source_commit }}
           RELEASE_VERSION: ${{ inputs.version }}
           RELEASE_DIRECTORY: ${{ github.workspace }}/release
+          DOWNLOAD_COMMIT: ${{ github.sha }}
         run: node scripts/github-desktop-download.mjs
