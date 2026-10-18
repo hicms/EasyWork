@@ -3,6 +3,9 @@
   "version": "0.2.1-rc.2",
   "releasePolicy": "user-confirmed-0.2.1-rc.2-after-compatibility-validation",
   "distribution": "published-packages-and-desktop-release",
+  "pendingDesktopArtifacts": [
+    "mac-x64"
+  ],
   "desktopArtifacts": {
     "mac-arm64": {
       "url": "https://download.deepseek.com/dsh-desk/bin/mac-arm64/deepseek-harness-0.2.1-rc.2-mac-arm64.zip",

@@ -14,8 +14,17 @@ if (process.argv.length !== 3 || !['desktop', 'web'].includes(scope)) {
 if (scope === 'desktop') {
   const problems = []
   if (upstream.version !== DSH_VERSION || upstream.distribution !== 'published-packages-and-desktop-release') problems.push('Desktop must consume the locked official release version')
-  for (const target of ['mac-arm64', 'mac-x64', 'win-x64']) {
+  const targets = ['mac-arm64', 'mac-x64', 'win-x64']
+  // Official pre-releases can publish platforms on different days; a listed target stays unbuildable until its lock is added.
+  const pending = upstream.pendingDesktopArtifacts ?? []
+  if (!Array.isArray(pending) || pending.some(target => !targets.includes(target) || target === 'win-x64')) problems.push('pendingDesktopArtifacts may list only unpublished macOS targets')
+  for (const target of targets) {
     const artifact = upstream.desktopArtifacts?.[target]
+    if (pending.includes(target)) {
+      if (artifact) problems.push('Locked official release target is still marked pending: ' + target)
+      else console.warn('Official release ' + DSH_VERSION + ' is not yet published for ' + target + '; that target cannot be built')
+      continue
+    }
     if (!artifact || !artifact.url.startsWith('https://download.deepseek.com/dsh-desk/bin/' + target + '/') || !artifact.url.includes('deepseek-harness-' + DSH_VERSION + '-') || Buffer.from(artifact.sha512 ?? '', 'base64').length !== 64 || !Number.isSafeInteger(artifact.size) || artifact.size <= 0) problems.push('Missing or invalid official release lock: ' + target)
   }
   const manifest = readJson('apps/desktop/package.json')
