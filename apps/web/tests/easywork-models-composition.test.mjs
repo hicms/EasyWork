@@ -42,7 +42,7 @@ test('actual native web tools execute server search and Exa extraction through t
   const { AskClient } = await import('../../../packages/plugins/models/src/ask-client.ts');
   const { memoryRecords, token } = await import('../../../packages/plugins/models/tests/fixture.ts');
   const ctx = new Context(); t.after(() => ctx.fiber.dispose());
-  const web = new WebRuntime(ctx, { searchProvider: 'easywork', fetchProvider: 'easywork' });
+  const web = new WebRuntime(ctx, WebRuntime.Config({ searchProvider: 'easywork', fetchProvider: 'easywork' }));
   const tools = new Map(); const calls = [];
   const account = new ModelsAccount(memoryRecords({ origin: 'https://ask.vigoai.cn', token, expiresAt: Date.now() + 60_000, user: { id: 'test', email: 'test@example.com' } }), new AskClient(async (input, init) => {
     assert.equal(new Headers(init.headers).get('authorization'), 'Bearer ' + token);

@@ -27,7 +27,7 @@ const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'))
 verifyProfileRelease(manifest, DSH_VERSION, RELEASE_PACKAGES)
 verifyReleaseArchives(manifest, release)
 verifyProductArtifacts(release)
-const marker = JSON.stringify({ harness: DSH_VERSION, layout: 'five-feature-plugins-personal-only-v8', nodeLinker: 'hoisted', architecture, release: manifest })
+const marker = JSON.stringify({ harness: DSH_VERSION, layout: 'five-feature-plugins-personal-only-v8', nodeLinker: 'hoisted', pnpm: '11.28.5', architecture, release: manifest })
 const markerPath = join(profile, '.easywork-desktop-release.json')
 const readJson = path => JSON.parse(readFileSync(path, 'utf8'))
 function run(command, args, options = {}) {
@@ -103,19 +103,19 @@ if (!prepared) {
       '@deepseek-ai/dsh-plugin-manager': DSH_VERSION, '@deepseek-ai/dsh-agent-loop': DSH_VERSION,
       '@deepseek-ai/dsh-agent-preset-registry': DSH_VERSION, '@deepseek-ai/dsh-scope': DSH_VERSION,
       '@deepseek-ai/dsh-tool-workspace-dependencies': DSH_VERSION, '@deepseek-ai/dsh-skill-office': DSH_VERSION,
-      '@deepseek-ai/cordis-plugin-group': '1.0.4', ...manifest.requiredPeers, ...CATALOG_PACKAGES }
+      '@deepseek-ai/cordis-plugin-group': '1.0.5', ...manifest.requiredPeers, ...CATALOG_PACKAGES }
     const optionalDependencies = {}
     for (const item of manifest.packages) {
       cpSync(join(release, item.filename), join(cache, item.filename))
       const target = PRODUCT_PACKAGES.includes(item.name) ? dependencies : optionalDependencies
       target[item.name] = 'file:../../package-cache/' + item.filename
     }
-    const pkg = { name: 'easywork-desktop-profile', private: true, type: 'module', packageManager: 'pnpm@11.7.0', dependencies, optionalDependencies,
+    const pkg = { name: 'easywork-desktop-profile', private: true, type: 'module', packageManager: 'pnpm@11.28.5', dependencies, optionalDependencies,
       dsh: { profile: { bundles: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', ...PRODUCT_PACKAGES, ...Object.keys(CATALOG_PACKAGES)] } } }
     writeFileSync(join(profile, 'package.json'), JSON.stringify(pkg, null, 2) + '\n')
     const overrides = Object.entries(manifest.runtimeOverrides ?? {}).map(([name, version]) => `  ${JSON.stringify(name)}: ${JSON.stringify(version)}`).join('\n')
     writeFileSync(join(profile, 'pnpm-workspace.yaml'), 'nodeLinker: hoisted\nautoInstallPeers: true\nstrictPeerDependencies: false\n' + runtimeArchitectureYaml(architecture) + 'overrides:\n' + overrides + '\n')
-    run(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['--yes', 'pnpm@11.7.0', '--dir', profile, 'install', '--prod', '--ignore-scripts'], { shell: process.platform === 'win32' })
+    run(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['--yes', 'pnpm@11.28.5', '--dir', profile, 'install', '--prod', '--ignore-scripts'], { shell: process.platform === 'win32' })
     // Promote mandatory official peers into this installation's single root
     // graph, so CLI, Config Editor and Agent providers share module instances.
     for (let pass = 0; pass < 9; pass++) {
@@ -131,7 +131,7 @@ if (!prepared) {
       }
       if (!missing.size) break
       if (pass === 8) throw new Error('Official runtime peer closure did not converge')
-      run(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['--yes', 'pnpm@11.7.0', '--dir', profile, 'add', '--save-exact', '--ignore-scripts', ...missing.values()], { shell: process.platform === 'win32' })
+      run(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['--yes', 'pnpm@11.28.5', '--dir', profile, 'add', '--save-exact', '--ignore-scripts', ...missing.values()], { shell: process.platform === 'win32' })
     }
     const patches = RELEASE_PACKAGES.filter(name => !PRODUCT_PACKAGES.includes(name) && !UNSUPPORTED_ENTERPRISE_PACKAGES.includes(name))
       .map(name => join(profile, 'node_modules', name, 'cordis.patch.yml')).filter(existsSync)

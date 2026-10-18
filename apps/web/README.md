@@ -66,7 +66,7 @@ Earlier local preview showing the artifact workflow; it is not an alpha.8 accept
 
 ## Quick start
 
-Requirements: Node.js `^22.19.0 || >=24.0.0`, Corepack/pnpm and the official `dsh` CLI **0.2.0-rc.2**.
+Requirements: Node.js `^22.19.0 || >=24.0.0`, Corepack/pnpm and the official `dsh` CLI **0.2.1-rc.2**.
 
 1. Download all 12 `.tgz` packages, `release-manifest.json`, `SHA256SUMS` and `install-easywork.mjs` from the [alpha.14 release](https://github.com/techflag/easywork/releases/tag/v0.1.0-alpha.14) into one directory.
 2. For an upgrade, stop the target Profile and keep a recoverable backup of its configuration and data.

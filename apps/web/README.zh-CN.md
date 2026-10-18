@@ -66,7 +66,7 @@ alpha.14 整包包含 **12 个可安装模块**，包括项目、资料库和受
 
 ## 快速开始
 
-环境要求：Node.js `^22.19.0 || >=24.0.0`、Corepack/pnpm，以及官方 **0.2.0-rc.2** 版本的 `dsh` CLI。
+环境要求：Node.js `^22.19.0 || >=24.0.0`、Corepack/pnpm，以及官方 **0.2.1-rc.2** 版本的 `dsh` CLI。
 
 1. 从 [alpha.14 Release](https://github.com/techflag/easywork/releases/tag/v0.1.0-alpha.14) 下载全部 12 个 `.tgz`、`release-manifest.json`、`SHA256SUMS` 和 `install-easywork.mjs`，放入同一目录。
 2. 升级已有 Profile 时，先停止运行，并保留配置和数据的可恢复备份。

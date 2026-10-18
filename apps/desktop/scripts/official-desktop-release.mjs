@@ -58,7 +58,7 @@ export async function prepareOfficialRelease(desktopRoot, target) {
     if (!resources) throw new Error('Official release has no reusable runtime resources')
     const metadata = JSON.parse(readFileSync(join(resources, 'runtime/primary-runtime/runtime.json'), 'utf8'))
     const [platform, arch] = target.split('-')
-    if (metadata.desktopVersion !== lock.version || metadata.platform !== (platform === 'mac' ? 'darwin' : 'win32') || metadata.arch !== arch || metadata.pnpm !== '11.7.0') throw new Error('Official release runtime version/platform mismatch')
+    if (metadata.desktopVersion !== lock.version || metadata.platform !== (platform === 'mac' ? 'darwin' : 'win32') || metadata.arch !== arch || metadata.pnpm !== '11.28.5') throw new Error('Official release runtime version/platform mismatch')
     if (!existsSync(join(resources, 'runtime/cli/command-manager.js')) || !existsSync(join(resources, 'runtime/office-skills'))) throw new Error('Official release is missing command/Office resources')
     rmSync(destination, { recursive: true, force: true }); mkdirSync(destination)
     for (const name of ['primary-runtime', 'office-skills', 'cli']) cpSync(join(resources, 'runtime', name), join(destination, 'runtime', name), { recursive: true, dereference: false })

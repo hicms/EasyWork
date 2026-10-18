@@ -4,7 +4,7 @@ This independent pnpm workspace owns EasyWork feature packages and Web compositi
 
 ## Runtime and ownership
 
-- Pin official DSH dependencies and required peers to the product target `0.2.0-rc.2`, with Cordis `4.0.4`. Web consumes published official packages. Never edit upstream DSH or require its checkout for a Web build.
+- Pin official DSH dependencies and required peers to the product target `0.2.1-rc.2`, with Cordis `4.0.5`. Web consumes published official packages. Never edit upstream DSH or require its checkout for a Web build.
 - Personal Web, enterprise Web and Desktop share official runtime targets, owned feature packages, business services and pages. Identity, storage, execution and synchronization vary only at explicit adapter boundaries.
 - Use official Loader/Profile/Cordis, Session/Agent loop, preset registry, Skill parser/provider, MCP transport, model routing, Remote, Storage and Conversation UI. EasyWork owns account and model presentation through the shared `packages/plugins/models` plugin and its `ModelAdapter`; its Profile patch replaces the official account/model rows. Do not introduce another Host, Client, loader or executor, or modify DSH sources.
 - Feature packages own business objects, revisions, authorization and presentation. Page actions and Agent tools use the same business services. Optional cross-plugin collaboration uses public contracts and lifecycle injection, never another plugin's internal implementation.

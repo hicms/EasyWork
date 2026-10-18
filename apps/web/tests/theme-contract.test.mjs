@@ -61,12 +61,17 @@ function officialTheme(t, preference = 'system') {
   const ctx = {
     effect: factory => { const dispose = factory(); lifecycle.push(dispose); return dispose; },
     emit: (name, snapshot) => events.push({ name, snapshot }),
+    // Shortcut and locale services are absent from this DOM-free contract.
+    inject: () => {},
   };
-  const value = { preference, fontSize: 16 };
+  const value = {
+    preference, fontSize: 16, codeFontSize: 13, terminalFontSize: 13,
+    textFontFamily: 'system-ui, sans-serif', codeFontFamily: 'monospace', terminalFontFamily: 'monospace',
+  };
   const host = {
     getSnapshot: () => ({ value }),
     subscribe: listener => { settingsListeners.add(listener); return () => settingsListeners.delete(listener); },
-    set: (key, next) => { writes.push([key, next]); value[key] = next; },
+    set: async (key, next) => { writes.push([key, next]); value[key] = next; },
   };
   const theme = new exported.ThemeRuntime(ctx, host);
   t.after(() => lifecycle.reverse().forEach(dispose => dispose()));
@@ -105,7 +110,7 @@ test('appearance follows system and persisted modes without changing user prefer
   const f = officialTheme(t);
   const dispose = mountAppearance(f.theme);
   assert.equal(f.theme.getTheme().preference, 'system');
-  assert.equal(f.theme.getTheme().fontSize, 16);
+  assert.equal(f.theme.getTheme().fontSizes.text, 16);
   const name = '--dsw-specific-sidebar-fill';
   assert.equal(f.theme.getTheme().active.tokens[name], themeTokenOverrides[name].light);
   f.systemDark(true);
@@ -116,7 +121,7 @@ test('appearance follows system and persisted modes without changing user prefer
   assert.equal(f.theme.getTheme().active.tokens[name], themeTokenOverrides[name].dark);
   dispose();
   assert.equal(f.theme.getTheme().preference, 'dark');
-  assert.equal(f.theme.getTheme().fontSize, 16);
+  assert.equal(f.theme.getTheme().fontSizes.text, 16);
   assert.equal(Object.keys(f.theme.getTheme().active.tokens).length, 0);
   assert.deepEqual(f.writes, [], 'appearance may never write persisted theme/font preferences');
   assert.ok(f.events.every(event => event.name === 'theme/change'));

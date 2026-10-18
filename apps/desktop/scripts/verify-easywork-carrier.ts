@@ -178,7 +178,7 @@ export async function afterPack(context: PackContext): Promise<void> {
   if (images.error || images.status !== 0) throw new Error('Packaged image admission failed: ' + String(images.error ?? images.stderr))
   process.stdout.write(images.stdout)
   const pnpm = join(runtime, 'primary-runtime', 'dependencies', 'pnpm', 'bin', 'pnpm.cjs')
-  if (primary.pnpm !== '11.7.0' || !existsSync(pnpm)) throw new Error('Packaged official pnpm CLI is missing or has another version')
+  if (primary.pnpm !== '11.28.5' || !existsSync(pnpm)) throw new Error('Packaged official pnpm CLI is missing or has another version')
   // Probe the bundled CLI outside the caller's Yarn/pnpm project configuration.
   const packageManager = spawnSync(node, [pnpm, '--version'], { cwd: tmpdir(), encoding: 'utf8', timeout: 30_000 })
   if (packageManager.error || packageManager.status !== 0 || packageManager.stdout.trim() !== primary.pnpm) {

@@ -16,7 +16,7 @@
 
 ## 公开接口与权限
 
-复用官方 `inputTriggers.registerSource`、CommandClaim、Session inspect、附件 API、deliverables 事件、scoped filesystem、Host Connection、Client Slots 和 MarkdownText。当前源码精确锁定官方 DSH `0.2.0-rc.2` / Cordis `4.0.4`；不修改 Harness 源码。当前运行与验收范围见[验收要求](../../../apps/web/docs/ACCEPTANCE.md)。
+复用官方 `inputTriggers.registerSource`、CommandClaim、Session inspect、附件 API、deliverables 事件、scoped filesystem、Host Connection、Client Slots 和 MarkdownText。当前源码精确锁定官方 DSH `0.2.1-rc.2` / Cordis `4.0.5`；不修改 Harness 源码。当前运行与验收范围见[验收要求](../../../apps/web/docs/ACCEPTANCE.md)。
 
 浏览器仅请求同源 Host，企业运行凭据不进入浏览器。Host 使用企业身份服务核对当前成员，企业服务限制有效同组织接收人及分享双方读写权限。每次访问核对 v1 协作契约；提交和回复采用去重键，文件验证 SHA256。下载也重新核对双方权限，返回文件副本，不暴露本地路径。
 

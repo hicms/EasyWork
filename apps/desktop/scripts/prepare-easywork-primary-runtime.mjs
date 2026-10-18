@@ -35,7 +35,7 @@ if (manifest.desktopVersion !== DSH_VERSION || manifest.platform !== process.pla
   throw new Error(`Official primary runtime metadata does not match ${target} / ${DSH_VERSION}`)
 }
 const runtimePnpm = join(output, 'primary-runtime', 'dependencies', 'pnpm', 'bin', 'pnpm.cjs')
-if (manifest.pnpm !== '11.7.0' || !existsSync(runtimePnpm)) throw new Error('Official primary runtime must carry its pinned pnpm 11.7.0 JavaScript CLI')
+if (manifest.pnpm !== '11.28.5' || !existsSync(runtimePnpm)) throw new Error('Official primary runtime must carry its pinned pnpm 11.28.5 JavaScript CLI')
 const packagePath = join(profile, 'package.json')
 if (!existsSync(packagePath)) throw new Error('EasyWork release profile must be prepared first')
 const profilePackage = JSON.parse(readFileSync(packagePath, 'utf8'))

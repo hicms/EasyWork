@@ -6,7 +6,7 @@ import { test } from 'node:test'
 import { verifyInstalledDshVersions } from './verify-profile-release.mjs'
 import { verifyReleaseProfileLayout } from './verify-profile-layout.mjs'
 
-const version = '0.2.0-rc.2'
+const version = '0.2.1-rc.2'
 function fixture(t) {
   const profile = mkdtempSync(join(tmpdir(), 'easywork-layout-test-'))
   t.after(() => rmSync(profile, { recursive: true, force: true }))

@@ -1,6 +1,6 @@
 # 技能管理插件
 
-> 当前源码精确锁定 Harness **0.2.0-rc.2 / Cordis 4.0.4**；实际构建、安装与运行范围见[验收要求](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/ACCEPTANCE.md)。[历史发布说明](https://github.com/techflag/easywork/releases)及旧探针不能证明本轮源码或 Desktop 安装包已验收。
+> 当前源码精确锁定 Harness **0.2.1-rc.2 / Cordis 4.0.5**；实际构建、安装与运行范围见[验收要求](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/ACCEPTANCE.md)。[历史发布说明](https://github.com/techflag/easywork/releases)及旧探针不能证明本轮源码或 Desktop 安装包已验收。
 
 状态：**Skill 0.1 开发候选，已提供本地技能管理和独立插件入口**。当前构建、安装和运行验收以[验收要求](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/ACCEPTANCE.md)为准。当前候选制品 `easywork-plugin-skills@0.1.0-alpha.34`，尚未发布 npm。一个插件管理多个 Skill 业务对象；用户制作技能不需要发布 npm 包。
 
@@ -12,7 +12,7 @@
 
 ## 安装和组合
 
-当前源码基线：Node 22.19+、Harness `0.2.0-rc.2`、Cordis `4.0.4`。从已配置这些依赖的官方 Web Profile 安装同次构建的本地 tgz；将以下路径替换为实际制品绝对路径：
+当前源码基线：Node 22.19+、Harness `0.2.1-rc.2`、Cordis `4.0.5`。从已配置这些依赖的官方 Web Profile 安装同次构建的本地 tgz；将以下路径替换为实际制品绝对路径：
 
 ```sh
 dsh plugin --profile <你的 Web Profile> add /absolute/path/easywork-plugin-skills-0.1.0-alpha.34.tgz

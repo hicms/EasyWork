@@ -96,7 +96,7 @@ const definition = name => ({ name, description: `${name} fixture expert.`, role
 try {
   const { default: Loader } = await import(pathToFileURL(requireDsh.resolve('@deepseek-ai/cordis-plugin-loader')).href);
   await ctx.plugin(Loader, { baseUrl });
-  for (const name of ['dsh-session', 'dsh-session-projection', 'dsh-system-prompt', 'dsh-tools', 'dsh-llm', 'dsh-agent', 'dsh-agent-loop', 'dsh-subagent', 'dsh-invariants']) await load(`@deepseek-ai/${name}`);
+  for (const name of ['dsh-session', 'dsh-session-projection', 'dsh-system-prompt', 'dsh-tools', 'dsh-llm', 'dsh-agent', 'dsh-agent-loop', 'dsh-subagent']) await load(`@deepseek-ai/${name}`);
   await load('@deepseek-ai/dsh-session-persistence-jsonl', { root: join(home, 'sessions'), compression: 'none' });
   await load('@deepseek-ai/dsh-session-query-sqlite', { path: join(home, 'session-query.sqlite'), openAt: 'never' });
   await load('@deepseek-ai/dsh-subagent-spawn-in-process', { providerName: 'spawn' });

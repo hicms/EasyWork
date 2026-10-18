@@ -92,6 +92,6 @@ Windows 安装器性能比较使用 `node apps/desktop/scripts/build-windows-nsi
 
 Web 和 Desktop Profile 打包还会检查压缩插件包内部及发行元数据中的名称。Desktop `afterPack` 启动隔离的 headless 运行时，检查实际注册的原生 Skill 命令和 MCP 工具 schema。可在仓库根目录运行 `node apps/desktop/scripts/verify-runtime-product-names.mjs <runtime-directory>`，复查准备目录或打包目录中的运行时；该检查不打开窗口，也不发送模型请求。
 
-Desktop pin 与共同产品目标均为 **DSH 0.2.0-rc.2**，由用户明确选择。未修改的官方 `dsh-v0.2.0-rc.2` tag 固定提交 `639ed015397290b3745d163aafe02ffee4aa3f84`。既有安装包和 Profile 的实际版本需要单独核验。Desktop alignment、Desktop checks 和 packaged-runtime 验收都通过后才能宣布统一升级完成；Web Docker 证据不能代替。默认选择经过验证的官方稳定版。
+Desktop pin 与共同产品目标均为 **DSH 0.2.1-rc.2**，由用户明确选择。未修改的官方 `dsh-v0.2.1-rc.2` tag 固定提交 `687f282e8625c6b8d11ff58211a90524be2e4317`。既有安装包和 Profile 的实际版本需要单独核验。Desktop alignment、Desktop checks 和 packaged-runtime 验收都通过后才能宣布统一升级完成；Web Docker 证据不能代替。默认选择经过验证的官方稳定版。
 
 构建只消费已发布官方包和校验锁定的二进制制品。外壳源码与打包脚本在本目录，功能包源码属于 EasyWork，Web 启动与部署由 apps/web 拥有。参见 [Desktop 归属](../../docs/desktop-boundaries.md)。

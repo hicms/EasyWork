@@ -1,6 +1,6 @@
 # EasyWork 专家插件 / Experts plugin
 
-一个插件管理多个专家与专家团配置。当前源码候选为 `easywork-plugin-experts@0.1.0-alpha.8`，精确锁定 **DeepSeek Harness 0.2.0-rc.2 / Cordis 4.0.4**；实际构建、安装与运行范围见[验收要求](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/ACCEPTANCE.md)，旧探针和已发布安装包不能证明本轮候选已验收。
+一个插件管理多个专家与专家团配置。当前源码候选为 `easywork-plugin-experts@0.1.0-alpha.8`，精确锁定 **DeepSeek Harness 0.2.1-rc.2 / Cordis 4.0.5**；实际构建、安装与运行范围见[验收要求](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/ACCEPTANCE.md)，旧探针和已发布安装包不能证明本轮候选已验收。
 
 EasyWork manages authored expert assets and immutable revisions. Team execution, messaging, tasks and the Web team panel use the official DSH Agent Teams plugins.
 
@@ -50,13 +50,13 @@ corepack pnpm probe:experts:team
 - `probe:experts:team` 使用真实 Loader、生产资产服务与执行准入、官方 Agent Loop/Team/持久化；仅模型 I/O 和受信本地入口使用夹具。验证并行、各成员角色与技能、fresh/fork、非法成员和跨主体拒绝、任务依赖/CAS、模型工具分派、中断及独立进程恢复。
 - `probe:experts` 保留专家资产与编辑页面的独立打包回归。
 
-此前 `.artifacts/dsh-0.1.6-upgrade/native-expert-team/` 和 `native-team-web/` 结果属于旧候选历史，不作为当前 0.2.0-rc.2 源码验收。当前实际结果以[验收要求](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/ACCEPTANCE.md)为准。探针使用独立 Home；只有显式 `:real` 命令调用付费模型。
+此前 `.artifacts/dsh-0.1.6-upgrade/native-expert-team/` 和 `native-team-web/` 结果属于旧候选历史，不作为当前 0.2.1-rc.2 源码验收。当前实际结果以[验收要求](https://github.com/hicms/EasyWork/blob/main/apps/web/docs/ACCEPTANCE.md)为准。探针使用独立 Home；只有显式 `:real` 命令调用付费模型。
 
 官方 Team 仍为实验性能力。旧候选纯官方 fork 历史查询曾记录 `seeded session constructor seed must equal its inherited prefix` 问题；公共持久化读取与成员冷恢复的通过不能代替 Web 分叉历史验收。默认使用 fresh 成员。真实模型专业成果质量、企业远程多用户和完整热卸载仍须分别验收，不宣称本轮已完成。
 
 ## 安装候选包
 
-当前源码依赖 DSH 0.2.0-rc.2 / Cordis 4.0.4，应使用同一次构建产出的配套 tgz；不要把旧 Release 的安装包当作已含本次升级。先在独立 Profile 验证，再部署实际使用的 Profile：
+当前源码依赖 DSH 0.2.1-rc.2 / Cordis 4.0.5，应使用同一次构建产出的配套 tgz；不要把旧 Release 的安装包当作已含本次升级。先在独立 Profile 验证，再部署实际使用的 Profile：
 
 ```sh
 dsh --profile easywork --from-default-profile web --dump-config
