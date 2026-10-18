@@ -240,3 +240,12 @@ jobs:
           node scripts/release-acceptance.mjs collect
           export RELEASE_ACCEPTANCE="$(cat acceptance.json)"
           node scripts/github-desktop-release.mjs
+
+  download:
+    needs: [source, publish]
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release-download.yml
+    with:
+      source_commit: ${{ needs.source.outputs.commit }}
+      version: ${{ needs.source.outputs.version }}

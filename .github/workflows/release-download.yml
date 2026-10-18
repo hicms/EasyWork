@@ -1,0 +1,56 @@
+name: Download release refresh
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_commit:
+        description: Full commit SHA of the published alpha release
+        type: string
+        required: true
+      version:
+        description: Published alpha Desktop version (x.y.z-alpha.n)
+        type: string
+        required: true
+  workflow_call:
+    inputs:
+      source_commit:
+        type: string
+        required: true
+      version:
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: easywork-download-release
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Download the published installer and manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-alpha\.[0-9]+$ ]] || { echo 'Invalid alpha version'; exit 1; }
+          gh release download "acceptance-v$RELEASE_VERSION" --repo "$GITHUB_REPOSITORY" --dir release \
+            --pattern release.json --pattern "EasyWork-$RELEASE_VERSION-x64-Setup.exe"
+      - name: Point the rolling download release at the published installer
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          RELEASE_COMMIT: ${{ inputs.source_commit }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_DIRECTORY: ${{ github.workspace }}/release
+        run: node scripts/github-desktop-download.mjs

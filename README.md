@@ -4,7 +4,7 @@ EasyWork 是基于官方 DeepSeek Harness 的个人 AI 工作台，包含 Web �
 
 Desktop 和 Web 共用 EasyWork 账号与模型服务。在“账号与模型”中登录 [模型服务](https://ask.vigoai.cn) 后，使用服务下发的模型目录；会话内可搜索、切换模型和调整思考参数。账号 JWT 保存在 Host 凭据记录中，退出账号保留本地会话、文件和已安装插件。接入说明见[账号与模型插件](packages/plugins/models/README.md)。
 
-Windows x64 安装包通过 [GitHub Releases](https://github.com/hicms/EasyWork/releases) 提供。官方运行时版本由 [upstream.json](upstream.json) 锁定；桌面端只承载已发布的官方运行时。
+Windows x64 安装包通过 [GitHub Releases](https://github.com/hicms/EasyWork/releases) 提供，最新版可直接下载 [EasyWork-x64-Setup.exe](https://github.com/hicms/EasyWork/releases/download/easywork-download/EasyWork-x64-Setup.exe)。官方运行时版本由 [upstream.json](upstream.json) 锁定；桌面端只承载已发布的官方运行时。
 
 需要 Node.js `^22.19.0` 或 `>=24.0.0`，并启用 Corepack。
 
@@ -50,11 +50,11 @@ corepack yarn release:acceptance --dry-run
 corepack yarn release:acceptance
 ```
 
-脚本会校验当前提交已推送到 `main`，触发 GitHub Actions 的 Windows x64 构建、实际界面验收、四个 A→B 更新场景和制品校验，并在成功后自动公开 `acceptance-v<版本>` 预发布版；默认会等待工作流结束并打印 Release 地址。它不读取或要求 `WIN_CSC_*` 证书配置。客户端必须是同一未签名验收渠道的安装版，才会收到该版本更新。签名发布仍使用下面的 `release:windows` 流程。
+脚本会校验当前提交已推送到 `main`，触发 GitHub Actions 的 Windows x64 构建、实际界面验收、四个 A→B 更新场景和制品校验，并在成功后自动公开 `acceptance-v<版本>` 预发布版，再把固定的 `easywork-download` Release 更新为该版本安装包 `EasyWork-x64-Setup.exe`（没有正式稳定版时显示为 Latest，更新器不会从它安装）；默认会等待工作流结束并打印 Release 地址。它不读取或要求 `WIN_CSC_*` 证书配置。客户端必须是同一未签名验收渠道的安装版，才会收到该版本更新。签名发布仍使用下面的 `release:windows` 流程。
 
 ### Windows 签名发布流程
 
-发布入口为 [scripts/release-windows.mjs](scripts/release-windows.mjs)，在仓库根目录执行。需要安装 GitHub CLI（`gh`），用有权触发本仓库工作流的账号执行 `gh auth login`。先在 GitHub Settings → Environments → `desktop-release-signing` 配置 secrets `WIN_CSC_LINK`（签名证书）、`WIN_CSC_KEY_PASSWORD`（证书密码），以及变量 `EASYWORK_WIN_PUBLISHER`（与证书发布者名称完全一致）。保留 `desktop-release-publish` 环境的部署保护；缺少签名配置时，正式发布会停止。
+发布入口为 [scripts/release-windows.mjs](scripts/release-windows.mjs)，在仓库根目录执行。需要安装 GitHub CLI（`gh`），用有权触发本仓库工作流的账号执行 `gh auth login`。先在 GitHub Settings → Secrets and variables → Actions 配置仓库级 secrets `WIN_CSC_LINK`（签名证书）、`WIN_CSC_KEY_PASSWORD`（证书密码），以及变量 `EASYWORK_WIN_PUBLISHER`（与证书发布者名称完全一致）。工作流不使用 GitHub environments，不会在仓库首页产生 Deployments 记录；缺少签名配置时，正式发布会停止。
 
 1. 在 `apps/desktop/package.json` 设置未发布的新版本：`x.y.z-alpha.n` 对应 alpha 渠道，`x.y.z` 对应稳定渠道。将版本和待发布修改提交、推送到 `main`，确保工作区干净，并执行 `git fetch origin` 更新远端引用。
 2. 先预览参数，再触发候选构建：

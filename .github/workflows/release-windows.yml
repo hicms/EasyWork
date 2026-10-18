@@ -86,7 +86,6 @@ jobs:
     if: inputs.operation == 'draft'
     needs: [source, checks]
     runs-on: windows-2022
-    environment: desktop-release-signing
     env:
       EASYWORK_RELEASE_DIRECTORY: ${{ github.workspace }}/apps/desktop/build/easywork-profile-release
     steps:
@@ -170,7 +169,6 @@ jobs:
     if: inputs.operation == 'publish'
     needs: source
     runs-on: ubuntu-latest
-    environment: desktop-release-publish
     permissions:
       contents: write
       actions: read

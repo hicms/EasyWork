@@ -287,12 +287,24 @@ test('manual release preserves source, acceptance and signing gates', async () =
   const publishStep = unsigned.jobs.publish.steps.find(step => step.name === 'Collect hash-bound acceptance evidence and publish the draft')
   assert.equal(publishStep.env.RELEASE_MODE, 'unsigned-acceptance')
   assert.equal(publishStep.env.RELEASE_OPERATION, 'publish')
+  // A separate job lets a failed download refresh be re-run without re-running the one-time publish step.
+  const download = unsigned.jobs.download
+  assert.deepEqual(download.needs, ['source', 'publish'])
+  assert.equal(download.permissions.contents, 'write')
+  assert.equal(download.uses, './.github/workflows/release-download.yml')
+  assert.deepEqual(download.with, { source_commit: '${{ needs.source.outputs.commit }}', version: '${{ needs.source.outputs.version }}' })
+  const refreshWorkflow = load(await readFile(new URL('../../../.github/workflows/release-download.yml', import.meta.url), 'utf8'))
+  assert.deepEqual(Object.keys(refreshWorkflow.on).sort(), ['workflow_call', 'workflow_dispatch'])
+  assert.equal(refreshWorkflow.permissions.contents, 'read')
+  assert.equal(refreshWorkflow.jobs.refresh.permissions.contents, 'write')
+  const refreshStep = refreshWorkflow.jobs.refresh.steps.find(step => step.run === 'node scripts/github-desktop-download.mjs')
+  assert.equal(refreshStep.env.RELEASE_COMMIT, '${{ inputs.source_commit }}')
+  assert.equal(refreshStep['continue-on-error'], undefined)
   assert.deepEqual(Object.keys(workflow.on), ['workflow_dispatch'])
   assert.deepEqual(Object.keys(ci.on).sort(), ['workflow_call', 'workflow_dispatch'])
   assert.equal(workflow.permissions.contents, 'read')
   assert.equal(workflow.jobs.checks.with.revision, '${{ needs.source.outputs.commit }}')
   assert.deepEqual(workflow.jobs.windows.needs, ['source', 'checks'])
-  assert.equal(workflow.jobs.windows.environment, 'desktop-release-signing')
   const windowsSteps = workflow.jobs.windows.steps
   const updateChecks = windowsSteps.findIndex(step => step.run === 'corepack yarn check:updates')
   assert(updateChecks >= 0, 'Windows release must run the Windows-specific updater regressions')
@@ -300,7 +312,9 @@ test('manual release preserves source, acceptance and signing gates', async () =
   assert.equal(checkStep.if, undefined, 'Updater regressions must not be conditional')
   assert.equal(checkStep['continue-on-error'], undefined, 'Updater failures must stop the release')
   assert(workflow.jobs.windows.steps.some(step => step.run === 'node apps/desktop/tests/acceptance/accept-windows-package.mjs'))
-  assert.equal(workflow.jobs.publish.environment, 'desktop-release-publish')
+  for (const [name, job] of [...Object.entries(workflow.jobs), ...Object.entries(unsigned.jobs), ...Object.entries(refreshWorkflow.jobs)]) {
+    assert.equal(job.environment, undefined, `${name} must not create GitHub deployments`)
+  }
   assert(workflow.jobs.publish.steps.some(step => step.with?.['run-id'] === '${{ inputs.candidate_run }}'))
   assert(ci.jobs['desktop-check']); assert(ci.jobs['web-check'])
   assert.deepEqual(Object.entries(workflow.jobs).filter(([, job]) => job.permissions?.contents === 'write').map(([name]) => name), ['draft', 'publish'])
