@@ -63,7 +63,7 @@ jobs:
           RELEASE_COMMIT: ${{ inputs.source_commit }}
           RELEASE_VERSION: ${{ inputs.version }}
           RELEASE_CHANNEL: ${{ inputs.channel }}
-        run: node scripts/desktop-release-gate.mjs
+        run: node scripts/desktop-release-policy.mjs
       - name: Verify candidate provenance
         if: inputs.operation == 'publish'
         uses: actions/github-script@v8

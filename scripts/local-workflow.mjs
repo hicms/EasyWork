@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /** Local build/debug entry points. Keep the Desktop and Web dependency graphs separate. */
 import { spawn } from 'node:child_process'
-import { dirname, join, resolve } from 'node:path'
+import { lstatSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs'
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { createLocalProfileStage } from './local-profile-stage.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const webRoot = join(root, 'apps/web')
@@ -18,6 +18,22 @@ build-win: Default: build an unpacked Windows x64 application in apps/desktop/di
 web:       Install, build and prepare the independent Web preview, then serve on
            http://127.0.0.1:18989. Stop with Ctrl+C. --skip-setup reuses a prepared preview.
 Requires Node ^22.19.0 or >=24.0.0, Git and Corepack.`
+
+export function createLocalProfileStage(buildRoot) {
+  const root = resolve(buildRoot)
+  mkdirSync(root, { recursive: true })
+  const directory = mkdtempSync(join(root, 'easywork-profile-local-'))
+  return {
+    releaseDirectory: join(directory, 'archives'),
+    cleanup() {
+      const withinRoot = relative(root, resolve(directory))
+      if (!withinRoot || isAbsolute(withinRoot) || withinRoot.startsWith('..') || lstatSync(directory).isSymbolicLink()) {
+        throw new Error('Refusing to clean a Profile stage outside its build directory')
+      }
+      rmSync(directory, { recursive: true, force: true })
+    },
+  }
+}
 
 /** Parse only supported options, so a typo cannot silently change a build. */
 export function parseOptions(args) {

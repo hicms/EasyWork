@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, lstatSync, readFileSync, readlinkSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { RELEASE_PACKAGES, PACKAGE_DIRECTORIES } from '../apps/desktop/scripts/easywork-package-boundary.mjs'
 
 const root = resolve(import.meta.dirname, '..')
 const readJson = path => JSON.parse(readFileSync(resolve(root, path), 'utf8'))
@@ -68,3 +69,29 @@ if (Object.keys(stablePlugin.dependencies ?? {}).some(name => name === '@deepsee
 }
 
 process.stdout.write(`verify-layout: one Electron carrier and official release ${upstream.version} are consistent\n`)
+
+for (const name of RELEASE_PACKAGES) {
+  const directory = resolve(root, 'apps/web', PACKAGE_DIRECTORIES[name])
+  if (!existsSync(resolve(directory, 'package.json'))) fail('missing package directory ' + name)
+  const manifest = readJson(resolve(directory, 'package.json'))
+  for (const peer of Object.keys(manifest.peerDependencies ?? {})) {
+    if (peer.startsWith('easywork-') && !manifest.peerDependenciesMeta?.[peer]?.optional && !RELEASE_PACKAGES.includes(peer)) {
+      fail(name + ' requires unshipped ' + peer)
+    }
+  }
+}
+for (const file of run('git', ['ls-files', '--', 'apps', 'scripts', '.github']).split(/\r?\n/u)) {
+  if (!/\.(?:mjs|ts|json|ya?ml)$/u.test(file) || !existsSync(resolve(root, file))) continue
+  const text = readFileSync(resolve(root, file), 'utf8')
+  if (/(?:\.\.?\/|\b)dsh-plugin-desktop\/(?:scripts|src|tests|build)/u.test(text)) fail(file + ' uses retired Desktop directory')
+}
+const ci = readFileSync(resolve(root, '.github/workflows/ci.yml'), 'utf8')
+if (!ci.includes('  desktop-check:') || !ci.includes('  web-check:') || /^\s+(?:-\s+)?if:/m.test(ci)) {
+  fail('manual CI must always verify Desktop and Web including shared packages')
+}
+for (const name of ['easywork-provider-identity-enterprise', 'easywork-plugin-enterprise-collaboration']) {
+  if (!ci.includes(`pnpm --filter ${name} build`) || !ci.includes(`pnpm --filter ${name} typecheck`)) {
+    fail('Web CI must build and typecheck ' + name)
+  }
+}
+console.log('Verified delivery directories, owned dependency closure and shared CI coverage')

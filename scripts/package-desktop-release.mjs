@@ -42,7 +42,7 @@ const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding:
 const releaseDirectory = join(root, 'apps/desktop', 'build', `easywork-profile-release-${source}-${commit.slice(0, 12)}-${Date.now()}`)
 if (source === 'local') {
   run('Install Web dependencies', corepack, ['pnpm', 'install', '--frozen-lockfile'], { cwd: webRoot })
-  run('Check Web and Desktop DSH alignment', process.execPath, [join(root, 'scripts/verify-web-desktop-dsh-alignment.mjs')])
+  run('Check Web and Desktop DSH alignment', process.execPath, [join(root, 'scripts/verify-dsh-alignment.mjs'), 'web'])
   run('Build EasyWork Web and plugins', corepack, ['pnpm', 'build'], { cwd: webRoot })
   run('Pack this commit\'s EasyWork Profile', corepack, ['pnpm', 'release:project:pack'], { cwd: webRoot })
   const webReleaseDirectory = join(webRoot, '.artifacts', `project-v${version}`)

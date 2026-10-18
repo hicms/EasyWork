@@ -48,14 +48,14 @@ jobs:
           RELEASE_COMMIT: ${{ inputs.source_commit }}
           RELEASE_VERSION: ${{ inputs.version }}
           RELEASE_CHANNEL: alpha
-        run: node scripts/desktop-release-gate.mjs
+        run: node scripts/desktop-release-policy.mjs
       - name: Resolve the newest published unsigned baseline
         id: baseline
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_VERSION: ${{ inputs.version }}
         run: |
-          baseline=$(node scripts/resolve-unsigned-baseline.mjs)
+          baseline=$(node scripts/release-acceptance.mjs baseline)
           echo "baseline=$baseline" >> "$GITHUB_OUTPUT"
 
   checks:
@@ -237,6 +237,6 @@ jobs:
           RELEASE_EVIDENCE_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           export RELEASE_INSTALLER_SHA512="$(node -e "console.log(JSON.parse(require('fs').readFileSync('release/release.json','utf8')).installerSha512)")"
-          node scripts/collect-unsigned-acceptance.mjs
+          node scripts/release-acceptance.mjs collect
           export RELEASE_ACCEPTANCE="$(cat acceptance.json)"
           node scripts/github-desktop-release.mjs

@@ -100,3 +100,11 @@ export function verifyTrackedBilingualRecords(root) {
     ]).trim(),
   })
 }
+
+if (import.meta.main) {
+  const root = resolve(import.meta.dirname, '..')
+  const result = verifyTrackedBilingualRecords(root)
+  process.stdout.write(
+    `verify-bilingual-docs: ${String(result.recordCount)} records and ${String(result.documentCount)} documents are consistent\n`,
+  )
+}

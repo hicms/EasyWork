@@ -1,5 +1,5 @@
 import childProcess from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { appendFileSync, readFileSync } from 'node:fs'
 import { updateChannel } from '../apps/desktop/src/update-policy.ts'
 
 export function verifyReleaseSource({ commit, version, channel, defaultBranch, root }) {
@@ -114,4 +114,11 @@ export function readReleaseManifest(path, mode = 'signed') {
     if (!expected.includes(asset.name) || !Number.isSafeInteger(asset.size) || asset.size <= 0 || !/^[a-f0-9]{64}$/u.test(asset.sha256)) throw new Error('Invalid release asset')
   }
   return release
+}
+
+if (import.meta.main) {
+  const env = process.env
+  if (env.GITHUB_REF !== `refs/heads/${env.DEFAULT_BRANCH}`) throw new Error('Dispatch releases from the GitHub default branch')
+  const release = verifyReleaseSource({ commit: env.RELEASE_COMMIT, version: env.RELEASE_VERSION, channel: env.RELEASE_CHANNEL, defaultBranch: env.DEFAULT_BRANCH, root: process.cwd() })
+  for (const [name, value] of Object.entries(release)) appendFileSync(env.GITHUB_OUTPUT, `${name}=${value}\n`)
 }
