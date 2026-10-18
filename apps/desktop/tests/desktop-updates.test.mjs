@@ -19,6 +19,7 @@ function fixture(prepareInstall = async () => {}, mode = 'signed') {
   const controller = new DesktopUpdateController(updater, {
     currentVersion: '2.1.0-alpha.1', mode, discover: async () => '2.1.0-alpha.2', changed: () => {},
     error: error => errors.push(error), prepareInstall, installFailed: () => calls.push('install-failed'),
+    installStarting: () => calls.push('install-starting'), installAborted: () => calls.push('install-aborted'),
   })
   return { updater, controller, errors, calls }
 }
@@ -68,6 +69,20 @@ test('unsafe shutdown blocks installation and preserves an explicit failure', as
   assert.equal(f.controller.state, 'error')
   assert.equal(f.calls.some(call => Array.isArray(call) && call[0] === 'install'), false)
   assert.match(f.errors[0].message, /unacknowledged/u)
+})
+
+test('restart hides the window at once and restores it only when verification fails before shutdown', async () => {
+  const f = fixture()
+  await f.controller.check()
+  const verify = deferred(); f.updater.validateCandidate = () => verify.promise
+  const pending = f.controller.install('zh-CN')
+  assert.deepEqual(f.calls.slice(-1), ['install-starting'])
+  verify.reject(new Error('changed')); await pending
+  assert.deepEqual(f.calls.slice(-2), ['install-starting', 'install-aborted'])
+  const stopped = fixture(async () => { throw new Error('unacknowledged') })
+  await stopped.controller.check(); await stopped.controller.install('zh-CN')
+  assert.equal(stopped.calls.includes('install-aborted'), false)
+  assert.deepEqual(stopped.calls.slice(-1), ['install-failed'])
 })
 
 test('ordinary quit during verification never starts update shutdown', async () => {

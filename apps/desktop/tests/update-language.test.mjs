@@ -58,10 +58,10 @@ test('acceptance startup downloads without a modal; trusted UI reads state and n
   const { installDesktopUpdates } = await import('../src/desktop-updates.ts')
   const { installWindowMenu } = await import('../src/window-menu.ts')
   const window = { setProgressBar() {}, setTitleBarOverlay() {}, isDestroyed: () => false, webContents: { send: (_name, value) => states.push(value) } }
-  const updates = installDesktopUpdates({ currentWindow: () => window, assertSender: event => assert.equal(event, trusted), prepareInstall: async () => {}, installerStarted() {}, installFailed() {}, log: (event, error) => logs.push({ event, error }) })
+  const updates = installDesktopUpdates({ currentWindow: () => window, assertSender: event => assert.equal(event, trusted), installStarting() {}, installAborted() {}, prepareInstall: async () => {}, installerStarted() {}, installFailed() {}, log: (event, error) => logs.push({ event, error }) })
   assert(updates)
   let menuOpened = 0
-  installWindowMenu({ currentWindow: () => window, restore() {}, command() {}, edit() {}, assertSender() {},
+  installWindowMenu({ currentWindow: () => window, restore() {}, command() {}, about() {}, edit() {}, assertSender() {},
     updates: lang => { menuOpened++; return updates.menu(lang) }, languageChanged: lang => updates.setLanguage(lang) })
   // The renderer's ready notification supplies its selected language, even on a Chinese OS.
   updates.startup('en-US')

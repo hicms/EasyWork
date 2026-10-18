@@ -12,6 +12,8 @@ import type { DesktopUpdateSnapshot } from '../../../packages/bundle/src/desktop
 export function installDesktopUpdates(operations: {
   currentWindow(): BrowserWindow | undefined
   assertSender(event: IpcMainInvokeEvent): void
+  installStarting(): void
+  installAborted(): void
   prepareInstall(): Promise<void>
   installerStarted(): void
   installFailed(): void
@@ -74,6 +76,8 @@ export function installDesktopUpdates(operations: {
         buttons: zh() ? ['关闭', '打开发行页面'] : ['Close', 'Open releases'], defaultId: 0, cancelId: 0,
       }).then(result => { if (!suspended && result.response === 1) void shell.openExternal(UPDATE_RELEASES_URL) })
     },
+    installStarting: operations.installStarting,
+    installAborted: operations.installAborted,
     prepareInstall: operations.prepareInstall,
     installFailed: operations.installFailed,
   })

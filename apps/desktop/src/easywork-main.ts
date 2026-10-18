@@ -1,9 +1,9 @@
 /** Minimal personal Electron carrier for the bundled EasyWork release Profile. */
-import { app, BrowserWindow, dialog, ipcMain, Menu, protocol, session, shell, Tray, type IpcMainInvokeEvent } from 'electron'
+import { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, protocol, session, shell, Tray, type IpcMainInvokeEvent, type MessageBoxOptions } from 'electron'
 import { spawn, type ChildProcess } from 'node:child_process'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join } from 'node:path'
-import { uptime } from 'node:os'
+import { release as osRelease, uptime } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { startupErrorHtml } from './startup-surface.ts'
 import { CarrierWeb, officialFrontendDirectory } from './carrier-web.ts'
@@ -21,6 +21,7 @@ import { isWindowLanguage } from './window-chrome-contract.ts'
 import { installKeyboard } from './keyboard.ts'
 import { installDesktopUpdates } from './desktop-updates.ts'
 import { ShutdownCoordinator } from './shutdown-coordinator.ts'
+import { aboutContent, bundledRuntimeVersion } from './about-dialog.ts'
 
 const PROFILE_NAME = 'easywork'
 
@@ -422,11 +423,26 @@ async function startPersonalWorkspace(): Promise<void> {
   }
 }
 
+async function showAbout(language: string): Promise<void> {
+  const system = process.platform === 'win32' ? 'Windows' : process.platform === 'darwin' ? 'macOS' : process.platform
+  const content = aboutContent(language, {
+    version: app.getVersion(), runtime: bundledRuntimeVersion(bundledProfileDirectory()),
+    electron: process.versions.electron, chromium: process.versions.chrome, node: process.versions.node,
+    system: `${system} ${osRelease()} ${process.arch}`,
+  })
+  const options: MessageBoxOptions = { type: 'info', icon: fileURLToPath(new URL('../build/app-icon.png', import.meta.url)),
+    title: content.title, message: content.message, detail: content.detail, buttons: content.buttons, defaultId: 0, cancelId: 0, noLink: true }
+  const page = window && !window.isDestroyed() ? window : undefined
+  const { response } = page ? await dialog.showMessageBox(page, options) : await dialog.showMessageBox(options)
+  if (response === 1) clipboard.writeText(`${content.message}\n${content.detail}`)
+}
+
 function installMenu(): void {
   getWindowLanguage = installWindowMenu({ currentWindow: () => window, restore: restoreWindow, assertSender: assertStartupSender,
     updates: language => updates?.menu(language) ?? [],
     languageChanged: language => { updates?.setLanguage(language) },
     edit: (keyCode, modifiers) => { keyboard!.sendEditingKey(keyCode, modifiers) },
+    about: language => { void showAbout(language).catch(error => { log!.write('about.failed', startupErrorFields(error)) }) },
     command: () => { void manageCommand(join(process.resourcesPath, 'easywork-runtime'), '个人工作区') } })
   installTray()
 }
@@ -543,11 +559,21 @@ if (worker !== undefined) {
       keyboard = await installKeyboard(bundledProfileDirectory(), app.getPath('userData'), () => window, assertStartupSender)
       if (quitRequested || quitting) return
       updates = installDesktopUpdates({ currentWindow: () => window, assertSender: assertStartupSender,
+        installStarting: () => {
+          if (!window || window.isDestroyed()) return
+          windowHidden = true
+          window.hide()
+        },
+        installAborted: restoreWindow,
         prepareInstall: async () => {
           if (shutdownReason === 'quit') throw new Error('应用正在退出，请重新启动后更新')
           await shutdown.request('update')
         },
-        installerStarted: () => { quitting = true; tray?.destroy(); tray = undefined },
+        installerStarted: () => {
+          quitting = true; tray?.destroy(); tray = undefined
+          // The installer only waits a few seconds for this process; a page can veto close(), not destroy().
+          if (window && !window.isDestroyed()) window.destroy()
+        },
         installFailed: () => { cancelQuit(new Error('更新已暂缓，请重新启动 EasyWork 后重试。')) },
         log: (event, error) => { log!.write(event, error === undefined ? {} : startupErrorFields(error)) },
       })

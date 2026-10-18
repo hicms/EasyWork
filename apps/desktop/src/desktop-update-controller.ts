@@ -11,6 +11,8 @@ interface Operations {
   discover(): Promise<string | undefined>
   changed(): void
   error(error: unknown, phase: UpdateState): void
+  installStarting(): void
+  installAborted(): void
   prepareInstall(): Promise<void>
   installFailed(): void
 }
@@ -76,6 +78,7 @@ export class DesktopUpdateController {
     if (this.installPending) return this.installPending
     if (this.suspended || this.state !== 'downloaded') return Promise.resolve()
     this.setState('verifying')
+    this.operations.installStarting()
     let stopping = false
     this.installPending = this.updater.validateCandidate(this.version!).then(async () => {
       if (this.suspended) return
@@ -86,6 +89,7 @@ export class DesktopUpdateController {
       await this.updater.launchAndQuit(language)
     }).catch(error => {
       if (stopping) this.operations.installFailed()
+      else this.operations.installAborted()
       this.fail(error)
     }).finally(() => { this.installPending = undefined })
     return this.installPending

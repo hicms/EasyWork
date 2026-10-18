@@ -6,6 +6,7 @@ export function installWindowMenu(operations: {
   currentWindow(): BrowserWindow | undefined,
   restore(): void,
   command(): void,
+  about(language: string): void,
   updates(language: string): MenuItemConstructorOptions[],
   languageChanged(language: string): void,
   edit(keyCode: string, modifiers: Array<'control'>): void,
@@ -19,6 +20,8 @@ export function installWindowMenu(operations: {
       { label: labels.open, click: operations.restore },
       { label: labels.command, click: operations.command },
       ...operations.updates(language),
+      // macOS already provides About in its application menu.
+      ...(process.platform === 'darwin' ? [] : [{ label: labels.about, click: () => { operations.about(language) } }]),
       { type: 'separator' },
       { label: labels.quit, accelerator: 'CmdOrCtrl+Q', click: () => { app.quit() } },
     ]
