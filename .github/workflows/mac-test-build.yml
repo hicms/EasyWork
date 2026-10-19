@@ -1,0 +1,43 @@
+name: macOS test build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DSH_TELEMETRY_DISABLED: '1'
+  EASYWORK_MAC_ARCH: arm64
+  EASYWORK_RELEASE_DIRECTORY: ${{ github.workspace }}/apps/desktop/build/easywork-profile-release
+
+jobs:
+  mac:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - run: corepack enable
+      - run: corepack yarn install --immutable
+      - working-directory: apps/web
+        run: corepack pnpm install --frozen-lockfile
+      - name: Build Desktop carrier, Web, and stage the shared Profile
+        run: |
+          corepack yarn workspace dsh-plugin-desktop build
+          (cd apps/web && corepack pnpm build)
+          node apps/desktop/scripts/pack-easywork-profile.mjs apps/web "$EASYWORK_RELEASE_DIRECTORY"
+      - name: Package an unsigned arm64 DMG
+        env:
+          DSH_PACKAGE_CHECK_ALREADY_RAN: '1'
+        run: corepack yarn dist:mac-smoke
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EasyWork-mac-arm64-unsigned
+          path: apps/desktop/dist/mac-smoke/arm64/*.dmg
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
