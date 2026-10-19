@@ -34,7 +34,14 @@ jobs:
         env:
           DSH_PACKAGE_CHECK_ALREADY_RAN: '1'
         run: corepack yarn dist:mac-smoke
+      - name: Diagnose bundled Python
+        if: always()
+        run: |
+          ls -la apps/desktop/build/official-release-cache/mac-arm64-*/runtime/primary-runtime/dependencies/python/bin || true
+          ls -la apps/desktop/build/easywork-runtime/primary-runtime/dependencies/python/bin || true
+          ls apps/desktop/dist/mac-smoke/arm64 || true
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: EasyWork-mac-arm64-unsigned
           path: apps/desktop/dist/mac-smoke/arm64/*.dmg
