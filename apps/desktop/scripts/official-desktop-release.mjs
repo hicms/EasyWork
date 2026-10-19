@@ -61,7 +61,7 @@ export async function prepareOfficialRelease(desktopRoot, target) {
     if (metadata.desktopVersion !== lock.version || metadata.platform !== (platform === 'mac' ? 'darwin' : 'win32') || metadata.arch !== arch || metadata.pnpm !== '11.28.5') throw new Error('Official release runtime version/platform mismatch')
     if (!existsSync(join(resources, 'runtime/cli/command-manager.js')) || !existsSync(join(resources, 'runtime/office-skills'))) throw new Error('Official release is missing command/Office resources')
     rmSync(destination, { recursive: true, force: true }); mkdirSync(destination)
-    for (const name of ['primary-runtime', 'office-skills', 'cli']) cpSync(join(resources, 'runtime', name), join(destination, 'runtime', name), { recursive: true, dereference: false })
+    for (const name of ['primary-runtime', 'office-skills', 'cli']) cpSync(join(resources, 'runtime', name), join(destination, 'runtime', name), { recursive: true, dereference: false, verbatimSymlinks: true })
     writeFileSync(receipt, identity)
     return destination
   } finally { rmSync(temporary, { recursive: true, force: true }) }
