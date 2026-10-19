@@ -1,4 +1,4 @@
-import { chmodSync, closeSync, copyFileSync, cpSync, lstatSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, readlinkSync, renameSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { chmodSync, closeSync, copyFileSync, cpSync, lstatSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, readlinkSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { randomUUID } from 'node:crypto'
 import { join, relative, resolve } from 'node:path'
 
@@ -52,9 +52,7 @@ export function copyRuntimeAssets(source, destination, receiptPath) {
     if (original.isSymbolicLink()) {
       if (installed?.isSymbolicLink() && readlinkSync(from) === readlinkSync(to)) return
       if (installed) rmSync(to, { recursive: true, force: true })
-      // Node 24's cpSync rejects links whose target is not yet materialized; the link text is all that must be preserved.
-      if (process.platform === 'win32') cpSync(from, to, { dereference: false, verbatimSymlinks: true })
-      else symlinkSync(readlinkSync(from), to)
+      cpSync(from, to, { dereference: false, verbatimSymlinks: true })
       result.copiedLinks++
     } else if (original.isDirectory()) {
       // Never traverse a destination link when repairing a generated build tree.
