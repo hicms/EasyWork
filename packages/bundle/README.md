@@ -21,6 +21,8 @@
 
 新建工作区和新会话会拒绝磁盘、共享盘或文件系统根目录，请选择具体的可写子文件夹。新会话目录不可用时，界面会提示检查磁盘连接、目录权限和可用空间，也可从侧栏添加其他文件夹作为工作区；不会自动迁移已有会话、切换到其他目录或删除文件。该处理由 Desktop/Web 共用的 Profile 提供，已有会话仍可打开。
 
+文件与目录右键菜单：右侧栏“文件”树的行、已发送消息中的 `@` 文件/目录引用，以及助手回复里的文件链接，右键会出现按类型区分的菜单。文件提供预览、打开、打开方式、在文件管理器中显示、复制路径、复制相对路径和添加到对话；目录提供在文件管理器中打开、复制路径、复制相对路径和添加到对话。打开类动作只在 Host 报告可使用桌面时出现，依赖官方 Session Remote 的 `canOpenWorkspacePath`、`openWorkspacePath` 与 `workspacePathApplications`。输入框与其他可编辑区域、选中文字内的右键、助手回复里的目录和行内代码路径保持原生菜单。该能力只读取 DSH 已渲染的 DOM 标记，不修改 DSH；`apps/web/tests/file-context-menu-contract.test.mjs` 在升级 DSH 时核对这些标记，`file-context-menu.browser.mjs` 用无头 Chromium 验证拦截与放行（菜单组件为替身，真实菜单外观需在 Desktop/Web 中验收）。
+
 技能、专家、资料库、连接器和项目由本仓库源码构建，随应用提供本地默认版本。插件安装与管理使用完整官方 DSH 界面，保留社区市场入口。个人 Profile、配置、数据和显式安装的插件由官方加载机制管理；官方 DSH 及依赖继续使用 `upstream.json` 锁定版本。
 
 整体外观通过公开的 `ThemeRuntime.overrideTokens` 应用 `easywork-ui` 共享配色与尺寸。主题层由 Cordis 注入和 effect 管理，停用 bundle 后撤销自身覆盖，恢复此前的主题组合；不写用户的浅色、深色或跟随系统偏好。官方 Sidebar、Conversation、Composer、Settings 和右栏仍由官方包渲染。升级 DSH 时，`apps/web/tests/theme-contract.test.mjs` 核对安装包实际消费的 token 和主题生命周期，并继续执行版本对齐、打包运行与 UI 验收。

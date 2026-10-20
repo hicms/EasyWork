@@ -2,6 +2,7 @@ export { Icon, type IconName, type IconProps } from './components/Icon.js';
 export { LogoMark, type LogoMarkProps } from './components/LogoMark.js';
 export { IconButton, NavGroup, NavItem, type IconButtonProps, type NavGroupProps, type NavItemProps } from './components/Navigation.js';
 export { Modal, type ModalProps } from './components/Modal.js';
+export { PointMenu, type PointMenuProps } from './components/PointMenu.js';
 export { modalCss } from './styles/modal.js';
 export { navigationCss } from './styles/navigation.js';
 export { tokens, themeTokenOverrides, type EasyWorkTokens } from './styles/tokens.js';

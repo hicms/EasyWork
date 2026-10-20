@@ -1,5 +1,6 @@
 import { installAppearance } from './appearance.js';
 import { installBranding } from './branding.js';
+import { installFileContextMenu } from './file-context-menu.js';
 import { installFreshSessionNavigation } from './fresh-session.js';
 import { communityMarketView, type MarketHost } from '../components/CommunityMarket.js';
 import type { Context } from '@deepseek-ai/cordis';
@@ -38,6 +39,7 @@ export function apply(ctx: Context): void {
   installAppearance(ctx);
   installBranding(ctx);
   installFreshSessionNavigation(ctx);
+  installFileContextMenu(ctx);
   ctx.inject(['market'], scope => {
     if (scope.market.version !== 1) return;
     scope.market.setSettingsVisible(false);
