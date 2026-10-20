@@ -19,6 +19,8 @@
 
 ### 本地默认插件
 
+新建工作区和新会话会拒绝磁盘、共享盘或文件系统根目录，请选择具体的可写子文件夹。新会话目录不可用时，界面会提示检查磁盘连接、目录权限和可用空间，也可从侧栏添加其他文件夹作为工作区；不会自动迁移已有会话、切换到其他目录或删除文件。该处理由 Desktop/Web 共用的 Profile 提供，已有会话仍可打开。
+
 技能、专家、资料库、连接器和项目由本仓库源码构建，随应用提供本地默认版本。插件安装与管理使用完整官方 DSH 界面，保留社区市场入口。个人 Profile、配置、数据和显式安装的插件由官方加载机制管理；官方 DSH 及依赖继续使用 `upstream.json` 锁定版本。
 
 整体外观通过公开的 `ThemeRuntime.overrideTokens` 应用 `easywork-ui` 共享配色与尺寸。主题层由 Cordis 注入和 effect 管理，停用 bundle 后撤销自身覆盖，恢复此前的主题组合；不写用户的浅色、深色或跟随系统偏好。官方 Sidebar、Conversation、Composer、Settings 和右栏仍由官方包渲染。升级 DSH 时，`apps/web/tests/theme-contract.test.mjs` 核对安装包实际消费的 token 和主题生命周期，并继续执行版本对齐、打包运行与 UI 验收。
