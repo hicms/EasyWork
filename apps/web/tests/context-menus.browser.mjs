@@ -6,15 +6,17 @@ import { build } from 'esbuild';
 import { chromium, expect } from '@playwright/test';
 
 const requireReact = createRequire(new URL('../../../packages/plugins/models/package.json', import.meta.url));
-const installer = fileURLToPath(new URL('../../../packages/bundle/src/client/harness/file-context-menu.ts', import.meta.url));
+const installer = fileURLToPath(new URL('../../../packages/bundle/src/client/harness/context-menus.ts', import.meta.url));
 const bundle = await build({
   stdin: { contents: `
     import React from 'react';
     import {createRoot} from 'react-dom/client';
-    import {installFileContextMenu} from ${JSON.stringify(installer)};
-    const calls = { opened: [], open: [], bail: [], disposed: 0, listeners: 0 };
+    import {installContextMenus} from ${JSON.stringify(installer)};
+    const calls = { opened: [], open: [], bail: [], sidebar: [], browser: [], disposed: 0, listeners: 0 };
+    window.open = (...args) => { calls.browser.push(args); return null; };
     let overlay;
     let desktop = window.initialDesktop ?? true;
+    const browserTab = window.initialBrowserTab ?? true;
     const ctx = {
       inject: (_names, apply) => apply(ctx),
       effect: factory => { const dispose = factory(); calls.dispose = () => { dispose(); calls.disposed += 1; }; return dispose; },
@@ -27,7 +29,8 @@ const bundle = await build({
         openWorkspacePath: async request => { calls.open.push(request); return request.path.endsWith('fail.ts') ? { ok: false, error: { code: 'gateway/bad-request' } } : { ok: true, value: { opened: true } }; },
         workspacePathApplications: async () => ({ ok: true, value: [{ id: 'code', name: 'Code', default: true, icon: null }] }),
       } },
-      sidebarRight: { openResource: address => calls.opened.push(address) },
+      sidebarRight: { openResource: address => calls.opened.push(address), openTab: (kind, options) => calls.sidebar.push([kind, options]) },
+      sidebarRightTabs: { get: kind => kind === 'browser' && browserTab ? {} : undefined },
       conversation: { input: { for: () => ({ state: { getSnapshot: () => ({ draft: 'hi', draftRev: 3 }) } }) } },
       slots: {
         inject: (_name, apply) => apply(),
@@ -35,7 +38,7 @@ const bundle = await build({
       },
     };
     window.calls = calls;
-    installFileContextMenu(ctx);
+    installContextMenus(ctx);
     const props = overlay.options.inject();
     const subscribe = props.source.subscribe;
     props.source.subscribe = listener => { calls.listeners += 1; const off = subscribe(listener); return () => { calls.listeners -= 1; off(); }; };
@@ -98,7 +101,13 @@ const fixture = `<!doctype html><html lang="zh-CN"><body>
   <button id="inline" type="button" class="h4sh_fileMention" title="src/c.ts">c.ts</button>
   <button id="plain-button" type="button" class="h4sh_other" title="src/d.ts">d</button>
   <p id="paragraph">普通文字 selectable text</p><textarea id="editor"></textarea>
+  <a id="web" href="https://example.com/a?b=1" target="_blank"><span id="web-label">example</span></a>
+  <a id="plain-http" href="http://example.com/x">http</a>
+  <a id="mail" href="mailto:x@y.z">mail</a>
+  <a id="anchor-only" href="#top">top</a>
+  <div contenteditable="true"><a id="editable-link" href="https://example.com/e">edit</a></div>
 </main>
+<a id="outside" href="https://example.com/out">outside</a>
 <main data-conversation-session="no-root"><span id="rootless" data-ref-chip="file" title="@a.ts">a.ts</span><span id="absolute" data-ref-chip="file" title="@C:/x/y.ts">y.ts</span></main>
 </body></html>`;
 
@@ -154,7 +163,7 @@ try {
   await rightClick('#level', { x: 2, y: 2 });
   assert.equal(await wasPrevented(), false, 'directory padding outside the row keeps the native menu');
   await expect(items).toHaveCount(0);
-  for (const selector of ['#header', '#loading', '#skill', '#inline', '#plain-button', '#paragraph', '#editor', '#rootless']) {
+  for (const selector of ['#header', '#loading', '#skill', '#inline', '#plain-button', '#paragraph', '#editor', '#rootless', '#mail', '#anchor-only', '#editable-link', '#outside']) {
     await rightClick(selector);
     assert.equal(await wasPrevented(), false, `${selector} keeps the native menu`);
     await expect(items).toHaveCount(0);
@@ -200,6 +209,21 @@ try {
     ['slash/input-insert-reference', '@src/', 'src/', 'folder', { start: 2, end: 2, draftRev: 3 }],
   ]);
 
+  await rightClick('#web-label');
+  assert.equal(await wasPrevented(), true, 'a web link in a conversation gets the link menu');
+  await expect(page.getByRole('menuitem', { name: '复制链接地址' })).toBeVisible();
+  assert.deepEqual(await menuTexts(), ['在侧栏浏览器中打开', '在浏览器中打开', '复制链接地址']);
+  await closeMenu();
+  await rightClick('#plain-http');
+  await page.getByRole('menuitem', { name: '在浏览器中打开' }).click();
+  await rightClick('#web');
+  await page.getByRole('menuitem', { name: '在侧栏浏览器中打开' }).click();
+  await rightClick('#web');
+  await page.getByRole('menuitem', { name: '复制链接地址' }).click();
+  await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe('https://example.com/a?b=1');
+  const linkCalls = await page.evaluate(() => ({ browser: window.calls.browser, sidebar: window.calls.sidebar }));
+  assert.deepEqual(linkCalls.browser, [['http://example.com/x', '_blank', 'noopener,noreferrer']]);
+  assert.deepEqual(linkCalls.sidebar, [['browser', { params: { url: 'https://example.com/a?b=1' } }]]);
   await rightClick('#fail');
   await page.getByRole('menuitem', { name: '打开', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('无法在本机打开该路径');
@@ -217,12 +241,21 @@ try {
   await expect(headless.getByRole('menuitem', { name: 'Copy path' })).toBeVisible();
   assert.deepEqual((await headless.getByRole('menuitem').allTextContents()).map(text => text.trim()), ['Preview in side panel', 'Copy path', 'Copy relative path', 'Add to chat']);
 
+  const noBrowser = await context.newPage();
+  await noBrowser.addInitScript(() => { window.initialBrowserTab = false; });
+  await noBrowser.route('http://localhost/', route => route.fulfill({ contentType: 'text/html; charset=utf-8', body: fixture.replace('lang="zh-CN"', 'lang="en-US"') }));
+  await noBrowser.goto('http://localhost/');
+  await noBrowser.addScriptTag({ content: bundle.outputFiles[0].text });
+  await noBrowser.locator('#web-label').click({ button: 'right' });
+  await expect(noBrowser.getByRole('menuitem', { name: 'Copy link address' })).toBeVisible();
+  assert.deepEqual((await noBrowser.getByRole('menuitem').allTextContents()).map(text => text.trim()), ['Open in browser', 'Copy link address']);
+
   await page.evaluate(() => { window.calls.dispose(); window.root.unmount(); });
   await rightClick('#file');
   assert.equal(await wasPrevented(), false, 'listener is removed on disposal');
   assert.equal(await page.evaluate(() => window.calls.listeners), 0);
   assert.deepEqual(errors.filter(message => !message.includes('gateway/bad-request') && !message.includes('文件菜单操作失败')), []);
-  console.log('File context menu: tree, chips, links, fall-through, actions, localization and disposal passed');
+  console.log('Context menus: tree, chips, file links, web links, fall-through, actions, localization and disposal passed');
 } finally {
   await browser.close();
 }

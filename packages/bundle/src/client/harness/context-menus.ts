@@ -1,9 +1,14 @@
 import type { Context } from '@deepseek-ai/cordis';
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client';
 import type { ISessions } from '@deepseek-ai/dsh-api-session-controller/client';
-import { FileContextMenu, type FileContextMenuProps, type FileMenuRequest } from '../components/FileContextMenu.js';
+import { ContextMenus, type ContextMenusProps, type ContextMenuRequest } from '../components/ContextMenus.js';
 import { copyText, createFileMenuHost } from '../file-menu/actions.js';
 import { resolveFileTarget } from '../file-menu/target.js';
+import { createLinkMenuHost } from '../link-menu/actions.js';
+import { resolveLinkTarget } from '../link-menu/target.js';
+
+/** The registered page type of the side panel browser. */
+const sidebarBrowserKind = 'browser';
 
 /** The point a menu opens at: the pointer, or the target itself when the keyboard asked for it. */
 function menuPoint(event: MouseEvent, element: Element): { x: number; y: number } {
@@ -19,13 +24,13 @@ function insideSelection(element: Element): boolean {
 }
 
 /**
- * Right-click menu for files and directories shown in the Files tree, in sent `@` references and in
- * assistant file links. Everything else, including editable text, keeps the native menu.
+ * Right-click menus for files and directories (Files tree, sent `@` references, assistant file links)
+ * and for web links in conversations. Everything else, including editable text, keeps the native menu.
  */
-export function installFileContextMenu(ctx: Context): void {
-  ctx.inject(['remote.session', 'sessions', 'sidebarRight', 'conversation', 'slots'], scope => scope.effect(() => {
+export function installContextMenus(ctx: Context): void {
+  ctx.inject(['remote.session', 'sessions', 'sidebarRight', 'sidebarRightTabs', 'conversation', 'slots'], scope => scope.effect(() => {
     const sessions = scope.sessions as unknown as ISessions;
-    const host = createFileMenuHost({
+    const files = createFileMenuHost({
       session: scope.remote.session,
       openResource: address => { scope.sidebarRight.openResource(address); },
       insertReference: (sessionId, { mention, label, kind }) => {
@@ -40,36 +45,46 @@ export function installFileContextMenu(ctx: Context): void {
       },
       writeClipboard: copyText,
     });
-    let request: FileMenuRequest | null = null;
+    const links = createLinkMenuHost({
+      sidebarBrowserAvailable: () => scope.sidebarRightTabs.get(sidebarBrowserKind) !== undefined,
+      // The official link click opens the browser page type the same way.
+      openInSidebarBrowser: url => { scope.sidebarRight.openTab(sidebarBrowserKind, { params: { url } } as never); },
+      openInBrowser: url => { window.open(url, '_blank', 'noopener,noreferrer'); },
+      writeClipboard: copyText,
+    });
+    let request: ContextMenuRequest | null = null;
     const listeners = new Set<() => void>();
-    const show = (next: FileMenuRequest | null) => {
+    const show = (next: ContextMenuRequest | null) => {
       request = next;
       for (const listener of listeners) listener();
     };
-    const props: FileContextMenuProps = {
+    const props: ContextMenusProps = {
       source: {
         getSnapshot: () => request,
         subscribe: listener => { listeners.add(listener); return () => { listeners.delete(listener); }; },
       },
-      host,
+      files,
+      links,
       close: () => { show(null); },
     };
     const onContextMenu = (event: MouseEvent) => {
       if (event.defaultPrevented || !(event.target instanceof Element) || insideSelection(event.target)) return;
-      const target = resolveFileTarget(event.target, id => sessions.list.getSnapshot().byId[id as never]?.cwd);
-      if (target === null) return;
+      const file = resolveFileTarget(event.target, id => sessions.list.getSnapshot().byId[id as never]?.cwd);
+      const link = file === null ? resolveLinkTarget(event.target) : null;
+      const subject: ContextMenuRequest['subject'] | null = file !== null ? { type: 'file', target: file } : link !== null ? { type: 'link', target: link } : null;
+      if (subject === null) return;
       event.preventDefault();
-      show({ target, point: menuPoint(event, event.target) });
+      show({ subject, point: menuPoint(event, event.target) });
     };
     // Capture phase: the official surfaces never see a right-click this menu owns.
     document.addEventListener('contextmenu', onContextMenu, true);
     const unregister = scope.slots.inject('shell.overlay', () => scope.slots.register({
-      name: 'shell.overlay', id: 'easywork-file-context-menu', inject: () => props,
-    }, FileContextMenu));
+      name: 'shell.overlay', id: 'easywork-context-menus', inject: () => props,
+    }, ContextMenus));
     return () => {
       document.removeEventListener('contextmenu', onContextMenu, true);
       unregister();
       listeners.clear();
     };
-  }, 'easywork.file-context-menu'));
+  }, 'easywork.context-menus'));
 }

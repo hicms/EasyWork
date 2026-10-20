@@ -17,6 +17,10 @@ export type WorkspaceRootOf = (sessionId: string) => string | undefined;
 
 const editable = 'input, textarea, select, [contenteditable=""], [contenteditable="true"], [contenteditable="plaintext-only"]';
 
+export function isEditable(element: Element): boolean {
+  return element.closest(editable) !== null;
+}
+
 /** CSS-module class tokens are `hash_name` in DSH client modules and `_name_hash_line` in the Web frontend. */
 function hasModuleClass(element: Element, name: string): boolean {
   const local = new RegExp(`(?:^|_)${name}(?:_|$)`, 'u');
@@ -58,7 +62,7 @@ function referenceTarget(element: Element, rootOf: WorkspaceRootOf): FileTarget 
  * Reads only DSH markers that the contract test pins.
  */
 export function resolveFileTarget(element: Element, rootOf: WorkspaceRootOf): FileTarget | null {
-  if (element.closest(editable) !== null) return null;
+  if (isEditable(element)) return null;
   // `null` from a resolver means "recognized, but not actionable"; only `undefined` falls through.
   const tree = treeTarget(element, rootOf);
   if (tree !== undefined) return tree;

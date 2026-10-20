@@ -3,25 +3,38 @@ import { PointMenu } from 'easywork-ui';
 import type { FileMenuHost } from '../file-menu/actions.js';
 import { buildFileMenu, failureMessage, parseCommand, type FileApplication } from '../file-menu/menu-model.js';
 import type { FileTarget } from '../file-menu/target.js';
+import type { LinkMenuHost } from '../link-menu/actions.js';
+import { buildLinkMenu, linkFailureMessage, parseLinkCommand } from '../link-menu/menu-model.js';
+import type { LinkTarget } from '../link-menu/target.js';
 
-export interface FileMenuRequest {
-  readonly target: FileTarget;
+export interface ContextMenuRequest {
+  readonly subject: { readonly type: 'file'; readonly target: FileTarget } | { readonly type: 'link'; readonly target: LinkTarget };
   readonly point: { readonly x: number; readonly y: number };
 }
 
-export interface FileContextMenuProps {
+export interface ContextMenusProps {
   source: {
-    getSnapshot(): FileMenuRequest | null;
+    getSnapshot(): ContextMenuRequest | null;
     subscribe(listener: () => void): () => void;
   };
-  host: FileMenuHost;
+  files: FileMenuHost;
+  links: LinkMenuHost;
   close(): void;
+}
+
+interface MenuProps<Target, Host> {
+  target: Target;
+  point: ContextMenuRequest['point'];
+  host: Host;
+  close(): void;
+  announce(message: string): void;
 }
 
 const noticeDuration = 4000;
 
-function OpenMenu({ request, host, close, announce }: { request: FileMenuRequest; host: FileMenuHost; close(): void; announce(message: string): void }) {
-  const { target, point } = request;
+const isEnglish = () => document.documentElement.lang.startsWith('en');
+
+function FileMenu({ target, point, host, close, announce }: MenuProps<FileTarget, FileMenuHost>) {
   const [desktop, setDesktop] = React.useState(false);
   const [applications, setApplications] = React.useState<readonly FileApplication[]>([]);
   React.useEffect(() => {
@@ -35,7 +48,7 @@ function OpenMenu({ request, host, close, announce }: { request: FileMenuRequest
     }).catch(error => { if (!lifetime.signal.aborted) console.error('无法读取文件的可用应用', error); });
     return () => lifetime.abort();
   }, [host, target]);
-  const english = document.documentElement.lang.startsWith('en');
+  const english = isEnglish();
   const items = React.useMemo(() => buildFileMenu(target, { desktop, applications }, english), [target, desktop, applications, english]);
   const select = (id: string) => {
     const command = parseCommand(id);
@@ -49,7 +62,22 @@ function OpenMenu({ request, host, close, announce }: { request: FileMenuRequest
   return <PointMenu point={point} items={items} onSelect={select} onClose={close} />;
 }
 
-export function FileContextMenu({ source, host, close }: FileContextMenuProps) {
+function LinkMenu({ target, point, host, close, announce }: MenuProps<LinkTarget, LinkMenuHost>) {
+  const english = isEnglish();
+  const items = React.useMemo(() => buildLinkMenu(host.sidebarBrowserAvailable(), english), [host, english]);
+  const select = (id: string) => {
+    const command = parseLinkCommand(id);
+    if (command === undefined) return;
+    close();
+    host.run(command, target).catch(error => {
+      console.error('链接菜单操作失败', command, error);
+      announce(linkFailureMessage(command, english));
+    });
+  };
+  return <PointMenu point={point} items={items} onSelect={select} onClose={close} />;
+}
+
+export function ContextMenus({ source, files, links, close }: ContextMenusProps) {
   const request = React.useSyncExternalStore(source.subscribe, source.getSnapshot);
   const [notice, setNotice] = React.useState<string | null>(null);
   React.useEffect(() => {
@@ -57,9 +85,12 @@ export function FileContextMenu({ source, host, close }: FileContextMenuProps) {
     const timer = window.setTimeout(() => setNotice(null), noticeDuration);
     return () => window.clearTimeout(timer);
   }, [notice]);
+  const key = request === null ? '' : `${String(request.point.x)}:${String(request.point.y)}:${request.subject.type}`;
   return <>
-    {request !== null && <OpenMenu key={`${String(request.point.x)}:${String(request.point.y)}:${request.target.path}`}
-      request={request} host={host} close={close} announce={setNotice} />}
+    {request?.subject.type === 'file' && <FileMenu key={`${key}:${request.subject.target.path}`} target={request.subject.target}
+      point={request.point} host={files} close={close} announce={setNotice} />}
+    {request?.subject.type === 'link' && <LinkMenu key={`${key}:${request.subject.target.url}`} target={request.subject.target}
+      point={request.point} host={links} close={close} announce={setNotice} />}
     {notice !== null && <aside role="status" style={{
       position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 1000,
       maxWidth: 'min(520px, calc(100vw - 32px))', boxSizing: 'border-box', padding: '10px 16px', borderRadius: 12,

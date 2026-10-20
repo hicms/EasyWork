@@ -21,7 +21,9 @@
 
 新建工作区和新会话会拒绝磁盘、共享盘或文件系统根目录，请选择具体的可写子文件夹。新会话目录不可用时，界面会提示检查磁盘连接、目录权限和可用空间，也可从侧栏添加其他文件夹作为工作区；不会自动迁移已有会话、切换到其他目录或删除文件。该处理由 Desktop/Web 共用的 Profile 提供，已有会话仍可打开。
 
-文件与目录右键菜单：右侧栏“文件”树的行、已发送消息中的 `@` 文件/目录引用，以及助手回复里的文件链接，右键会出现按类型区分的菜单。文件提供预览、打开、打开方式、在文件管理器中显示、复制路径、复制相对路径和添加到对话；目录提供在文件管理器中打开、复制路径、复制相对路径和添加到对话。打开类动作只在 Host 报告可使用桌面时出现，依赖官方 Session Remote 的 `canOpenWorkspacePath`、`openWorkspacePath` 与 `workspacePathApplications`。输入框与其他可编辑区域、选中文字内的右键、助手回复里的目录和行内代码路径保持原生菜单。该能力只读取 DSH 已渲染的 DOM 标记，不修改 DSH；`apps/web/tests/file-context-menu-contract.test.mjs` 在升级 DSH 时核对这些标记，`file-context-menu.browser.mjs` 用无头 Chromium 验证拦截与放行（菜单组件为替身，真实菜单外观需在 Desktop/Web 中验收）。
+文件与目录右键菜单：右侧栏“文件”树的行、已发送消息中的 `@` 文件/目录引用，以及助手回复里的文件链接，右键会出现按类型区分的菜单。文件提供预览、打开、打开方式、在文件管理器中显示、复制路径、复制相对路径和添加到对话；目录提供在文件管理器中打开、复制路径、复制相对路径和添加到对话。打开类动作只在 Host 报告可使用桌面时出现，依赖官方 Session Remote 的 `canOpenWorkspacePath`、`openWorkspacePath` 与 `workspacePathApplications`。输入框与其他可编辑区域、选中文字内的右键、助手回复里的目录和行内代码路径保持原生菜单。该能力只读取 DSH 已渲染的 DOM 标记，不修改 DSH；`apps/web/tests/file-context-menu-contract.test.mjs` 在升级 DSH 时核对这些标记，`context-menus.browser.mjs` 用无头 Chromium 验证拦截与放行（菜单组件为替身，真实菜单外观需在 Desktop/Web 中验收）。
+
+网页链接右键菜单：会话消息区里的 http/https 链接（Markdown 链接和搜索来源链接）右键会出现“在侧栏浏览器中打开”（仅当侧栏注册了浏览器页类型）、“在浏览器中打开”和“复制链接地址”，Desktop 与 Web 共用同一实现，左键行为仍由官方链接处理。输入框、选中文字内的右键、mailto 与会话外的链接保持原生菜单。`apps/web/tests/file-context-menu-contract.test.mjs` 同样核对官方链接锚点与打开路径。
 
 技能、专家、资料库、连接器和项目由本仓库源码构建，随应用提供本地默认版本。插件安装与管理使用完整官方 DSH 界面，保留社区市场入口。个人 Profile、配置、数据和显式安装的插件由官方加载机制管理；官方 DSH 及依赖继续使用 `upstream.json` 锁定版本。
 

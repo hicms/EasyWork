@@ -49,8 +49,8 @@ test('Session owners keep their markers', () => {
 
 test('sent references and assistant file links keep their markers', () => {
   assertEveryCopy('dsh-client-ui-primitives', 'lib/index.js', {
-    'reference chip kind': '"data-ref-chip": referenceKind ?? slashKind',
-    'chip title is the mention': /"data-ref-chip": referenceKind \?\? slashKind,\s*title: label/u,
+    'reference chip kind': '"data-ref-chip": appearance',
+    'chip title is the mention': /"data-ref-chip": appearance,\s*title,/u,
     'file link classes': 'clsx(markdownCss.fileMention, markdownCss.fileLink)',
     'file link title is the path': 'title: src === void 0 ? file.path : void 0',
     'file link is a button': /MarkdownFileLink[\s\S]{0,600}jsxs\("button"/u,
@@ -63,6 +63,21 @@ test('sent references and assistant file links keep their markers', () => {
   }
 });
 
+test('conversation web links stay anchors and keep the official opening paths', () => {
+  assertEveryCopy('dsh-client-ui-primitives', 'lib/index.js', {
+    'markdown anchor': /function MarkdownAnchor[\s\S]{0,400}jsxs\("a", \{\s*href,\s*\.\.\.external \? \{\s*target: "_blank",\s*rel: "noopener noreferrer"/u,
+    'search source anchor': /function SafeLink[\s\S]{0,400}jsxs\("a", \{\s*className,\s*href,\s*target: "_blank",\s*rel: "noopener noreferrer"/u,
+  });
+  assertEveryCopy('dsh-client-ui-chat', 'lib/client.js', {
+    'side panel browser page type': 'ctx.sidebarRight.openTab("browser", { params: { url } })',
+    'new tab fallback': 'window.open(url, "_blank", "noopener,noreferrer")',
+  });
+  for (const directory of installed('dsh-web-frontend')) {
+    const assets = join(directory, 'dist', 'assets');
+    const script = readdirSync(assets).filter(file => file.endsWith('.js')).map(file => readFileSync(join(assets, file), 'utf8')).join('\n');
+    assert.ok(script.includes('jsxs("a",{href:e,...n?{target:"_blank",rel:"noopener noreferrer"}:{}'), 'compiled markdown anchor');
+  }
+});
 test('the bundle client declares every official module it loads at runtime', async () => {
   const manifest = JSON.parse(readFileSync(new URL('../../../packages/bundle/package.json', import.meta.url), 'utf8'));
   const compiled = await build({
